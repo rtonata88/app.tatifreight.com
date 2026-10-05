@@ -1,8 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { FileInput } from '@/components/file-input';
 import { FormField } from '@/components/form-field';
+import { Notice } from '@/components/notice';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -44,8 +45,8 @@ type FormValues = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'MDC Charges', href: index() },
-    { title: 'Record Payment', href: recordPayment() },
+    { title: 'MDC charges', href: index() },
+    { title: 'Record payment', href: recordPayment() },
 ];
 
 export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defaultPaymentDate, paymentMethods }: Props) {
@@ -68,11 +69,11 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Record MDC Payment" />
+            <Head title="Record MDC payment" />
             <PageContainer>
                 <PageHeader
-                    title="Record MDC Payment"
-                    description="Record payment made to RFANAM (Road Fund Administration)"
+                    title="Record MDC payment"
+                    description="Record payment made to RFANAM (Road Fund Administration)."
                     actions={
                         <Button asChild variant="ghost">
                             <Link href={index()}>
@@ -85,23 +86,19 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <div className="space-y-6 lg:col-span-2">
                         {errors.payment_error && (
-                            <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-                                <AlertCircle className="mt-0.5 size-5 shrink-0 text-red-600 dark:text-red-400" />
-                                <div>
-                                    <h3 className="mb-1 text-sm font-semibold text-red-800 dark:text-red-200">Payment Error</h3>
-                                    <p className="text-sm text-red-700 dark:text-red-300">{errors.payment_error}</p>
-                                </div>
-                            </div>
+                            <Notice tone="error" title="Payment error">
+                                {errors.payment_error}
+                            </Notice>
                         )}
 
                         <form onSubmit={submit}>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Payment Details</CardTitle>
+                                    <CardTitle>Payment details</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <FormField label="Payment Date" required htmlFor="payment_date" error={errors.payment_date} description="Date payment was made to RFANAM">
+                                        <FormField label="Payment date" required htmlFor="payment_date" error={errors.payment_date} description="Date payment was made to RFANAM">
                                             <Input
                                                 id="payment_date"
                                                 type="date"
@@ -120,14 +117,26 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                                             <Input
                                                 id="amount"
                                                 type="number"
+                                                inputMode="decimal"
                                                 step="0.01"
                                                 placeholder="0.00"
                                                 value={data.amount}
                                                 onChange={(e) => setData('amount', e.target.value)}
                                                 aria-invalid={!!errors.amount}
                                             />
+                                            {totalUnpaid > 0 && (
+                                                <Button
+                                                    type="button"
+                                                    variant="link"
+                                                    size="sm"
+                                                    className="h-auto justify-self-start p-0 md:h-auto"
+                                                    onClick={() => setData('amount', totalUnpaid.toFixed(2))}
+                                                >
+                                                    Pay full amount
+                                                </Button>
+                                            )}
                                         </FormField>
-                                        <FormField label="Payment Method" required htmlFor="payment_method" error={errors.payment_method}>
+                                        <FormField label="Payment method" required htmlFor="payment_method" error={errors.payment_method}>
                                             <NativeSelect
                                                 id="payment_method"
                                                 value={data.payment_method}
@@ -141,7 +150,7 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                                                 ))}
                                             </NativeSelect>
                                         </FormField>
-                                        <FormField label="Bank Reference / Transaction ID" htmlFor="bank_reference" error={errors.bank_reference}>
+                                        <FormField label="Bank reference / transaction ID" htmlFor="bank_reference" error={errors.bank_reference}>
                                             <Input
                                                 id="bank_reference"
                                                 placeholder="e.g., TXN-123456"
@@ -152,7 +161,7 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                                         </FormField>
                                     </div>
 
-                                    <FormField label="Receipt / Proof of Payment" htmlFor="receipt" error={errors.receipt} description="Upload receipt (PDF, JPG, PNG - max 5MB)">
+                                    <FormField label="Receipt / proof of payment" htmlFor="receipt" error={errors.receipt} description="Upload receipt (PDF, JPG, PNG - max 5MB)">
                                         <FileInput
                                             id="receipt"
                                             accept=".pdf,.jpg,.jpeg,.png"
@@ -178,7 +187,7 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                                         </Button>
                                         <Button type="submit" disabled={processing}>
                                             {processing && <Spinner />}
-                                            Record Payment
+                                            Record payment
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -186,33 +195,34 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                         </form>
                     </div>
 
-                    <div>
+                    {/* Phones: what is owed comes before the form. */}
+                    <div className="order-first lg:order-none">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Unpaid MDC</CardTitle>
                                 <CardDescription>Payment will be allocated to oldest charges first</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-                                    <div className="text-sm font-medium text-amber-800 dark:text-amber-200">Total Outstanding</div>
-                                    <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">{formatMoney(totalUnpaid)}</div>
+                                <div className="rounded-lg border border-warning bg-(--nx-warn-wash) p-4">
+                                    <div className="text-sm font-medium text-warning">Total outstanding</div>
+                                    <div className="font-condensed text-2xl font-bold tabular-nums">{formatMoney(totalUnpaid)}</div>
                                 </div>
 
                                 {unpaidCalculations.length > 0 ? (
                                     <div className="space-y-2">
-                                        <div className="text-sm font-medium">Recent Unpaid Charges ({unpaidCalculations.length})</div>
+                                        <div className="text-sm font-medium">Recent unpaid charges ({unpaidCalculations.length})</div>
                                         <div className="max-h-96 space-y-2 overflow-y-auto">
                                             {unpaidCalculations.slice(0, 10).map((calc) => (
                                                 <div key={calc.id} className="rounded-lg bg-muted p-3 text-xs">
                                                     <div className="mb-1 flex items-start justify-between">
-                                                        <span className="font-medium">{calc.logbook_reference}</span>
-                                                        <span className="font-bold">{formatMoney(calc.outstanding)}</span>
+                                                        <span className="font-mono font-medium">{calc.logbook_reference}</span>
+                                                        <span className="font-mono font-bold tabular-nums">{formatMoney(calc.outstanding)}</span>
                                                     </div>
                                                     <div className="text-muted-foreground">
                                                         {calc.vehicle_reg} • {calc.date}
                                                     </div>
                                                     {calc.amount_paid > 0 && (
-                                                        <div className="mt-1 text-amber-600 dark:text-amber-400">Partially paid: {formatMoney(calc.amount_paid)}</div>
+                                                        <div className="mt-1 text-warning">Partially paid: {formatMoney(calc.amount_paid)}</div>
                                                     )}
                                                 </div>
                                             ))}
@@ -220,8 +230,7 @@ export default function MdcRecordPayment({ unpaidCalculations, totalUnpaid, defa
                                     </div>
                                 ) : (
                                     <div className="p-4 text-center text-muted-foreground">
-                                        <div className="mb-2 text-4xl">✓</div>
-                                        <div>All MDC charges are paid!</div>
+                                        <div>All MDC charges are paid.</div>
                                     </div>
                                 )}
                             </CardContent>

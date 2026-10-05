@@ -2,6 +2,7 @@ import { Link, router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FileInput } from '@/components/file-input';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { Button } from '@/components/ui/button';
@@ -89,7 +90,37 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Expense Details">
+            {/* Receipt first: drivers start from the slip in their hand. */}
+            <FormSection title={editing ? 'Receipt' : 'Receipt upload'} columns={1}>
+                {expense?.receipt_path && expense.receipt_url && (
+                    <div>
+                        <p className="mb-2 text-sm text-muted-foreground">Current receipt:</p>
+                        <div className="flex max-w-sm flex-col items-start">
+                            <img src={expense.receipt_url} alt="Receipt" className="max-w-full rounded border" />
+                            <ConfirmDialog
+                                trigger={
+                                    <Button type="button" variant="destructive" size="sm" className="mt-2">
+                                        Delete receipt
+                                    </Button>
+                                }
+                                description="Are you sure you want to delete this receipt?"
+                                onConfirm={(done) => router.delete(destroyReceipt(expense.id).url, { preserveScroll: true, preserveState: true, onFinish: done })}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <FormField
+                    label={editing ? (expense?.receipt_path ? 'Replace receipt' : 'Upload receipt') : 'Receipt/invoice image'}
+                    htmlFor="receipt_upload"
+                    error={errors.receipt_upload}
+                    description="Upload a photo or scan of the receipt (max 2MB)"
+                >
+                    <FileInput id="receipt_upload" accept="image/*" preview file={data.receipt_upload} onChange={(file) => setData('receipt_upload', file)} />
+                </FormField>
+            </FormSection>
+
+            <FormSection title="Expense details">
                 <FormField label="Category" required htmlFor="category" error={errors.category}>
                     <NativeSelect id="category" value={data.category} onChange={(e) => setData('category', e.target.value)} aria-invalid={!!errors.category}>
                         <option value="">Select category</option>
@@ -105,6 +136,7 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
                     <Input
                         id="amount"
                         type="number"
+                        inputMode="decimal"
                         step="0.01"
                         min="0.01"
                         placeholder={editing ? undefined : '0.00'}
@@ -114,7 +146,7 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
                     />
                 </FormField>
 
-                <FormField label="Expense Date" required htmlFor="expense_date" error={errors.expense_date}>
+                <FormField label="Expense date" required htmlFor="expense_date" error={errors.expense_date}>
                     <Input id="expense_date" type="date" value={data.expense_date} onChange={(e) => setData('expense_date', e.target.value)} aria-invalid={!!errors.expense_date} />
                 </FormField>
 
@@ -140,7 +172,7 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
                 </FormField>
 
                 <FormField
-                    label="Related Booking"
+                    label="Related booking"
                     htmlFor="booking_id"
                     error={errors.booking_id}
                     className={editing ? undefined : 'md:col-span-2'}
@@ -168,53 +200,25 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
                 </FormField>
             </FormSection>
 
-            <FormSection title={editing ? 'Receipt' : 'Receipt Upload'} columns={1}>
-                {expense?.receipt_path && expense.receipt_url && (
-                    <div>
-                        <p className="mb-2 text-sm text-muted-foreground">Current Receipt:</p>
-                        <div className="inline-flex flex-col items-start">
-                            <img src={expense.receipt_url} alt="Receipt" className="max-w-sm rounded border" />
-                            <ConfirmDialog
-                                trigger={
-                                    <Button type="button" variant="destructive" size="sm" className="mt-2">
-                                        Delete Receipt
-                                    </Button>
-                                }
-                                description="Are you sure you want to delete this receipt?"
-                                onConfirm={(done) => router.delete(destroyReceipt(expense.id).url, { preserveScroll: true, preserveState: true, onFinish: done })}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                <FormField
-                    label={editing ? (expense?.receipt_path ? 'Replace Receipt' : 'Upload Receipt') : 'Receipt/Invoice Image'}
-                    htmlFor="receipt_upload"
-                    error={errors.receipt_upload}
-                    description="Upload a photo or scan of the receipt (max 2MB)"
-                >
-                    <FileInput id="receipt_upload" accept="image/*" preview file={data.receipt_upload} onChange={(file) => setData('receipt_upload', file)} />
-                </FormField>
-            </FormSection>
 
             {expense ? (
-                <FormSection title="Additional Information">
+                <FormSection title="Additional information">
                     <div>
-                        <p className="text-sm text-muted-foreground">Submitted By</p>
+                        <p className="text-sm text-muted-foreground">Submitted by</p>
                         <p className="text-sm font-medium">{expense.submitted_by}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Submitted On</p>
+                        <p className="text-sm text-muted-foreground">Submitted on</p>
                         <p className="text-sm font-medium">{formatDateTime(expense.created_at)}</p>
                     </div>
                     {expense.approved_by_id && (
                         <>
                             <div>
-                                <p className="text-sm text-muted-foreground">{decided} By</p>
+                                <p className="text-sm text-muted-foreground">{decided} by</p>
                                 <p className="text-sm font-medium">{expense.approved_by}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">{decided} On</p>
+                                <p className="text-sm text-muted-foreground">{decided} on</p>
                                 <p className="text-sm font-medium">{formatDateTime(expense.approved_at)}</p>
                             </div>
                         </>
@@ -224,22 +228,22 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
                     </FormField>
                 </FormSection>
             ) : (
-                <FormSection title="Additional Notes" columns={1}>
+                <FormSection title="Additional notes" columns={1}>
                     <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                         <Textarea id="notes" rows={3} placeholder="Any additional information..." value={data.notes} onChange={(e) => setData('notes', e.target.value)} />
                     </FormField>
                 </FormSection>
             )}
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? 'Update Expense' : 'Submit Expense'}
+                    {editing ? 'Update expense' : 'Submit expense'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

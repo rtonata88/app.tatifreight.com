@@ -24,14 +24,15 @@ createInertiaApp({
             <StrictMode>
                 <App {...props} />
                 {/* One toaster for the whole app, so toasts survive page changes. */}
-                <Toaster position="top-right" />
+                <Toaster position="bottom-right" mobileOffset={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }} />
             </StrictMode>,
         );
 
         registerFlashToasts(props.initialPage.props.flash as Flash | undefined);
     },
     progress: {
-        color: '#4B5563',
+        // Nexus accent (Slate theme).
+        color: '#4e73df',
     },
 });
 

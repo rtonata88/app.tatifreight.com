@@ -44,7 +44,7 @@ export const emptyLineItem = (): LineItem => ({
     vehicle_id: '',
     description: '',
     quantity: 1,
-    unit_price: 0,
+    unit_price: '',
     unit: 'trip',
 });
 
@@ -94,8 +94,9 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
         });
     };
 
-    const vehicleSelect = (item: LineItem, index: number, className?: string) => (
+    const vehicleSelect = (item: LineItem, index: number, className?: string, id?: string) => (
         <NativeSelect
+            id={id}
             aria-label="Vehicle"
             className={className}
             value={item.vehicle_id ?? ''}
@@ -111,8 +112,8 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
         </NativeSelect>
     );
 
-    const unitSelect = (item: LineItem, index: number, className?: string) => (
-        <NativeSelect aria-label="Unit" className={className} value={item.unit} onChange={(e) => updateItem(index, { unit: e.target.value })}>
+    const unitSelect = (item: LineItem, index: number, className?: string, id?: string) => (
+        <NativeSelect id={id} aria-label="Unit" className={className} value={item.unit} onChange={(e) => updateItem(index, { unit: e.target.value })}>
             {UNITS.map((unit) => (
                 <option key={unit.value} value={unit.value}>
                     {unit.label}
@@ -126,9 +127,9 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-2">
-                <CardTitle>Line Items</CardTitle>
+                <CardTitle>Line items</CardTitle>
                 <Button type="button" variant="ghost" size="sm" onClick={addItem}>
-                    <Plus /> Add Line
+                    <Plus /> Add line
                 </Button>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -138,11 +139,11 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                 <div className="space-y-4 md:hidden">
                     {items.length === 0 ? (
                         <div className="rounded-lg border bg-muted/50 p-8 text-center text-sm text-muted-foreground">
-                            No line items added yet. Click "Add Line" to get started.
+                            No line items added yet. Use "Add line" to get started.
                         </div>
                     ) : (
                         items.map((item, index) => (
-                            <div key={index} className="space-y-3 rounded-lg border p-4 shadow-xs">
+                            <div key={index} className="space-y-3 rounded-lg border p-4">
                                 <div className="flex items-center justify-between">
                                     <span className="text-xs font-semibold text-muted-foreground">LINE ITEM #{index + 1}</span>
                                     {items.length > 1 && (
@@ -150,7 +151,7 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                             type="button"
                                             variant="ghost"
                                             size="icon"
-                                            className="size-8 text-red-600 hover:text-red-800 dark:text-red-400"
+                                            className="size-8 text-destructive hover:text-destructive/80"
                                             onClick={() => removeItem(index)}
                                             aria-label="Remove line"
                                         >
@@ -159,13 +160,18 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                     )}
                                 </div>
                                 <div className="grid gap-1.5">
-                                    <Label className="text-xs">Vehicle *</Label>
-                                    {vehicleSelect(item, index)}
+                                    <Label htmlFor={`items-${index}-vehicle`} className="text-xs">
+                                        Vehicle
+                                    </Label>
+                                    {vehicleSelect(item, index, undefined, `items-${index}-vehicle`)}
                                     {fieldError(index, 'vehicle_id')}
                                 </div>
                                 <div className="grid gap-1.5">
-                                    <Label className="text-xs">Description *</Label>
+                                    <Label htmlFor={`items-${index}-description`} className="text-xs">
+                                        Description *
+                                    </Label>
                                     <Input
+                                        id={`items-${index}-description`}
                                         value={item.description}
                                         placeholder="Item description"
                                         onChange={(e) => updateItem(index, { description: e.target.value })}
@@ -175,35 +181,55 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="grid gap-1.5">
-                                        <Label className="text-xs">Unit</Label>
-                                        {unitSelect(item, index)}
+                                        <Label htmlFor={`items-${index}-unit`} className="text-xs">
+                                            Unit
+                                        </Label>
+                                        {unitSelect(item, index, undefined, `items-${index}-unit`)}
                                     </div>
                                     <div className="grid gap-1.5">
-                                        <Label className="text-xs">Quantity *</Label>
-                                        <Input type="number" min="1" value={item.quantity} onChange={(e) => updateItem(index, { quantity: e.target.value })} />
+                                        <Label htmlFor={`items-${index}-qty`} className="text-xs">
+                                            Quantity *
+                                        </Label>
+                                        <Input
+                                            id={`items-${index}-qty`}
+                                            type="number"
+                                            min="1"
+                                            inputMode="numeric"
+                                            value={item.quantity}
+                                            onChange={(e) => updateItem(index, { quantity: e.target.value })}
+                                            aria-invalid={!!errors[`items.${index}.quantity`]}
+                                        />
                                         {fieldError(index, 'quantity')}
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 items-start gap-3">
                                     <div className="grid gap-1.5">
-                                        <Label className="text-xs">Unit Price *</Label>
+                                        <Label htmlFor={`items-${index}-price`} className="text-xs">
+                                            Unit price *
+                                        </Label>
                                         <Input
+                                            id={`items-${index}-price`}
                                             type="number"
                                             step="0.01"
+                                            inputMode="decimal"
                                             placeholder="0.00"
                                             value={item.unit_price}
                                             onChange={(e) => updateItem(index, { unit_price: e.target.value })}
+                                            aria-invalid={!!errors[`items.${index}.unit_price`]}
                                         />
                                         {fieldError(index, 'unit_price')}
                                     </div>
-                                    <div className="grid gap-1.5">
-                                        <Label className="text-xs">Amount</Label>
-                                        <Input readOnly tabIndex={-1} className="bg-muted font-semibold" value={formatMoney(lineAmount(item))} />
+                                    <div className="grid gap-1.5 text-right">
+                                        <span className="text-xs font-medium">Amount</span>
+                                        <span className="flex h-11 items-center justify-end font-mono font-semibold tabular-nums">{formatMoney(lineAmount(item))}</span>
                                     </div>
                                 </div>
                             </div>
                         ))
                     )}
+                    <Button type="button" variant="outline" className="w-full" onClick={addItem}>
+                        <Plus /> Add line
+                    </Button>
                 </div>
 
                 {/* Tablets and up: spreadsheet-style table */}
@@ -216,7 +242,7 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                 <th className="w-[25%] border px-2 py-2 text-left font-semibold">Description</th>
                                 <th className="w-[12%] border px-2 py-2 text-left font-semibold">Unit</th>
                                 <th className="w-[10%] border px-2 py-2 text-center font-semibold">Qty</th>
-                                <th className="w-[13%] border px-2 py-2 text-right font-semibold">Unit Price</th>
+                                <th className="w-[13%] border px-2 py-2 text-right font-semibold">Unit price</th>
                                 <th className="w-[13%] border px-2 py-2 text-right font-semibold">Amount</th>
                                 <th className="w-[2%] border px-2 py-2" />
                             </tr>
@@ -225,7 +251,7 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                             {items.length === 0 ? (
                                 <tr>
                                     <td colSpan={8} className="border px-4 py-8 text-center text-muted-foreground">
-                                        No line items added yet. Click "Add Line" to get started.
+                                        No line items added yet. Use "Add line" to get started.
                                     </td>
                                 </tr>
                             ) : (
@@ -251,6 +277,8 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                             <Input
                                                 type="number"
                                                 min="1"
+                                                inputMode="numeric"
+                                                aria-label="Quantity"
                                                 className={cn(cellClass, 'text-center')}
                                                 value={item.quantity}
                                                 onChange={(e) => updateItem(index, { quantity: e.target.value })}
@@ -262,6 +290,9 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                             <Input
                                                 type="number"
                                                 step="0.01"
+                                                inputMode="decimal"
+                                                placeholder="0.00"
+                                                aria-label="Unit price"
                                                 className={cn(cellClass, 'text-right')}
                                                 value={item.unit_price}
                                                 onChange={(e) => updateItem(index, { unit_price: e.target.value })}
@@ -269,13 +300,13 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                                             />
                                             {fieldError(index, 'unit_price')}
                                         </td>
-                                        <td className="border bg-muted/50 px-2 py-1.5 text-right font-medium tabular-nums">{lineAmount(item).toFixed(2)}</td>
+                                        <td className="border bg-muted/50 px-2 py-1.5 text-right font-mono font-medium tabular-nums">{lineAmount(item).toFixed(2)}</td>
                                         <td className="border p-1 text-center">
                                             {items.length > 1 && (
                                                 <button
                                                     type="button"
                                                     onClick={() => removeItem(index)}
-                                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                                    className="text-destructive hover:text-destructive/80"
                                                     title="Remove line"
                                                     aria-label="Remove line"
                                                 >
@@ -295,17 +326,17 @@ export function LineItemsEditor({ items, onChange, vehicles, taxRate, errors }: 
                     <div className="ml-auto max-w-md space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Subtotal:</span>
-                            <span className="font-medium" data-testid="quote-subtotal">
+                            <span className="font-mono font-medium tabular-nums" data-testid="quote-subtotal">
                                 {formatMoney(totals.subtotal)}
                             </span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">VAT ({taxRate}%):</span>
-                            <span className="font-medium">{formatMoney(totals.taxAmount)}</span>
+                            <span className="font-mono font-medium tabular-nums">{formatMoney(totals.taxAmount)}</span>
                         </div>
                         <div className="flex justify-between border-t pt-2 text-lg font-bold">
                             <span>Total:</span>
-                            <span>{formatMoney(totals.total)}</span>
+                            <span className="font-mono tabular-nums">{formatMoney(totals.total)}</span>
                         </div>
                     </div>
                 </div>

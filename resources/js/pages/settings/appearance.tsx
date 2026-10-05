@@ -25,7 +25,7 @@ export default function Appearance() {
                     <Heading
                         variant="small"
                         title="Appearance settings"
-                        description="Update your account's appearance settings"
+                        description="Choose the Slate (light) or Ink (dark) theme, or follow your system."
                     />
                     <AppearanceTabs />
                 </div>

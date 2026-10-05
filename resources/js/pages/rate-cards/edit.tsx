@@ -15,16 +15,16 @@ type Props = {
 
 export default function RateCardsEdit({ vehicleTypes, clients, rateCard }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Rate Cards', href: index() },
+        { title: 'Rate cards', href: index() },
         { title: rateCard.name, href: edit(rateCard.id) },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Edit Rate Card" />
+            <Head title="Edit rate card" />
             <PageContainer>
                 <PageHeader
-                    title="Edit Rate Card"
+                    title="Edit rate card"
                     actions={<StatusBadge tone={rateCard.is_active ? 'green' : 'gray'}>{rateCard.is_active ? 'Active' : 'Inactive'}</StatusBadge>}
                 />
                 <RateCardForm vehicleTypes={vehicleTypes} clients={clients} rateCard={rateCard} />

@@ -1,7 +1,10 @@
 import { usePage } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
+
+/* The Nexus rail: 248px expanded, 64px collapsed to icons. */
+const RAIL = { '--sidebar-width': '248px', '--sidebar-width-icon': '64px' } as CSSProperties;
 
 type Props = {
     children: ReactNode;
@@ -18,6 +21,8 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
     }
 
     return (
-        <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>
+        <SidebarProvider defaultOpen={isOpen} style={RAIL}>
+            {children}
+        </SidebarProvider>
     );
 }

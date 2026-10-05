@@ -14,7 +14,7 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: "Documents", href: index() },
-    { title: "Upload Document", href: upload() },
+    { title: "Upload document", href: upload() },
 ];
 
 export default function DocumentsUpload({
@@ -24,9 +24,9 @@ export default function DocumentsUpload({
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Upload Document" />
+            <Head title="Upload document" />
             <PageContainer>
-                <PageHeader title="Upload Document" />
+                <PageHeader title="Upload document" />
                 <DocumentForm
                     clients={clients}
                     vehicles={vehicles}

@@ -1,7 +1,5 @@
 import { Head, Link, router } from "@inertiajs/react";
 import {
-    AlertTriangle,
-    Clock,
     Download,
     File,
     FileImage,
@@ -17,6 +15,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageContainer } from "@/components/page-container";
 import { RowActionContent, rowActionProps } from "@/components/row-action";
 import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,7 +35,6 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { destroy, edit, file, index, upload } from "@/routes/documents";
 import type { BreadcrumbItem, Paginated } from "@/types";
-import type { LucideIcon } from "lucide-react";
 
 type DocumentRow = {
     id: number;
@@ -95,45 +93,36 @@ export default function DocumentsIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Document Management" />
+            <Head title="Document management" />
             <PageContainer>
                 <PageHeader
-                    title="Document Management"
+                    title="Document management"
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={upload()}>
-                                    <Plus /> Upload Document
+                                    <Plus /> Upload document
                                 </Link>
                             </Button>
                         )
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <Stat
-                        label="Total Documents"
-                        value={stats.total}
-                        icon={FileText}
-                        tone="blue"
-                    />
-                    <Stat
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-4">
+                    <StatCard label="Total documents" value={stats.total} />
+                    <StatCard
                         label="Expired"
                         value={stats.expired}
-                        icon={AlertTriangle}
-                        tone="red"
+                        tone="negative"
                     />
-                    <Stat
-                        label="Expiring Soon"
+                    <StatCard
+                        label="Expiring soon"
                         value={stats.expiring_soon}
-                        icon={Clock}
-                        tone="yellow"
+                        tone="warning"
                     />
-                    <Stat
+                    <StatCard
                         label="Contracts"
                         value={stats.by_category.contracts}
-                        icon={FileText}
-                        tone="green"
                     />
                 </div>
 
@@ -158,7 +147,7 @@ export default function DocumentsIndex({
                                 }
                                 aria-label="Filter by category"
                             >
-                                <option value="">All Categories</option>
+                                <option value="">All categories</option>
                                 <option value="contract">Contracts</option>
                                 <option value="license">Licenses</option>
                                 <option value="insurance">Insurance</option>
@@ -174,10 +163,10 @@ export default function DocumentsIndex({
                                 }
                                 aria-label="Filter by expiry"
                             >
-                                <option value="">All Documents</option>
+                                <option value="">All documents</option>
                                 <option value="expired">Expired</option>
                                 <option value="expiring_soon">
-                                    Expiring Soon (30 days)
+                                    Expiring soon (30 days)
                                 </option>
                             </NativeSelect>
                         </div>
@@ -208,7 +197,7 @@ export default function DocumentsIndex({
                                             <div className="grid grid-cols-2 gap-3 border-t pt-3">
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        Related To
+                                                        Related to
                                                     </div>
                                                     <Related
                                                         document={document}
@@ -216,7 +205,7 @@ export default function DocumentsIndex({
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        Uploaded By
+                                                        Uploaded by
                                                     </div>
                                                     <UploadedBy
                                                         document={document}
@@ -224,7 +213,7 @@ export default function DocumentsIndex({
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        Expiry Date
+                                                        Expiry date
                                                     </div>
                                                     <Expiry
                                                         document={document}
@@ -261,13 +250,13 @@ export default function DocumentsIndex({
                                                 <TableHead>Document</TableHead>
                                                 <TableHead>Category</TableHead>
                                                 <TableHead>
-                                                    Related To
+                                                    Related to
                                                 </TableHead>
                                                 <TableHead>
-                                                    Uploaded By
+                                                    Uploaded by
                                                 </TableHead>
                                                 <TableHead>
-                                                    Expiry Date
+                                                    Expiry date
                                                 </TableHead>
                                                 <TableHead>Size</TableHead>
                                                 <TableHead>Actions</TableHead>
@@ -337,71 +326,18 @@ export default function DocumentsIndex({
     );
 }
 
-const statTones = {
-    blue: {
-        card: "bg-blue-50 dark:bg-blue-500/10",
-        value: "text-blue-700 dark:text-blue-300",
-        icon: "text-blue-500",
-    },
-    red: {
-        card: "bg-red-50 dark:bg-red-500/10",
-        value: "text-red-700 dark:text-red-300",
-        icon: "text-red-500",
-    },
-    yellow: {
-        card: "bg-yellow-50 dark:bg-yellow-500/10",
-        value: "text-yellow-700 dark:text-yellow-300",
-        icon: "text-yellow-500",
-    },
-    green: {
-        card: "bg-green-50 dark:bg-green-500/10",
-        value: "text-green-700 dark:text-green-300",
-        icon: "text-green-500",
-    },
-};
-
-function Stat({
-    label,
-    value,
-    icon: Icon,
-    tone,
-}: {
-    label: string;
-    value: number;
-    icon: LucideIcon;
-    tone: keyof typeof statTones;
-}) {
-    const t = statTones[tone];
-    return (
-        <Card className={cn("gap-0 py-0", t.card)}>
-            <CardContent className="flex items-center justify-between p-4">
-                <div>
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <p className={cn("text-2xl font-bold", t.value)}>{value}</p>
-                </div>
-                <Icon className={cn("size-8", t.icon)} />
-            </CardContent>
-        </Card>
-    );
-}
-
 function DocumentCell({ document }: { document: DocumentRow }) {
     const Icon = document.file_type.includes("pdf")
         ? FileText
         : document.file_type.includes("image")
           ? FileImage
           : File;
-    const color = document.file_type.includes("pdf")
-        ? "text-red-500"
-        : document.file_type.includes("image")
-          ? "text-green-500"
-          : "text-muted-foreground";
 
     return (
         <div className="flex min-w-0 items-start gap-3">
-            <Icon className={cn("mt-1 size-8 shrink-0", color)} />
+            <Icon className="mt-1 size-8 shrink-0 text-muted-foreground" strokeWidth={1.6} />
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{document.title}</p>
+                <p className="line-clamp-2 text-sm font-medium md:truncate">{document.title}</p>
                 <p className="truncate text-xs text-muted-foreground">
                     {document.file_name}
                 </p>
@@ -451,21 +387,21 @@ function Expiry({ document }: { document: DocumentRow }) {
             <div
                 className={cn(
                     document.is_expired &&
-                        "font-medium text-red-600 dark:text-red-400",
+                        "font-medium text-destructive",
                     !document.is_expired &&
                         document.is_expiring_soon &&
-                        "text-yellow-600 dark:text-yellow-400",
+                        "text-warning",
                 )}
             >
                 {formatDate(document.expiry_date)}
             </div>
             {document.is_expired ? (
-                <div className="text-xs text-red-600 dark:text-red-400">
+                <div className="text-xs text-destructive">
                     Expired
                 </div>
             ) : (
                 document.is_expiring_soon && (
-                    <div className="text-xs text-yellow-600 dark:text-yellow-400">
+                    <div className="text-xs text-warning">
                         {document.days_left} days left
                     </div>
                 )

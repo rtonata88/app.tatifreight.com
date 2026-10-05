@@ -25,9 +25,9 @@ export default function VehiclesEdit({ vehicleTypes, mdcRateCards, vehicle }: Pr
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit Vehicle: ${vehicle.reg_number}`} />
+            <Head title={`Edit vehicle: ${vehicle.reg_number}`} />
             <PageContainer>
-                <PageHeader title={`Edit Vehicle: ${vehicle.reg_number}`} />
+                <PageHeader title={`Edit vehicle: ${vehicle.reg_number}`} />
                 <VehicleForm vehicleTypes={vehicleTypes} mdcRateCards={mdcRateCards} vehicle={vehicle} />
             </PageContainer>
         </AppLayout>

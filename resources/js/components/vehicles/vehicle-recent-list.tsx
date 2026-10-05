@@ -27,7 +27,7 @@ export function VehicleRecentList<T>({
                 <CardTitle>{title}</CardTitle>
                 {viewAllHref && (
                     <Button asChild variant="ghost" size="sm">
-                        <Link href={viewAllHref}>View All</Link>
+                        <Link href={viewAllHref}>View all</Link>
                     </Button>
                 )}
             </CardHeader>

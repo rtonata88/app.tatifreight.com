@@ -1,0 +1,45 @@
+/* ==========================================================================
+   Nexus Design System — primitive classes
+   Thin CSS layer the React components and UI kits both consume. Everything
+   resolves through the shadcn alias layer, so a class works in ink and paper.
+   ========================================================================== */
+
+/* ---- Type roles ------------------------------------------------------ */
+.nx-display { font-family: var(--nx-font-display); font-weight: 700; line-height: var(--nx-lh-display); letter-spacing: var(--nx-track-tight); }
+.nx-h1 { font-family: var(--nx-font-display); font-weight: 700; font-size: var(--nx-fs-3xl); line-height: var(--nx-lh-display); letter-spacing: var(--nx-track-tight); margin: 0; }
+.nx-h2 { font-family: var(--nx-font-display); font-weight: 700; font-size: var(--nx-fs-2xl); line-height: var(--nx-lh-tight); letter-spacing: -0.015em; margin: 0; }
+.nx-h3 { font-family: var(--nx-font-body); font-weight: 700; font-size: var(--nx-fs-xl); line-height: var(--nx-lh-tight); margin: 0; }
+.nx-h4 { font-family: var(--nx-font-body); font-weight: 600; font-size: var(--nx-fs-lg); line-height: var(--nx-lh-tight); margin: 0; }
+.nx-body { font-family: var(--nx-font-body); font-weight: 400; font-size: var(--nx-fs-md); line-height: var(--nx-lh-body); }
+.nx-meta { font-family: var(--nx-font-body); font-weight: 400; font-size: var(--nx-fs-small); color: var(--muted-foreground); }
+.nx-eyebrow {
+    font-family: var(--nx-font-body); font-size: var(--nx-fs-micro); font-weight: 600;
+    text-transform: uppercase; letter-spacing: var(--nx-track-widest); color: var(--muted-foreground);
+}
+.nx-label {
+    display: block; font-family: var(--nx-font-body); font-size: var(--nx-fs-micro); font-weight: 600;
+    text-transform: uppercase; letter-spacing: var(--nx-track-widest); color: var(--muted-foreground);
+}
+.nx-mono { font-family: var(--nx-font-mono); font-size: var(--nx-fs-small); font-feature-settings: 'tnum' 1; }
+.nx-num  { font-family: var(--nx-font-condensed); font-weight: 700; letter-spacing: -0.01em; font-feature-settings: 'tnum' 1; }
+.nx-money { font-family: var(--nx-font-mono); font-size: var(--nx-fs-body); font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums; }
+
+/* ---- Hairline rules -------------------------------------------------- */
+.nx-rule       { border: 0; border-top: 1px solid var(--border); margin: 0; }
+.nx-rule-x     { border: 0; border-top: 1px solid var(--input); margin: 0; }
+.nx-rule-brass { border: 0; border-top: 1px solid var(--nx-rule-brass); margin: 0; }
+
+/* ---- Paper-mode label contrast --------------------------------------
+   11px at 0.18em tracking needs more weight than --nx-pfg-3 gives on paper
+   (4.28:1). pfg-2 clears 4.5:1 comfortably, which printed documents require. */
+.nx-paper .nx-eyebrow,
+.nx-paper .nx-label,
+.nx-paper .nx-meta { color: var(--nx-pfg-2); }
+
+/* ---- Focus ----------------------------------------------------------- */
+.nx-focusable:focus-visible { outline: none; box-shadow: 0 0 0 1px var(--ring); }
+
+/* ---- Print ----------------------------------------------------------- */
+@media print {
+    .nx-no-print { display: none !important; }
+}

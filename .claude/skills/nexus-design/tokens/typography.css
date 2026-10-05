@@ -1,0 +1,32 @@
+/* ==========================================================================
+   Nexus Design System — type
+   Archivo display · Manrope UI · Archivo Narrow tabular figures · JetBrains Mono codes
+   ========================================================================== */
+
+:root {
+    --nx-font-display:   'Public Sans', ui-sans-serif, system-ui, sans-serif;
+    --nx-font-condensed: 'Archivo Narrow', 'Public Sans', ui-sans-serif, sans-serif;
+    --nx-font-body:      'Public Sans', -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
+    --nx-font-mono:      'Roboto Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+    /* Scale — ERP density: 13px is the working body size, 11px the label floor */
+    --nx-fs-micro: 11px;   /* eyebrow, status pill, table label */
+    --nx-fs-small: 12px;   /* meta, caption, table cell meta */
+    --nx-fs-body:  13px;   /* table cells, form values, dense UI */
+    --nx-fs-md:    14px;   /* prose body, card copy */
+    --nx-fs-lg:    16px;   /* card title */
+    --nx-fs-xl:    20px;   /* H3, metric value */
+    --nx-fs-2xl:   28px;   /* H2, page title */
+    --nx-fs-3xl:   40px;   /* H1 */
+    --nx-fs-4xl:   60px;   /* hero figure */
+
+    --nx-lh-display: 1.05;
+    --nx-lh-tight:   1.2;
+    --nx-lh-body:    1.55;
+    --nx-lh-loose:   1.7;
+
+    --nx-track-tight:  -0.02em;
+    --nx-track-normal: 0;
+    --nx-track-wide:   0.08em;   /* status, eyebrow */
+    --nx-track-widest: 0.18em;   /* form labels, rail section titles */
+}

@@ -1,0 +1,26 @@
+<!-- @dsCard group="Spacing" viewport="700x180" subtitle="24px card padding · 32px page gutter and section break · 44px table row" name="Density in use" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0}
+  body{padding:18px 22px;font-family:var(--nx-font-body)}
+  .grid{display:grid;gap:10px}
+  .sw{border-radius:var(--nx-r-3);border:1px solid var(--border);padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-end;min-height:64px}
+  .n{font-family:var(--nx-font-mono);font-size:10px;letter-spacing:0;line-height:1.5}
+  .l{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;line-height:1.6}
+  .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div style="display:flex;gap:14px;align-items:stretch">
+<div style="flex:1;background:var(--nx-ink-card);border:1px solid var(--border);border-radius:var(--nx-r-4);padding:24px"><div class="nx-eyebrow" style="margin-bottom:10px">Card padding</div><div class="nx-num" style="font-size:24px">24px</div><div class="nx-meta" style="margin-top:8px">32px on dossier and document cards.</div></div>
+<div style="flex:1;background:var(--nx-ink-card);border:1px solid var(--border);border-radius:var(--nx-r-4);overflow:hidden">
+<div style="height:36px;display:flex;align-items:center;padding:0 16px;background:var(--nx-ink-elevated);border-bottom:1px solid var(--border)" class="l"><span style="color:var(--nx-fg-3)">Row height</span></div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);font-size:13px">44px · default</div>
+<div style="height:36px;display:flex;align-items:center;padding:0 16px;font-size:13px">36px · dense</div>
+</div></div>
+</body>
+</html>

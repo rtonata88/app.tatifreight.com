@@ -1,8 +1,9 @@
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
-import { MetricCard, toneSurface, toneText, type ReportTone } from '@/components/reports/report-tiles';
+import { toneText, type ReportTone } from '@/components/reports/report-tiles';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
+import { StatCard } from '@/components/stat-card';
 import { StatusBadge } from '@/components/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,9 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Analytics', href: dashboard() }
 /** The old view used "N$1,234.50" (no space) via number_format. */
 const money = (value: number) => formatMoney(value, 'N$');
 
+/** Phones: figures two-up (the third spans both); from md they stack as before. */
+const figureGrid = 'grid grid-cols-2 gap-2 max-md:[&>*:last-child]:col-span-2 md:grid-cols-1 md:gap-4';
+
 export default function ReportsDashboard(props: Props) {
     const { filters, setFilter } = useFilters(dashboard().url, props.filters);
     const {
@@ -79,10 +83,10 @@ export default function ReportsDashboard(props: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Analytics Dashboard" />
+            <Head title="Analytics dashboard" />
             <PageContainer>
                 <PageHeader
-                    title="Analytics Dashboard"
+                    title="Analytics dashboard"
                     actions={
                         <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
                             <Input
@@ -97,138 +101,28 @@ export default function ReportsDashboard(props: Props) {
                 />
 
                 {/* Key metrics */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <MetricCard tone="green" label="Total Revenue" value={money(totalRevenue)} hint="Paid invoices" />
-                    <MetricCard tone="red" label="Total Expenses" value={money(totalExpenses)} hint="Approved expenses" />
-                    <MetricCard
-                        tone={profit >= 0 ? 'blue' : 'orange'}
-                        label="Net Profit"
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 lg:grid-cols-4">
+                    <StatCard label="Total revenue" value={money(totalRevenue)} hint="Paid invoices" />
+                    <StatCard label="Total expenses" value={money(totalExpenses)} hint="Approved expenses" />
+                    <StatCard
+                        tone={profit >= 0 ? 'positive' : 'negative'}
+                        emphasis
+                        label="Net profit"
                         value={money(profit)}
                         hint={`${formatNumber(profitMargin, 1)}% margin`}
                     />
-                    <MetricCard
-                        tone="purple"
-                        label="Fleet Utilization"
+                    <StatCard
+                        label="Fleet utilization"
                         value={`${formatNumber(utilizationRate, 1)}%`}
                         hint={`${vehiclesInUse}/${totalVehicles} in use`}
                     />
                 </div>
 
-                {/* Revenue & bookings */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Revenue Status</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <StackedFigure tone="green" label="Collected" value={money(totalRevenue)} />
-                            <StackedFigure tone="yellow" label="Pending" value={money(pendingRevenue)} />
-                            <StackedFigure tone="red" label="Overdue" value={money(overdueRevenue)} />
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Booking Activity</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <StackedFigure tone="blue" label="Completed Bookings" value={completedBookings} />
-                            <StackedFigure tone="purple" label="Active Bookings" value={activeBookings} />
-                            <StackedFigure
-                                tone="gray"
-                                label="Avg Revenue per Booking"
-                                value={completedBookings > 0 ? money(totalRevenue / completedBookings) : 'N$0.00'}
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Top clients */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Top Clients by Revenue</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {topClients.length === 0 ? (
-                            <p className="py-8 text-center text-muted-foreground">No revenue data for selected period</p>
-                        ) : (
-                            <>
-                                <div className="space-y-3 md:hidden">
-                                    {topClients.map((item, index) => (
-                                        <div key={item.client_id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
-                                            <div className="flex min-w-0 items-center gap-3">
-                                                <StatusBadge tone={index === 0 ? 'yellow' : 'gray'}>#{index + 1}</StatusBadge>
-                                                <div className="min-w-0">
-                                                    <div className="truncate font-medium">{item.name}</div>
-                                                    <div className="truncate text-sm text-muted-foreground">{item.company_name || '-'}</div>
-                                                </div>
-                                            </div>
-                                            <div className="shrink-0 font-bold text-green-600 tabular-nums dark:text-green-400">
-                                                {money(item.total_revenue)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="hidden md:block">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Rank</TableHead>
-                                                <TableHead>Client</TableHead>
-                                                <TableHead>Company</TableHead>
-                                                <TableHead>Revenue</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {topClients.map((item, index) => (
-                                                <TableRow key={item.client_id}>
-                                                    <TableCell>
-                                                        <StatusBadge tone={index === 0 ? 'yellow' : 'gray'}>#{index + 1}</StatusBadge>
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">{item.name}</TableCell>
-                                                    <TableCell className="text-muted-foreground">{item.company_name || '-'}</TableCell>
-                                                    <TableCell className="font-bold text-green-600 tabular-nums dark:text-green-400">
-                                                        {money(item.total_revenue)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Expenses breakdown */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Expenses by Category</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {expensesByCategory.length === 0 ? (
-                            <p className="py-8 text-center text-muted-foreground">No expense data for selected period</p>
-                        ) : (
-                            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                                {expensesByCategory.map((expense) => (
-                                    <div key={expense.category} className="rounded-md border bg-muted/60 p-4">
-                                        <p className="text-sm text-muted-foreground capitalize">{expense.category.replace(/_/g, ' ')}</p>
-                                        <p className="text-lg font-bold tabular-nums">{money(expense.total)}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {totalExpenses > 0 ? formatNumber((expense.total / totalExpenses) * 100, 1) : 0}% of total
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Maintenance alerts (only shown when there are any) */}
+                {/* Maintenance alerts (only shown when there are any), right under the key metrics */}
                 {maintenanceAlerts.length > 0 && (
-                    <Card className="border-red-200 bg-red-50 dark:border-red-500/25 dark:bg-red-500/10">
+                    <Card className="border-destructive">
                         <CardHeader>
-                            <CardTitle className="text-lg text-red-900 dark:text-red-300">Maintenance Alerts</CardTitle>
+                            <CardTitle className="text-destructive">Maintenance alerts</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3 md:hidden">
@@ -236,7 +130,7 @@ export default function ReportsDashboard(props: Props) {
                                     <div key={alert.key} className="space-y-2 rounded-lg border bg-background p-3">
                                         <div className="flex items-start justify-between gap-2">
                                             <div>
-                                                <div className="font-medium">{alert.reg_number}</div>
+                                                <div className="font-mono font-medium">{alert.reg_number}</div>
                                                 <div className="text-sm text-muted-foreground">{alert.type}</div>
                                             </div>
                                             <AlertBadge alert={alert} />
@@ -255,14 +149,14 @@ export default function ReportsDashboard(props: Props) {
                                             <TableHead>Vehicle</TableHead>
                                             <TableHead>Type</TableHead>
                                             <TableHead>Alert</TableHead>
-                                            <TableHead>Expiry Date</TableHead>
-                                            <TableHead>Days Remaining</TableHead>
+                                            <TableHead>Expiry date</TableHead>
+                                            <TableHead>Days remaining</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {maintenanceAlerts.map((alert) => (
                                             <TableRow key={alert.key}>
-                                                <TableCell className="font-medium">{alert.reg_number}</TableCell>
+                                                <TableCell className="font-mono font-medium">{alert.reg_number}</TableCell>
                                                 <TableCell>{alert.type}</TableCell>
                                                 <TableCell>
                                                     <AlertBadge alert={alert} />
@@ -279,6 +173,117 @@ export default function ReportsDashboard(props: Props) {
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Revenue & bookings */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Revenue status</CardTitle>
+                        </CardHeader>
+                        <CardContent className={figureGrid}>
+                            <StackedFigure tone="green" label="Collected" value={money(totalRevenue)} />
+                            <StackedFigure tone="yellow" label="Pending" value={money(pendingRevenue)} />
+                            <StackedFigure tone="red" label="Overdue" value={money(overdueRevenue)} />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Booking activity</CardTitle>
+                        </CardHeader>
+                        <CardContent className={figureGrid}>
+                            <StackedFigure tone="gray" label="Completed bookings" value={completedBookings} />
+                            <StackedFigure tone="gray" label="Active bookings" value={activeBookings} />
+                            <StackedFigure
+                                tone="gray"
+                                label="Avg revenue per booking"
+                                value={completedBookings > 0 ? money(totalRevenue / completedBookings) : 'N$0.00'}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Top clients */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top clients by revenue</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {topClients.length === 0 ? (
+                            <p className="py-8 text-center text-muted-foreground">No revenue data for selected period</p>
+                        ) : (
+                            <>
+                                <div className="space-y-3 md:hidden">
+                                    {topClients.map((item, index) => (
+                                        <div key={item.client_id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <StatusBadge tone={index === 0 ? 'yellow' : 'gray'}>#{index + 1}</StatusBadge>
+                                                <div className="min-w-0">
+                                                    <div className="truncate font-medium">{item.name}</div>
+                                                    <div className="truncate text-sm text-muted-foreground">{item.company_name || '-'}</div>
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 font-mono font-bold tabular-nums">
+                                                {money(item.total_revenue)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="hidden md:block">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Rank</TableHead>
+                                                <TableHead>Client</TableHead>
+                                                <TableHead>Company</TableHead>
+                                                <TableHead className="text-right">Revenue</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {topClients.map((item, index) => (
+                                                <TableRow key={item.client_id}>
+                                                    <TableCell>
+                                                        <StatusBadge tone={index === 0 ? 'yellow' : 'gray'}>#{index + 1}</StatusBadge>
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">{item.name}</TableCell>
+                                                    <TableCell className="text-muted-foreground">{item.company_name || '-'}</TableCell>
+                                                    <TableCell className="text-right font-mono font-bold tabular-nums">
+                                                        {money(item.total_revenue)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Expenses breakdown */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Expenses by category</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {expensesByCategory.length === 0 ? (
+                            <p className="py-8 text-center text-muted-foreground">No expense data for selected period</p>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                {expensesByCategory.map((expense) => (
+                                    <div key={expense.category} className="rounded-md border bg-muted p-4">
+                                        <p className="text-sm text-muted-foreground capitalize">{expense.category.replace(/_/g, ' ')}</p>
+                                        <p className="font-mono text-lg font-bold tabular-nums">{money(expense.total)}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {totalExpenses > 0 ? formatNumber((expense.total / totalExpenses) * 100, 1) : 0}% of total
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
             </PageContainer>
         </AppLayout>
     );
@@ -286,9 +291,9 @@ export default function ReportsDashboard(props: Props) {
 
 function StackedFigure({ tone, label, value }: { tone: ReportTone; label: string; value: ReactNode }) {
     return (
-        <div className={cn('rounded-md border p-4', toneSurface[tone])}>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className={cn('text-lg font-bold tabular-nums', toneText[tone])}>{value}</p>
+        <div className="min-w-0 rounded-md border bg-muted p-3 md:p-4">
+            <p className="text-xs text-muted-foreground md:text-sm">{label}</p>
+            <p className={cn('font-mono text-base font-bold tabular-nums md:text-lg', toneText[tone])}>{value}</p>
         </div>
     );
 }
@@ -303,7 +308,7 @@ function AlertBadge({ alert }: { alert: MaintenanceAlert }) {
 
 function DaysRemaining({ alert }: { alert: MaintenanceAlert }) {
     return (
-        <span className={cn('font-medium', alert.expired ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400')}>
+        <span className={cn('font-medium', alert.expired ? 'text-destructive' : 'text-warning')}>
             {alert.expired ? `Expired ${alert.days} days ago` : `${alert.days} days`}
         </span>
     );

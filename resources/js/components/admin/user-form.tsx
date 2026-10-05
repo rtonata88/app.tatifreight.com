@@ -1,6 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { ucfirst } from '@/components/admin/role-badge';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { Button } from '@/components/ui/button';
@@ -39,14 +40,15 @@ export function UserForm({ roles, user }: Props) {
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="User Information">
-                <FormField label="Full Name" required htmlFor="name" error={errors.name}>
-                    <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} placeholder="John Doe" aria-invalid={!!errors.name} />
+            <FormSection title="User information">
+                <FormField label="Full name" required htmlFor="name" error={errors.name}>
+                    <Input id="name" autoComplete="name" value={data.name} onChange={(e) => setData('name', e.target.value)} placeholder="John Doe" aria-invalid={!!errors.name} />
                 </FormField>
-                <FormField label="Email Address" required htmlFor="email" error={errors.email}>
+                <FormField label="Email address" required htmlFor="email" error={errors.email}>
                     <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         placeholder="user@example.com"
@@ -54,11 +56,11 @@ export function UserForm({ roles, user }: Props) {
                     />
                 </FormField>
                 <FormField
-                    label={editing ? 'New Password' : 'Password'}
+                    label={editing ? 'New password' : 'Password'}
                     required={!editing}
                     htmlFor="password"
                     error={errors.password}
-                    description={editing ? 'Leave blank to keep current password' : 'Minimum 8 characters'}
+                    description={editing ? 'Leave blank to keep the current password.' : 'Minimum 8 characters.'}
                 >
                     <Input
                         id="password"
@@ -71,7 +73,7 @@ export function UserForm({ roles, user }: Props) {
                     />
                 </FormField>
                 <FormField
-                    label={editing ? 'Confirm New Password' : 'Confirm Password'}
+                    label={editing ? 'Confirm new password' : 'Confirm password'}
                     required={!editing}
                     htmlFor="password_confirmation"
                     error={errors.password_confirmation}
@@ -88,9 +90,9 @@ export function UserForm({ roles, user }: Props) {
                 </FormField>
             </FormSection>
 
-            <FormSection title="Role Assignment" columns={1}>
+            <FormSection title="Role assignment" columns={1}>
                 <FormField
-                    label="User Role"
+                    label="User role"
                     required
                     htmlFor="role"
                     error={errors.role}
@@ -100,7 +102,7 @@ export function UserForm({ roles, user }: Props) {
                                 Current role: <strong>{ucfirst(user?.role || 'No role')}</strong>
                             </>
                         ) : (
-                            'Roles determine what actions a user can perform in the system'
+                            'Roles determine what actions a user can perform in the system.'
                         )
                     }
                 >
@@ -115,15 +117,15 @@ export function UserForm({ roles, user }: Props) {
                 </FormField>
             </FormSection>
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? 'Update User' : 'Create User'}
+                    {editing ? 'Update user' : 'Create user'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

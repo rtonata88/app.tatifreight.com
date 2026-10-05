@@ -27,7 +27,7 @@ export default function TwoFactorChallenge() {
                 title: 'Recovery code',
                 description:
                     'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                toggleText: 'log in using an authentication code',
             };
         }
 
@@ -35,7 +35,7 @@ export default function TwoFactorChallenge() {
             title: 'Authentication code',
             description:
                 'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+            toggleText: 'log in using a recovery code',
         };
     }, [showRecoveryInput]);
 
@@ -66,6 +66,10 @@ export default function TwoFactorChallenge() {
                                     <Input
                                         name="recovery_code"
                                         type="text"
+                                        autoComplete="one-time-code"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck={false}
                                         placeholder="Enter recovery code"
                                         autoFocus={showRecoveryInput}
                                         required
@@ -104,6 +108,7 @@ export default function TwoFactorChallenge() {
 
                             <Button
                                 type="submit"
+                                size="lg"
                                 className="w-full"
                                 disabled={processing}
                             >
@@ -114,7 +119,7 @@ export default function TwoFactorChallenge() {
                                 <span>or you can </span>
                                 <button
                                     type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                    className="cursor-pointer text-foreground underline decoration-muted-foreground/40 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-current!"
                                     onClick={() =>
                                         toggleRecoveryMode(clearErrors)
                                     }

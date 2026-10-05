@@ -1,5 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import type { FormEvent } from "react";
+import { FileInput } from "@/components/file-input";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,12 +70,12 @@ export function UploadDocumentDialog({
             <DialogContent className="sm:max-w-[600px]">
                 <form onSubmit={submit} className="space-y-6">
                     <DialogHeader>
-                        <DialogTitle>Upload Document</DialogTitle>
+                        <DialogTitle>Upload document</DialogTitle>
                     </DialogHeader>
 
                     <div className="space-y-4">
                         <FormField
-                            label="Document Title"
+                            label="Document title"
                             required
                             htmlFor="uploadTitle"
                             error={errors.uploadTitle}
@@ -132,27 +133,18 @@ export function UploadDocumentDialog({
                             />
                         </FormField>
                         <FormField
-                            label="File * (Max 10MB)"
+                            label="File * (max 10MB)"
                             htmlFor="uploadFile"
                             error={errors.uploadFile}
                         >
-                            <Input
+                            {/* Server accepts any file type up to 10MB. */}
+                            <FileInput
                                 id="uploadFile"
-                                type="file"
-                                onChange={(e) =>
-                                    setData(
-                                        "uploadFile",
-                                        e.target.files?.[0] ?? null,
-                                    )
-                                }
+                                file={data.uploadFile}
+                                onChange={(file) => setData("uploadFile", file)}
                                 aria-invalid={!!errors.uploadFile}
                             />
                         </FormField>
-                        {data.uploadFile && (
-                            <div className="text-sm text-muted-foreground">
-                                Selected: {data.uploadFile.name}
-                            </div>
-                        )}
                     </div>
 
                     <DialogFooter>
@@ -166,7 +158,7 @@ export function UploadDocumentDialog({
                         </Button>
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}
-                            Upload Document
+                            Upload document
                         </Button>
                     </DialogFooter>
                 </form>

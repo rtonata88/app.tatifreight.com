@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['nx-ink' => ($appearance ?? 'system') == 'dark', 'nx-light' => ($appearance ?? 'system') != 'dark'])>
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)">
+        <meta name="theme-color" content="#0E0D0B" media="(prefers-color-scheme: dark)">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
@@ -13,7 +15,7 @@
                     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
                     if (prefersDark) {
-                        document.documentElement.classList.add('dark');
+                        document.documentElement.classList.replace('nx-light', 'nx-ink');
                     }
                 }
             })();
@@ -21,12 +23,12 @@
 
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
-            html {
-                background-color: oklch(1 0 0);
+            html.nx-light {
+                background-color: #f8f9fa;
             }
 
-            html.dark {
-                background-color: oklch(0.145 0 0);
+            html.nx-ink {
+                background-color: #0E0D0B;
             }
         </style>
 
@@ -36,14 +38,11 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead
     </head>
-    <body class="font-sans antialiased">
+    <body class="antialiased">
         @inertia
     </body>
 </html>

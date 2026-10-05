@@ -59,8 +59,8 @@ function PageLink({
     children: React.ReactNode;
 }) {
     const classes = cn(
-        'inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-sm transition-colors',
-        active ? 'border-primary bg-primary text-primary-foreground' : 'bg-background hover:bg-accent',
+        'inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 font-mono text-sm tabular-nums transition-colors',
+        active ? 'border-primary bg-primary text-primary-foreground' : 'bg-card hover:border-primary hover:text-primary',
         !href && 'pointer-events-none opacity-50',
     );
 

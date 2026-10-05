@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { CheckCircle2, Clock, Download, Eye, FileText, MoreHorizontal, Pencil, Plus, ReceiptText, Search, Trash2, XCircle } from 'lucide-react';
+import { CheckCircle2, Download, Eye, FileText, MoreHorizontal, Pencil, Plus, ReceiptText, Search, Trash2, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataPagination } from '@/components/data-pagination';
@@ -75,37 +75,25 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Expense Management" />
+            <Head title="Expense management" />
             <PageContainer>
                 <PageHeader
-                    title="Expense Management"
+                    title="Expense management"
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> New Expense
+                                    <Plus /> New expense
                                 </Link>
                             </Button>
                         )
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <StatCard
-                        label="Pending Approval"
-                        value={stats.pending}
-                        hint={money(stats.total_pending)}
-                        icon={Clock}
-                        valueClassName="text-yellow-700 dark:text-yellow-400"
-                    />
-                    <StatCard
-                        label="Approved"
-                        value={stats.approved}
-                        hint={money(stats.total_approved)}
-                        icon={CheckCircle2}
-                        valueClassName="text-green-700 dark:text-green-400"
-                    />
-                    <StatCard label="Rejected" value={stats.rejected} icon={XCircle} valueClassName="text-red-700 dark:text-red-400" />
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-3">
+                    <StatCard label="Pending approval" value={stats.pending} hint={money(stats.total_pending)} tone="warning" />
+                    <StatCard label="Approved" value={stats.approved} hint={money(stats.total_approved)} tone="positive" />
+                    <StatCard label="Rejected" value={stats.rejected} tone="negative" />
                 </div>
 
                 <Card>
@@ -115,8 +103,12 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                 <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input className="pl-9" value={filters.search} onChange={(e) => setFilter('search', e.target.value)} placeholder="Search expenses..." />
                             </div>
-                            <NativeSelect value={filters.category} onChange={(e) => setFilter('category', e.target.value)} aria-label="Filter by category">
-                                <option value="">All Categories</option>
+                            <NativeSelect
+                                value={filters.category}
+                                onChange={(e) => setFilter('category', e.target.value)}
+                                aria-label="Filter by category"
+                            >
+                                <option value="">All categories</option>
                                 {expenseCategories.map((c) => (
                                     <option key={c.value} value={c.value}>
                                         {c.label}
@@ -124,7 +116,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                 ))}
                             </NativeSelect>
                             <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)} aria-label="Filter by status">
-                                <option value="">All Statuses</option>
+                                <option value="">All statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
@@ -141,7 +133,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                         <div key={expense.id} className="space-y-3 rounded-lg border p-4">
                                             <div className="flex items-start justify-between">
                                                 <div>
-                                                    <div className="text-2xl font-bold">{money(expense.amount)}</div>
+                                                    <div className="font-condensed text-2xl font-bold tabular-nums">{money(expense.amount)}</div>
                                                     <div className="text-sm text-muted-foreground">{formatDate(expense.expense_date)}</div>
                                                 </div>
                                                 <StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>
@@ -166,14 +158,14 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs text-muted-foreground">Submitted By</div>
+                                                    <div className="text-xs text-muted-foreground">Submitted by</div>
                                                     <div className="text-sm font-medium">{expense.submitted_by}</div>
                                                 </div>
                                             </div>
 
                                             {expense.status === 'approved' && expense.approved_by && (
                                                 <div className="border-t pt-3">
-                                                    <div className="text-xs text-muted-foreground">Approved By</div>
+                                                    <div className="text-xs text-muted-foreground">Approved by</div>
                                                     <div className="text-sm">{expense.approved_by}</div>
                                                     <div className="text-xs text-muted-foreground">{formatDateTime(expense.approved_at)}</div>
                                                 </div>
@@ -183,7 +175,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                 {expense.has_receipt && (
                                                     <Button asChild size="sm" variant="ghost" className="flex-1">
                                                         <a href={download(expense.id).url}>
-                                                            <Download /> Download Receipt
+                                                            <Download /> Download receipt
                                                         </a>
                                                     </Button>
                                                 )}
@@ -209,7 +201,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                 {can.delete && (
                                                     <ConfirmDialog
                                                         trigger={
-                                                            <Button size="sm" variant="destructive">
+                                                            <Button size="sm" variant="destructive" className="flex-1">
                                                                 <Trash2 /> Delete
                                                             </Button>
                                                         }
@@ -231,8 +223,8 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                 <TableHead>Category</TableHead>
                                                 <TableHead>Description</TableHead>
                                                 <TableHead>Vehicle</TableHead>
-                                                <TableHead>Submitted By</TableHead>
-                                                <TableHead>Amount</TableHead>
+                                                <TableHead>Submitted by</TableHead>
+                                                <TableHead className="text-right">Amount</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -250,10 +242,16 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        {expense.vehicle ? <span className="text-sm">{expense.vehicle}</span> : <span className="text-sm text-muted-foreground">-</span>}
+                                                        {expense.vehicle ? (
+                                                            <span className="text-sm">{expense.vehicle}</span>
+                                                        ) : (
+                                                            <span className="text-sm text-muted-foreground">-</span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-sm">{expense.submitted_by}</TableCell>
-                                                    <TableCell className="font-medium">{money(expense.amount)}</TableCell>
+                                                    <TableCell className="text-right font-mono font-medium tabular-nums">
+                                                        {money(expense.amount)}
+                                                    </TableCell>
                                                     <TableCell>
                                                         <StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>
                                                     </TableCell>
@@ -269,7 +267,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                                     <>
                                                                         <DropdownMenuItem asChild>
                                                                             <a href={download(expense.id).url}>
-                                                                                <Download /> Download Receipt
+                                                                                <Download /> Download receipt
                                                                             </a>
                                                                         </DropdownMenuItem>
                                                                         <DropdownMenuSeparator />
@@ -360,11 +358,15 @@ function Description({ expense }: { expense: ExpenseRow }) {
                 <p className="text-sm font-medium">{expense.description}</p>
                 {expense.has_receipt && (
                     <span title="Receipt available">
-                        <FileText className="size-4 shrink-0 text-green-600 dark:text-green-400" aria-label="Receipt available" />
+                        <FileText className="size-4 shrink-0 text-success" aria-label="Receipt available" />
                     </span>
                 )}
             </div>
-            {expense.booking_number && <p className="mt-1 text-xs text-muted-foreground">Booking: {expense.booking_number}</p>}
+            {expense.booking_number && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Booking: <span className="font-mono">{expense.booking_number}</span>
+                </p>
+            )}
         </>
     );
 }

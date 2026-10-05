@@ -69,12 +69,12 @@ export function BankAccountDialog({ open, onOpenChange, account }: Props) {
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
                 <form onSubmit={submit} className="space-y-6">
                     <DialogHeader>
-                        <DialogTitle>{account ? 'Edit' : 'Add'} Bank Account</DialogTitle>
+                        <DialogTitle>{account ? 'Edit' : 'Add'} bank account</DialogTitle>
                         <DialogDescription className="sr-only">Bank account details shown on quotes and invoices.</DialogDescription>
                     </DialogHeader>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <FormField label="Bank Name" required htmlFor="bank_name" error={errors.bank_name}>
+                        <FormField label="Bank name" required htmlFor="bank_name" error={errors.bank_name}>
                             <Input
                                 id="bank_name"
                                 value={data.bank_name}
@@ -92,7 +92,7 @@ export function BankAccountDialog({ open, onOpenChange, account }: Props) {
                                 <option value="GBP">GBP - British Pound</option>
                             </NativeSelect>
                         </FormField>
-                        <FormField label="Account Name" required htmlFor="account_name" error={errors.account_name} className="md:col-span-2">
+                        <FormField label="Account name" required htmlFor="account_name" error={errors.account_name} className="md:col-span-2">
                             <Input
                                 id="account_name"
                                 value={data.account_name}
@@ -101,34 +101,41 @@ export function BankAccountDialog({ open, onOpenChange, account }: Props) {
                                 aria-invalid={!!errors.account_name}
                             />
                         </FormField>
-                        <FormField label="Account Number" required htmlFor="account_number" error={errors.account_number} className="md:col-span-2">
+                        <FormField label="Account number" required htmlFor="account_number" error={errors.account_number} className="md:col-span-2">
                             <Input
                                 id="account_number"
                                 value={data.account_number}
                                 onChange={(e) => setData('account_number', e.target.value)}
+                                inputMode="numeric"
                                 placeholder="6000 6755 290"
                                 aria-invalid={!!errors.account_number}
                             />
                         </FormField>
-                        <FormField label="Branch Name" htmlFor="branch_name" error={errors.branch_name}>
+                        <FormField label="Branch name" htmlFor="branch_name" error={errors.branch_name}>
                             <Input id="branch_name" value={data.branch_name} onChange={(e) => setData('branch_name', e.target.value)} placeholder="Katutura" />
                         </FormField>
-                        <FormField label="Branch Code" htmlFor="branch_code" error={errors.branch_code}>
-                            <Input id="branch_code" value={data.branch_code} onChange={(e) => setData('branch_code', e.target.value)} placeholder="082 972" />
+                        <FormField label="Branch code" htmlFor="branch_code" error={errors.branch_code}>
+                            <Input
+                                id="branch_code"
+                                value={data.branch_code}
+                                onChange={(e) => setData('branch_code', e.target.value)}
+                                inputMode="numeric"
+                                placeholder="082 972"
+                            />
                         </FormField>
                         <FormField
-                            label="SWIFT Code"
+                            label="SWIFT code"
                             htmlFor="swift_code"
                             error={errors.swift_code}
-                            description="For international transfers"
+                            description="For international transfers."
                             className="md:col-span-2"
                         >
                             <Input id="swift_code" value={data.swift_code} onChange={(e) => setData('swift_code', e.target.value)} placeholder="SBNMNANX" />
                         </FormField>
-                        <FormField description="Primary account will be displayed on invoices and quotes" className="md:col-span-2">
+                        <FormField description="The primary account is shown on invoices and quotes." className="md:col-span-2">
                             <div className="flex items-center gap-2">
                                 <Checkbox id="is_primary" checked={data.is_primary} onCheckedChange={(checked) => setData('is_primary', checked === true)} />
-                                <Label htmlFor="is_primary">Set as Primary Account</Label>
+                                <Label htmlFor="is_primary">Set as primary account</Label>
                             </div>
                         </FormField>
                     </div>
@@ -136,7 +143,7 @@ export function BankAccountDialog({ open, onOpenChange, account }: Props) {
                     <DialogFooter className="sm:justify-start">
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}
-                            {account ? 'Update' : 'Add'} Account
+                            {account ? 'Update' : 'Add'} account
                         </Button>
                         <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                             Cancel

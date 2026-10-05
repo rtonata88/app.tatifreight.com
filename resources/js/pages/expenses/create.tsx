@@ -14,15 +14,15 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Expenses', href: index() },
-    { title: 'New Expense', href: create() },
+    { title: 'New expense', href: create() },
 ];
 
 export default function ExpensesCreate({ vehicles, bookings, defaults }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Submit New Expense" />
+            <Head title="Submit new expense" />
             <PageContainer>
-                <PageHeader title="Submit New Expense" />
+                <PageHeader title="Submit new expense" />
                 <ExpenseForm vehicles={vehicles} bookings={bookings} defaultDate={defaults.expense_date} />
             </PageContainer>
         </AppLayout>

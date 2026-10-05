@@ -17,7 +17,7 @@ export default function ResetPassword({ token, email }: Props) {
     return (
         <AuthLayout
             title="Reset password"
-            description="Please enter your new password below"
+            description="Enter your new password below."
         >
             <Head title="Reset password" />
 
@@ -77,6 +77,7 @@ export default function ResetPassword({ token, email }: Props) {
 
                         <Button
                             type="submit"
+                            size="lg"
                             className="mt-4 w-full"
                             disabled={processing}
                             data-test="reset-password-button"

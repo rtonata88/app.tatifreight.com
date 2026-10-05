@@ -1,0 +1,106 @@
+/* ==========================================================================
+   Nexus Design System — shadcn/ui compatibility layer
+   Drop-in theme for a React + shadcn Nexus. Every shadcn primitive resolves
+   to Nexus ink/brass/paper without touching component source.
+
+   Usage:  <html class="nx-ink">  (default)   ·  <html class="nx-paper">
+   Tailwind: point your theme at these vars (hsl() not required — plain hex).
+   ========================================================================== */
+
+.nx-ink {
+    --background:          var(--nx-ink);
+    --foreground:          var(--nx-fg-1);
+    --card:                var(--nx-ink-card);
+    --card-foreground:     var(--nx-fg-1);
+    --popover:             var(--nx-ink-card);
+    --popover-foreground:  var(--nx-fg-1);
+    --primary:             var(--nx-brass);
+    --primary-foreground:  var(--nx-ink);
+    --secondary:           var(--nx-ink-elevated);
+    --secondary-foreground: var(--nx-fg-1);
+    --muted:               var(--nx-ink-elevated);
+    --muted-foreground:    var(--nx-fg-3);
+    --accent:              var(--nx-brass-wash-2);
+    --accent-foreground:   var(--nx-brass-hi);
+    --destructive:         var(--nx-neg);
+    --destructive-foreground: var(--nx-fg-1);
+    --success:             var(--nx-pos);
+    --warning:             var(--nx-warn);
+    --info:                var(--nx-info);
+    --border:              var(--nx-rule);
+    --input:               var(--nx-rule-strong);
+    --ring:                var(--nx-brass);
+    --radius:              var(--nx-r-4);
+
+    --sidebar:                     var(--nx-ink-rail);
+    --sidebar-foreground:          var(--nx-fg-2);
+    --sidebar-primary:             var(--nx-brass);
+    --sidebar-primary-foreground:  var(--nx-ink);
+    --sidebar-accent:              var(--nx-brass-wash-2);
+    --sidebar-accent-foreground:   var(--nx-brass-hi);
+    --sidebar-border:              var(--nx-rule);
+    --sidebar-ring:                var(--nx-brass);
+
+    --chart-1: var(--nx-chart-1);
+    --chart-2: var(--nx-chart-2);
+    --chart-3: var(--nx-chart-3);
+    --chart-4: var(--nx-chart-4);
+    --chart-5: var(--nx-chart-5);
+
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--nx-font-body);
+    font-size: var(--nx-fs-body);
+    line-height: var(--nx-lh-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.nx-paper {
+    --background:          var(--nx-paper);
+    --foreground:          var(--nx-pfg-1);
+    --card:                var(--nx-paper-card);
+    --card-foreground:     var(--nx-pfg-1);
+    --popover:             var(--nx-paper-card);
+    --popover-foreground:  var(--nx-pfg-1);
+    --primary:             var(--nx-brass-lo);
+    --primary-foreground:  var(--nx-paper);
+    --secondary:           var(--nx-paper-elevated);
+    --secondary-foreground: var(--nx-pfg-1);
+    --muted:               var(--nx-paper-elevated);
+    --muted-foreground:    var(--nx-pfg-3);
+    --accent:              var(--nx-brass-wash-2);
+    --accent-foreground:   var(--nx-brass-lo);
+    --destructive:         var(--nx-neg);
+    --destructive-foreground: var(--nx-paper);
+    --success:             var(--nx-pos);
+    --warning:             var(--nx-warn);
+    --info:                var(--nx-info);
+    --border:              var(--nx-rule-paper);
+    --input:               var(--nx-rule-paper-strong);
+    --ring:                var(--nx-brass-lo);
+    --radius:              var(--nx-r-4);
+
+    --sidebar:                     var(--nx-paper-elevated);
+    --sidebar-foreground:          var(--nx-pfg-2);
+    --sidebar-primary:             var(--nx-brass-lo);
+    --sidebar-primary-foreground:  var(--nx-paper);
+    --sidebar-accent:              var(--nx-brass-wash-2);
+    --sidebar-accent-foreground:   var(--nx-brass-lo);
+    --sidebar-border:              var(--nx-rule-paper);
+    --sidebar-ring:                var(--nx-brass-lo);
+
+    --chart-1: var(--nx-chart-1);
+    --chart-2: var(--nx-chart-2);
+    --chart-3: var(--nx-chart-3);
+    --chart-4: var(--nx-chart-4);
+    --chart-5: var(--nx-chart-5);
+
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--nx-font-body);
+    font-size: var(--nx-fs-body);
+    line-height: var(--nx-lh-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}

@@ -1,8 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { CalendarDays, Check, CheckCircle2, CircleCheck, Clock, Ellipsis, MapPin, Pencil, Play, Plus, Search, Trash2, X, XCircle, Zap } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, CircleCheck, Ellipsis, MapPin, Pencil, Play, Plus, Search, Trash2, X, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { bookingStatusTone } from '@/components/bookings/booking-status';
-import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataPagination } from '@/components/data-pagination';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -84,82 +84,38 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Booking Management" />
+            <Head title="Booking management" />
             <PageContainer>
                 <PageHeader
-                    title="Booking Management"
+                    title="Booking management"
                     actions={
                         <>
-                            <div className="hidden gap-3 md:flex">
-                                <Button asChild variant="ghost">
-                                    <Link href={calendar()}>
-                                        <CalendarDays /> Calendar View
+                            <Button asChild variant="ghost" className="hidden md:inline-flex">
+                                <Link href={calendar()}>
+                                    <CalendarDays /> Calendar view
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="icon" className="md:hidden" aria-label="Calendar view">
+                                <Link href={calendar()}>
+                                    <CalendarDays />
+                                </Link>
+                            </Button>
+                            {can.create && (
+                                <Button asChild>
+                                    <Link href={create()}>
+                                        <Plus /> New booking
                                     </Link>
                                 </Button>
-                                {can.create && (
-                                    <Button asChild>
-                                        <Link href={create()}>
-                                            <Plus /> New Booking
-                                        </Link>
-                                    </Button>
-                                )}
-                            </div>
-                            <div className="md:hidden">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" aria-label="Actions">
-                                            <Ellipsis />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="min-w-40">
-                                        <DropdownMenuItem asChild>
-                                            <Link href={calendar()}>
-                                                <CalendarDays /> Calendar View
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        {can.create && (
-                                            <DropdownMenuItem asChild>
-                                                <Link href={create()}>
-                                                    <Plus /> New Booking
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                            )}
                         </>
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                    <StatCard
-                        label="Pending"
-                        value={stats.pending}
-                        icon={Clock}
-                        className="bg-yellow-50 dark:bg-yellow-500/10"
-                        valueClassName="text-yellow-700 dark:text-yellow-300"
-                    />
-                    <StatCard
-                        label="Confirmed"
-                        value={stats.confirmed}
-                        icon={CheckCircle2}
-                        className="bg-blue-50 dark:bg-blue-500/10"
-                        valueClassName="text-blue-700 dark:text-blue-300"
-                    />
-                    <StatCard
-                        label="In Progress"
-                        value={stats.in_progress}
-                        icon={Zap}
-                        className="bg-purple-50 dark:bg-purple-500/10"
-                        valueClassName="text-purple-700 dark:text-purple-300"
-                    />
-                    <StatCard
-                        label="Completed"
-                        value={stats.completed}
-                        icon={Check}
-                        className="bg-green-50 dark:bg-green-500/10"
-                        valueClassName="text-green-700 dark:text-green-300"
-                    />
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-4">
+                    <StatCard label="Pending" value={stats.pending} tone="warning" />
+                    <StatCard label="Confirmed" value={stats.confirmed} tone="info" />
+                    <StatCard label="In progress" value={stats.in_progress} />
+                    <StatCard label="Completed" value={stats.completed} tone="positive" />
                 </div>
 
                 <Card>
@@ -175,15 +131,15 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                 />
                             </div>
                             <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)} aria-label="Filter by status">
-                                <option value="">All Statuses</option>
+                                <option value="">All statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="confirmed">Confirmed</option>
-                                <option value="in_progress">In Progress</option>
+                                <option value="in_progress">In progress</option>
                                 <option value="completed">Completed</option>
                                 <option value="cancelled">Cancelled</option>
                             </NativeSelect>
                             <NativeSelect value={filters.date} onChange={(e) => setFilter('date', e.target.value)} aria-label="Filter by date">
-                                <option value="">All Dates</option>
+                                <option value="">All dates</option>
                                 <option value="today">Today</option>
                                 <option value="upcoming">Upcoming</option>
                                 <option value="past">Past</option>
@@ -205,17 +161,14 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                 <div className="py-8 text-center text-muted-foreground">{EMPTY_MESSAGE}</div>
                             ) : (
                                 bookings.data.map((booking) => (
-                                    <div key={booking.id} className="space-y-3 rounded-lg border p-4">
+                                    <div key={booking.id} className="space-y-3 rounded-lg border bg-card p-4">
                                         <div className="flex items-start justify-between gap-2">
                                             <div>
-                                                <div className="text-lg font-bold">{booking.booking_number}</div>
+                                                <div className="font-mono text-lg font-bold">{booking.booking_number}</div>
                                                 <div className="text-sm text-muted-foreground">{booking.client.name}</div>
                                                 {booking.client.phone && (
                                                     <div className="text-xs text-muted-foreground">
-                                                        <a
-                                                            href={`tel:${booking.client.phone}`}
-                                                            className="hover:text-blue-600 dark:hover:text-blue-400"
-                                                        >
+                                                        <a href={`tel:${booking.client.phone}`} className="hover:text-primary">
                                                             {booking.client.phone}
                                                         </a>
                                                     </div>
@@ -227,11 +180,16 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                             <StatusBadge tone={bookingStatusTone[booking.status] ?? 'gray'}>{humanize(booking.status)}</StatusBadge>
                                         </div>
 
+                                        <div className="text-sm">
+                                            <span className="text-xs text-muted-foreground">Dates </span>
+                                            {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
+                                        </div>
+
                                         {(booking.pickup_location || booking.delivery_location) && (
                                             <div className="grid grid-cols-1 gap-2 border-t pt-3">
                                                 {booking.pickup_location && (
                                                     <div className="flex items-start gap-2">
-                                                        <MapPin className="mt-0.5 size-5 shrink-0 text-green-600 dark:text-green-400" />
+                                                        <MapPin className="mt-0.5 size-5 shrink-0 text-success" />
                                                         <div>
                                                             <div className="text-xs text-muted-foreground">Pickup</div>
                                                             <div className="text-sm font-medium">{booking.pickup_location}</div>
@@ -240,7 +198,7 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                                 )}
                                                 {booking.delivery_location && (
                                                     <div className="flex items-start gap-2">
-                                                        <MapPin className="mt-0.5 size-5 shrink-0 text-red-600 dark:text-red-400" />
+                                                        <MapPin className="mt-0.5 size-5 shrink-0 text-destructive" />
                                                         <div>
                                                             <div className="text-xs text-muted-foreground">Delivery</div>
                                                             <div className="text-sm font-medium">{booking.delivery_location}</div>
@@ -253,7 +211,7 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                         <div className="grid grid-cols-2 gap-3 border-t pt-3">
                                             <div>
                                                 <div className="text-xs text-muted-foreground">Vehicle</div>
-                                                <div className="text-sm font-medium">{booking.vehicle.reg_number}</div>
+                                                <div className="font-mono text-sm font-medium">{booking.vehicle.reg_number}</div>
                                                 <div className="text-xs text-muted-foreground">{booking.vehicle.type}</div>
                                             </div>
                                             <div>
@@ -264,36 +222,47 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                                     <div className="text-sm text-muted-foreground">Not assigned</div>
                                                 )}
                                             </div>
-                                            {!!booking.distance_km && (
-                                                <div>
-                                                    <div className="text-xs text-muted-foreground">Distance</div>
-                                                    <div className="text-sm font-medium">{formatNumber(booking.distance_km, 2)} km</div>
-                                                </div>
-                                            )}
-                                            {!!booking.load_weight && (
-                                                <div>
-                                                    <div className="text-xs text-muted-foreground">Load Weight</div>
-                                                    <div className="text-sm font-medium">{formatNumber(booking.load_weight, 2)} tons</div>
-                                                </div>
-                                            )}
                                         </div>
 
-                                        {booking.cargo_description && (
-                                            <div className="border-t pt-3">
-                                                <div className="text-xs text-muted-foreground">Cargo</div>
-                                                <div className="text-sm">{booking.cargo_description}</div>
-                                            </div>
+                                        {(!!booking.distance_km || !!booking.load_weight || booking.cargo_description) && (
+                                            <Collapsible className="border-t pt-3">
+                                                <CollapsibleTrigger className="group flex min-h-10 w-full items-center justify-between text-sm font-medium text-muted-foreground">
+                                                    Details
+                                                    <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
+                                                </CollapsibleTrigger>
+                                                <CollapsibleContent className="space-y-3 pt-3">
+                                                    {(!!booking.distance_km || !!booking.load_weight) && (
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            {!!booking.distance_km && (
+                                                                <div>
+                                                                    <div className="text-xs text-muted-foreground">Distance</div>
+                                                                    <div className="text-sm font-medium">
+                                                                        {formatNumber(booking.distance_km, 2)} km
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {!!booking.load_weight && (
+                                                                <div>
+                                                                    <div className="text-xs text-muted-foreground">Load weight</div>
+                                                                    <div className="text-sm font-medium">
+                                                                        {formatNumber(booking.load_weight, 2)} tons
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {booking.cargo_description && (
+                                                        <div>
+                                                            <div className="text-xs text-muted-foreground">Cargo</div>
+                                                            <div className="text-sm">{booking.cargo_description}</div>
+                                                        </div>
+                                                    )}
+                                                </CollapsibleContent>
+                                            </Collapsible>
                                         )}
 
-                                        <div className="border-t pt-3">
-                                            <div className="text-xs text-muted-foreground">Duration</div>
-                                            <div className="text-sm">
-                                                {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
-                                            </div>
-                                        </div>
-
                                         {(can.edit || can.delete) && (
-                                            <div className="flex flex-wrap gap-2 border-t pt-3">
+                                            <div className="flex gap-2 border-t pt-3">
                                                 {can.edit && (
                                                     <>
                                                         {booking.status === 'pending' && (
@@ -311,23 +280,41 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                                                 Complete
                                                             </Button>
                                                         )}
-                                                        <Button asChild size="sm" variant="ghost" className="flex-1">
+                                                        <Button asChild size="sm" variant="outline" className="flex-1">
                                                             <Link href={edit(booking.id)}>
                                                                 <Pencil /> Edit
                                                             </Link>
                                                         </Button>
                                                     </>
                                                 )}
-                                                {can.delete && (
-                                                    <ConfirmDialog
-                                                        trigger={
-                                                            <Button size="sm" variant="destructive">
-                                                                <Trash2 /> Delete
+                                                {((can.edit && ['pending', 'confirmed'].includes(booking.status)) || can.delete) && (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                className="shrink-0"
+                                                                aria-label="More booking actions"
+                                                            >
+                                                                <Ellipsis />
                                                             </Button>
-                                                        }
-                                                        description={DELETE_MESSAGE}
-                                                        onConfirm={(done) => deleteBooking(booking, done)}
-                                                    />
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="min-w-40">
+                                                            {can.edit && ['pending', 'confirmed'].includes(booking.status) && (
+                                                                <DropdownMenuItem onSelect={() => updateStatus(booking, 'cancelled')}>
+                                                                    <XCircle /> Cancel booking
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can.edit && ['pending', 'confirmed'].includes(booking.status) && can.delete && (
+                                                                <DropdownMenuSeparator />
+                                                            )}
+                                                            {can.delete && (
+                                                                <DropdownMenuItem variant="destructive" onSelect={() => setPendingDelete(booking)}>
+                                                                    <Trash2 /> Delete
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 )}
                                             </div>
                                         )}
@@ -347,7 +334,7 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                         <TableHead>Route</TableHead>
                                         {/* Shown on very wide screens only, so status and actions stay in view at laptop widths. */}
                                         <TableHead className="hidden 2xl:table-cell">Distance</TableHead>
-                                        <TableHead className="hidden 2xl:table-cell">Load Details</TableHead>
+                                        <TableHead className="hidden 2xl:table-cell">Load details</TableHead>
                                         <TableHead>Dates</TableHead>
                                         <TableHead>Driver</TableHead>
                                         <TableHead>Status</TableHead>
@@ -364,7 +351,7 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                     ) : (
                                         bookings.data.map((booking) => (
                                             <TableRow key={booking.id}>
-                                                <TableCell className="font-bold">{booking.booking_number}</TableCell>
+                                                <TableCell className="font-mono font-bold">{booking.booking_number}</TableCell>
                                                 <TableCell>
                                                     <div className="font-medium">{booking.client.name}</div>
                                                     {booking.client.phone && (
@@ -375,7 +362,7 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="font-medium">{booking.vehicle.reg_number}</div>
+                                                    <div className="font-mono font-medium">{booking.vehicle.reg_number}</div>
                                                     <div className="text-sm text-muted-foreground">{booking.vehicle.type}</div>
                                                 </TableCell>
                                                 <TableCell>
@@ -447,22 +434,22 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                                                     </DropdownMenuItem>
                                                                     {booking.status === 'pending' && (
                                                                         <DropdownMenuItem onSelect={() => updateStatus(booking, 'confirmed')}>
-                                                                            <CircleCheck /> Confirm Booking
+                                                                            <CircleCheck /> Confirm booking
                                                                         </DropdownMenuItem>
                                                                     )}
                                                                     {booking.status === 'confirmed' && (
                                                                         <DropdownMenuItem onSelect={() => updateStatus(booking, 'in_progress')}>
-                                                                            <Play /> Start Trip
+                                                                            <Play /> Start trip
                                                                         </DropdownMenuItem>
                                                                     )}
                                                                     {booking.status === 'in_progress' && (
                                                                         <DropdownMenuItem onSelect={() => updateStatus(booking, 'completed')}>
-                                                                            <Check /> Complete Trip
+                                                                            <Check /> Complete trip
                                                                         </DropdownMenuItem>
                                                                     )}
                                                                     {['pending', 'confirmed'].includes(booking.status) && (
                                                                         <DropdownMenuItem onSelect={() => updateStatus(booking, 'cancelled')}>
-                                                                            <XCircle /> Cancel Booking
+                                                                            <XCircle /> Cancel booking
                                                                         </DropdownMenuItem>
                                                                     )}
                                                                     <DropdownMenuSeparator />
@@ -488,7 +475,7 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                 </Card>
             </PageContainer>
 
-            {/* Delete confirmation for the table's dropdown (the menu closes before the dialog opens). */}
+            {/* Delete confirmation for the row/card dropdowns (the menu closes before the dialog opens). */}
             <AlertDialog open={pendingDelete !== null} onOpenChange={(open) => !open && !deleting && setPendingDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>

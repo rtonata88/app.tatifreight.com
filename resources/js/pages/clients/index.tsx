@@ -108,15 +108,15 @@ export default function ClientsIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Client Management" />
+            <Head title="Client management" />
             <PageContainer>
                 <PageHeader
-                    title="Client Management"
+                    title="Client management"
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> Add Client
+                                    <Plus /> Add client
                                 </Link>
                             </Button>
                         )
@@ -144,7 +144,7 @@ export default function ClientsIndex({
                                 }
                                 aria-label="Filter by type"
                             >
-                                <option value="">All Types</option>
+                                <option value="">All types</option>
                                 <option value="adhoc">Ad-hoc</option>
                                 <option value="contract">Contract</option>
                             </NativeSelect>
@@ -155,7 +155,7 @@ export default function ClientsIndex({
                                 }
                                 aria-label="Filter by status"
                             >
-                                <option value="">All Statuses</option>
+                                <option value="">All statuses</option>
                                 <option value="1">Active</option>
                                 <option value="0">Inactive</option>
                             </NativeSelect>
@@ -178,9 +178,20 @@ export default function ClientsIndex({
                                         >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
-                                                    <div className="font-semibold">
-                                                        {client.name}
-                                                    </div>
+                                                    {can.edit ? (
+                                                        <Link
+                                                            href={edit(
+                                                                client.id,
+                                                            )}
+                                                            className="font-semibold underline-offset-4 hover:underline"
+                                                        >
+                                                            {client.name}
+                                                        </Link>
+                                                    ) : (
+                                                        <div className="font-semibold">
+                                                            {client.name}
+                                                        </div>
+                                                    )}
                                                     {client.company_name && (
                                                         <div className="text-sm text-muted-foreground">
                                                             {
@@ -189,22 +200,27 @@ export default function ClientsIndex({
                                                         </div>
                                                     )}
                                                 </div>
-                                                <RowActions
-                                                    client={client}
-                                                    can={can}
-                                                    onDelete={setDeleting}
-                                                />
                                             </div>
-                                            <div className="border-t pt-3 text-sm">
-                                                <div className="break-all">
-                                                    {client.email}
+                                            {(client.email || client.phone) && (
+                                                <div className="border-t pt-3 text-sm">
+                                                    {client.email && (
+                                                        <a
+                                                            href={`mailto:${client.email}`}
+                                                            className="block break-all hover:text-primary"
+                                                        >
+                                                            {client.email}
+                                                        </a>
+                                                    )}
+                                                    {client.phone && (
+                                                        <a
+                                                            href={`tel:${client.phone}`}
+                                                            className="block text-muted-foreground hover:text-primary"
+                                                        >
+                                                            {client.phone}
+                                                        </a>
+                                                    )}
                                                 </div>
-                                                {client.phone && (
-                                                    <div className="text-muted-foreground">
-                                                        {client.phone}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            )}
                                             <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
                                                 <div className="flex gap-2">
                                                     <ClassificationBadge
@@ -220,15 +236,23 @@ export default function ClientsIndex({
                                                 </div>
                                                 <div className="text-sm">
                                                     <span className="text-muted-foreground">
-                                                        Credit Limit:{" "}
+                                                        Credit limit:{" "}
                                                     </span>
-                                                    <span className="font-medium">
+                                                    <span className="font-mono font-medium tabular-nums">
                                                         {formatMoney(
                                                             client.credit_limit,
                                                             "N$",
                                                         )}
                                                     </span>
                                                 </div>
+                                            </div>
+                                            <div className="border-t pt-3">
+                                                <RowActions
+                                                    client={client}
+                                                    can={can}
+                                                    onDelete={setDeleting}
+                                                    triggerClassName="w-full"
+                                                />
                                             </div>
                                         </div>
                                     ))}
@@ -240,13 +264,13 @@ export default function ClientsIndex({
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>
-                                                    Client Name
+                                                    Client name
                                                 </TableHead>
                                                 <TableHead>Company</TableHead>
                                                 <TableHead>Contact</TableHead>
                                                 <TableHead>Type</TableHead>
-                                                <TableHead>
-                                                    Credit Limit
+                                                <TableHead className="text-right">
+                                                    Credit limit
                                                 </TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Actions</TableHead>
@@ -269,7 +293,7 @@ export default function ClientsIndex({
                                                     </TableCell>
                                                     <TableCell>
                                                         {client.company_name ||
-                                                            "N/A"}
+                                                            "—"}
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="text-sm">
@@ -292,7 +316,7 @@ export default function ClientsIndex({
                                                             }
                                                         />
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-right font-mono tabular-nums">
                                                         {formatMoney(
                                                             client.credit_limit,
                                                             "N$",
@@ -378,15 +402,17 @@ function RowActions({
     client,
     can,
     onDelete,
+    triggerClassName,
 }: {
     client: ClientRow;
     can: Can;
     onDelete: (client: ClientRow) => void;
+    triggerClassName?: string;
 }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="ghost">
+                <Button size="sm" variant="ghost" className={triggerClassName}>
                     <Ellipsis /> Actions
                 </Button>
             </DropdownMenuTrigger>
@@ -394,13 +420,13 @@ function RowActions({
                 {can.edit && (
                     <DropdownMenuItem asChild>
                         <Link href={edit(client.id)}>
-                            <Pencil /> Edit Client
+                            <Pencil /> Edit client
                         </Link>
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
                     <Link href={statement(client.id)}>
-                        <FileText /> Customer Statement
+                        <FileText /> Customer statement
                     </Link>
                 </DropdownMenuItem>
                 {can.viewDocuments && (
@@ -417,7 +443,7 @@ function RowActions({
                             variant="destructive"
                             onSelect={() => onDelete(client)}
                         >
-                            <Trash2 /> Delete Client
+                            <Trash2 /> Delete client
                         </DropdownMenuItem>
                     </>
                 )}

@@ -1,6 +1,7 @@
 import { Link, useForm } from "@inertiajs/react";
-import { FileIcon } from "lucide-react";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import type { FormEvent, ReactNode } from "react";
+import { FileInput } from "@/components/file-input";
+import { FormActions } from "@/components/form-actions";
 import { FormField } from "@/components/form-field";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { formatNumber } from "@/lib/format";
 import { index, store, update } from "@/routes/documents";
 import type { Option } from "@/types";
 
@@ -23,6 +23,9 @@ export const DOCUMENT_CATEGORIES: Option[] = [
     { value: "quote", label: "Quote" },
     { value: "other", label: "Other" },
 ];
+
+/** The formats the description promises; the server caps size at 10MB. */
+const DOCUMENT_ACCEPT = "image/*,application/pdf,.doc,.docx,.xls,.xlsx";
 
 type Values = {
     title: string;
@@ -111,11 +114,72 @@ export function DocumentForm({
 
     const ph = (value: string) => (editing ? undefined : value);
 
+    // Picking the file first fills an empty title from its name.
+    const pickFile = (file: File | null) =>
+        setData((current) => ({
+            ...current,
+            file_upload: file,
+            title:
+                file && current.title.trim() === ""
+                    ? file.name.replace(/\.[^.]+$/, "")
+                    : current.title,
+        }));
+
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Document Details">
+            <FormSection
+                title={editing ? "Replace file (optional)" : "File upload"}
+                columns={1}
+            >
                 <FormField
-                    label="Document Title"
+                    label={editing ? "Upload new file" : "Select file"}
+                    required={!editing}
+                    htmlFor="file_upload"
+                    error={errors.file_upload}
+                    description={
+                        editing
+                            ? "Upload a new file to replace the current one"
+                            : "Maximum file size: 10MB. Supported formats: PDF, Images, Word, Excel"
+                    }
+                >
+                    <FileInput
+                        id="file_upload"
+                        accept={DOCUMENT_ACCEPT}
+                        preview
+                        file={data.file_upload}
+                        onChange={pickFile}
+                        aria-invalid={!!errors.file_upload}
+                    />
+                </FormField>
+
+                {editing && data.file_upload && (
+                    <div className="grid gap-2">
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="createNewVersion"
+                                checked={data.createNewVersion}
+                                onCheckedChange={(checked) =>
+                                    setData(
+                                        "createNewVersion",
+                                        checked === true,
+                                    )
+                                }
+                            />
+                            <Label htmlFor="createNewVersion">
+                                Create new version (keep old file)
+                            </Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            If checked, a new version will be created.
+                            Otherwise, the current file will be replaced.
+                        </p>
+                    </div>
+                )}
+            </FormSection>
+
+            <FormSection title="Document details">
+                <FormField
+                    label="Document title"
                     required
                     htmlFor="title"
                     error={errors.title}
@@ -150,7 +214,7 @@ export function DocumentForm({
                     </NativeSelect>
                 </FormField>
                 <FormField
-                    label="Expiry Date"
+                    label="Expiry date"
                     htmlFor="expiry_date"
                     error={errors.expiry_date}
                     description={
@@ -184,66 +248,10 @@ export function DocumentForm({
                 </FormField>
             </FormSection>
 
-            <FormSection
-                title={editing ? "Replace File (Optional)" : "File Upload"}
-                columns={1}
-            >
-                <FormField
-                    label={editing ? "Upload New File" : "Select File"}
-                    required={!editing}
-                    htmlFor="file_upload"
-                    error={errors.file_upload}
-                    description={
-                        editing
-                            ? "Upload a new file to replace the current one"
-                            : "Maximum file size: 10MB. Supported formats: PDF, Images, Word, Excel"
-                    }
-                >
-                    <Input
-                        id="file_upload"
-                        type="file"
-                        onChange={(e) =>
-                            setData("file_upload", e.target.files?.[0] ?? null)
-                        }
-                        aria-invalid={!!errors.file_upload}
-                    />
-                </FormField>
-
-                {data.file_upload &&
-                    (editing ? (
-                        <NewFileSummary file={data.file_upload} />
-                    ) : (
-                        <FilePreview file={data.file_upload} />
-                    ))}
-
-                {editing && data.file_upload && (
-                    <div className="grid gap-2">
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="createNewVersion"
-                                checked={data.createNewVersion}
-                                onCheckedChange={(checked) =>
-                                    setData(
-                                        "createNewVersion",
-                                        checked === true,
-                                    )
-                                }
-                            />
-                            <Label htmlFor="createNewVersion">
-                                Create new version (keep old file)
-                            </Label>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            If checked, a new version will be created.
-                            Otherwise, the current file will be replaced.
-                        </p>
-                    </div>
-                )}
-            </FormSection>
 
             <FormSection
                 title={
-                    editing ? "Link to Records" : "Link to Records (Optional)"
+                    editing ? "Link to records" : "Link to records (optional)"
                 }
                 columns={3}
             >
@@ -287,7 +295,7 @@ export function DocumentForm({
 
             {beforeNotes}
 
-            <FormSection title="Internal Notes" columns={1}>
+            <FormSection title="Internal notes" columns={1}>
                 <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                     <Textarea
                         id="notes"
@@ -301,15 +309,15 @@ export function DocumentForm({
                 </FormField>
             </FormSection>
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? "Update Document" : "Upload Document"}
+                    {editing ? "Update document" : "Upload document"}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }
@@ -338,64 +346,5 @@ function OptionSelect({
                 </option>
             ))}
         </NativeSelect>
-    );
-}
-
-/** Upload screen: name, size and (for images) a preview, like temporaryUrl(). */
-function FilePreview({ file }: { file: File }) {
-    const [url, setUrl] = useState<string | null>(null);
-    const isImage = file.type.includes("image");
-
-    useEffect(() => {
-        if (!isImage) {
-            setUrl(null);
-            return;
-        }
-        const objectUrl = URL.createObjectURL(file);
-        setUrl(objectUrl);
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [file, isImage]);
-
-    return (
-        <div className="rounded border bg-muted/50 p-4">
-            <p className="text-sm font-medium">File Preview:</p>
-            <div className="mt-2 flex items-center gap-3">
-                <FileIcon className="size-10 shrink-0 text-blue-500" />
-                <div className="min-w-0">
-                    <p className="text-sm font-medium break-all">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {formatNumber(file.size / 1024, 2)} KB
-                    </p>
-                </div>
-            </div>
-            {url && (
-                <div className="mt-3">
-                    <img
-                        src={url}
-                        alt=""
-                        className="max-w-full rounded border md:max-w-md"
-                    />
-                </div>
-            )}
-        </div>
-    );
-}
-
-/** Edit screen: summary of the replacement file. */
-function NewFileSummary({ file }: { file: File }) {
-    return (
-        <div className="rounded border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/30 dark:bg-blue-500/10">
-            <div className="flex items-center gap-3">
-                <FileIcon className="size-10 shrink-0 text-blue-500" />
-                <div className="min-w-0">
-                    <p className="text-sm font-medium break-all text-blue-900 dark:text-blue-200">
-                        {file.name}
-                    </p>
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                        {formatNumber(file.size / 1024, 2)} KB
-                    </p>
-                </div>
-            </div>
-        </div>
     );
 }

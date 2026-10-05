@@ -14,9 +14,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function UsersCreate({ roles }: { roles: RoleOption[] }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create New User" />
+            <Head title="Create user" />
             <PageContainer>
-                <PageHeader title="Create New User" />
+                <PageHeader title="Create user" />
                 <UserForm roles={roles} />
             </PageContainer>
         </AppLayout>

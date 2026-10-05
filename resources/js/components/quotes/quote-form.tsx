@@ -1,5 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { emptyLineItem, LineItemsEditor, type LineItem, type VehicleOption } from '@/components/quotes/line-items-editor';
@@ -79,7 +80,7 @@ export function QuoteForm({ clients, vehicles, taxRate, bankAccounts = [], initi
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Quote Details" columns={editing ? 3 : 2}>
+            <FormSection title="Quote details" columns={editing ? 3 : 2}>
                 <FormField label="Client" required htmlFor="client_id" error={errors.client_id} description={editing ? undefined : 'Select the client for this quote'}>
                     <NativeSelect id="client_id" value={data.client_id} onChange={(e) => setData('client_id', e.target.value)} aria-invalid={!!errors.client_id}>
                         <option value="">Select a client</option>
@@ -91,7 +92,7 @@ export function QuoteForm({ clients, vehicles, taxRate, bankAccounts = [], initi
                     </NativeSelect>
                 </FormField>
 
-                <FormField label="Valid Until" required htmlFor="valid_until" error={errors.valid_until} description={editing ? undefined : 'Quote expiry date'}>
+                <FormField label="Valid until" required htmlFor="valid_until" error={errors.valid_until} description={editing ? undefined : 'Quote expiry date'}>
                     <Input id="valid_until" type="date" value={data.valid_until} onChange={(e) => setData('valid_until', e.target.value)} aria-invalid={!!errors.valid_until} />
                 </FormField>
 
@@ -107,14 +108,14 @@ export function QuoteForm({ clients, vehicles, taxRate, bankAccounts = [], initi
                     </FormField>
                 ) : (
                     <FormField
-                        label="Bank Account"
+                        label="Bank account"
                         htmlFor="company_bank_account_id"
                         error={errors.company_bank_account_id}
                         description="Select which bank account details to display on this quote"
                         className="md:col-span-2"
                     >
                         <NativeSelect id="company_bank_account_id" value={data.company_bank_account_id} onChange={(e) => setData('company_bank_account_id', e.target.value)}>
-                            <option value="">Use Primary Account</option>
+                            <option value="">Use primary account</option>
                             {bankAccounts.map((account) => (
                                 <option key={account.id} value={account.id}>
                                     {account.bank_name} - {account.account_number}
@@ -138,13 +139,13 @@ export function QuoteForm({ clients, vehicles, taxRate, bankAccounts = [], initi
 
             <LineItemsEditor items={data.items} onChange={(items) => setData('items', items)} vehicles={vehicles} taxRate={taxRate} errors={errors} />
 
-            <FormSection title="Terms & Conditions" columns={1}>
-                <FormField label="Terms & Conditions" htmlFor="terms_conditions" error={errors.terms_conditions}>
+            <FormSection title="Terms & conditions" columns={1}>
+                <FormField label="Terms & conditions" htmlFor="terms_conditions" error={errors.terms_conditions}>
                     <Textarea id="terms_conditions" rows={6} value={data.terms_conditions} onChange={(e) => setData('terms_conditions', e.target.value)} />
                 </FormField>
             </FormSection>
 
-            <FormSection title="Internal Notes" columns={1}>
+            <FormSection title="Internal notes" columns={1}>
                 <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                     <Textarea
                         id="notes"
@@ -158,15 +159,15 @@ export function QuoteForm({ clients, vehicles, taxRate, bankAccounts = [], initi
 
             {footer}
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? 'Update Quote' : 'Create Quote'}
+                    {editing ? 'Update quote' : 'Create quote'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

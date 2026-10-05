@@ -1,0 +1,61 @@
+<!-- @dsCard group="Components" viewport="700x330" name="Data display" subtitle="Metric row, index table, dossier lines, progress and empty state" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; }
+  body { padding: 22px 24px; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+  .split { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script>window.__nxBase = "../../";</script>
+<script src="../../ds-shim.js"></script>
+<script type="text/babel">
+const NS = window.__nxNS();
+const { MetricCard, DataTable, DossierRow, ProgressMeter, StatusPill, Badge, Card } = NS;
+
+const rows = [
+  { id: 1, ref: 'INV-2026-0117', client: 'Roads Authority', amount: '486,200.00', status: 'paid' },
+  { id: 2, ref: 'INV-2026-0118', client: 'NamWater', amount: '112,940.00', status: 'pending' },
+  { id: 3, ref: 'INV-2026-0119', client: 'City of Windhoek', amount: '78,500.00', status: 'overdue' },
+];
+const columns = [
+  { key: 'ref', label: 'Ref', mono: true, width: '128px' },
+  { key: 'client', label: 'Client' },
+  { key: 'amount', label: 'Amount (NAD)', align: 'right', mono: true, render: r => r.amount },
+  { key: 'status', label: 'Status', width: '104px', render: r => <StatusPill status={r.status} /> },
+];
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <>
+    <div className="metrics">
+      <MetricCard label="Monthly revenue" value="NAD 4.18m" delta="+12.4% MoM" deltaTone="positive" emphasis />
+      <MetricCard label="Outstanding" value="NAD 2.94m" meta="17 invoices · 6 overdue" />
+      <MetricCard label="Active projects" value="27" delta="+3" deltaTone="positive" meta="Across 11 clients" />
+    </div>
+    <div className="split">
+      <Card title="Client invoices" actions={<Badge>184</Badge>} bodyPad={false} padding="sm">
+        <DataTable columns={columns} rows={rows} dense />
+      </Card>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div>
+          <DossierRow label="Submitted by" meta="14 Feb 09:12">Tangeni Shipanga</DossierRow>
+          <DossierRow label="Finance sign-off" meta="—" last>Awaiting review</DossierRow>
+        </div>
+        <ProgressMeter label="Annual leave" value={18} max={24} display="18 of 24 days" tone="positive" />
+        <ProgressMeter label="Budget consumed" value={91} tone="negative" meta="NAD 1.82m of NAD 2.00m" />
+      </div>
+    </div>
+  </>
+);
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { FileInput } from '@/components/file-input';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { Button } from '@/components/ui/button';
@@ -123,8 +124,8 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Basic Information">
-                <FormField label="Vehicle Type" required htmlFor="vehicle_type_id" error={errors.vehicle_type_id}>
+            <FormSection title="Basic information">
+                <FormField label="Vehicle type" required htmlFor="vehicle_type_id" error={errors.vehicle_type_id}>
                     <NativeSelect id="vehicle_type_id" value={data.vehicle_type_id} onChange={(e) => setData('vehicle_type_id', e.target.value)} aria-invalid={!!errors.vehicle_type_id}>
                         <option value="">Select vehicle type</option>
                         {vehicleTypes.map((type) => (
@@ -134,11 +135,11 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                         ))}
                     </NativeSelect>
                 </FormField>
-                <FormField label="Registration Number" required htmlFor="reg_number" error={errors.reg_number}>
-                    <Input id="reg_number" value={data.reg_number} onChange={(e) => setData('reg_number', e.target.value)} placeholder="e.g., ABC 123 GP" aria-invalid={!!errors.reg_number} />
+                <FormField label="Registration number" required htmlFor="reg_number" error={errors.reg_number}>
+                    <Input id="reg_number" value={data.reg_number} onChange={(e) => setData('reg_number', e.target.value)} placeholder="e.g., N 12345 W" autoCapitalize="characters" autoCorrect="off" spellCheck={false} aria-invalid={!!errors.reg_number} />
                 </FormField>
                 <FormField label="VIN" htmlFor="vin" error={errors.vin}>
-                    <Input id="vin" value={data.vin} onChange={(e) => setData('vin', e.target.value)} placeholder="Vehicle Identification Number" aria-invalid={!!errors.vin} />
+                    <Input id="vin" value={data.vin} onChange={(e) => setData('vin', e.target.value)} placeholder="Vehicle Identification Number" autoCapitalize="characters" autoCorrect="off" spellCheck={false} aria-invalid={!!errors.vin} />
                 </FormField>
                 <FormField label="Make" required htmlFor="make" error={errors.make}>
                     <Input id="make" value={data.make} onChange={(e) => setData('make', e.target.value)} placeholder="e.g., Mercedes-Benz" aria-invalid={!!errors.make} />
@@ -147,27 +148,27 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                     <Input id="model" value={data.model} onChange={(e) => setData('model', e.target.value)} placeholder="e.g., Actros" aria-invalid={!!errors.model} />
                 </FormField>
                 <FormField label="Year" htmlFor="year" error={errors.year}>
-                    <Input id="year" type="number" value={data.year} onChange={(e) => setData('year', e.target.value)} placeholder="e.g., 2023" aria-invalid={!!errors.year} />
+                    <Input id="year" type="number" inputMode="numeric" value={data.year} onChange={(e) => setData('year', e.target.value)} placeholder="e.g., 2023" aria-invalid={!!errors.year} />
                 </FormField>
                 <FormField label="Status" required htmlFor="status" error={errors.status}>
                     <NativeSelect id="status" value={data.status} onChange={(e) => setData('status', e.target.value)} aria-invalid={!!errors.status}>
                         <option value="available">Available</option>
-                        <option value="in_use">In Use</option>
+                        <option value="in_use">In use</option>
                         <option value="maintenance">Maintenance</option>
                         <option value="retired">Retired</option>
                     </NativeSelect>
                 </FormField>
-                <FormField label="Current Mileage (km)" htmlFor="current_mileage" error={errors.current_mileage}>
-                    <Input id="current_mileage" type="number" step="0.01" value={data.current_mileage} onChange={(e) => setData('current_mileage', e.target.value)} aria-invalid={!!errors.current_mileage} />
+                <FormField label="Current mileage (km)" htmlFor="current_mileage" error={errors.current_mileage}>
+                    <Input id="current_mileage" type="number" step="0.01" inputMode="decimal" value={data.current_mileage} onFocus={(e) => e.target.select()} onChange={(e) => setData('current_mileage', e.target.value)} aria-invalid={!!errors.current_mileage} />
                 </FormField>
             </FormSection>
 
             <FormSection title="Specifications">
-                <FormField label="Load Capacity (tons)" htmlFor="load_capacity" error={errors.load_capacity}>
-                    <Input id="load_capacity" type="number" step="0.01" value={data.load_capacity} onChange={(e) => setData('load_capacity', e.target.value)} />
+                <FormField label="Load capacity (tons)" htmlFor="load_capacity" error={errors.load_capacity}>
+                    <Input id="load_capacity" type="number" step="0.01" inputMode="decimal" value={data.load_capacity} onChange={(e) => setData('load_capacity', e.target.value)} />
                 </FormField>
-                <FormField label="Tare Weight (tons)" htmlFor="tare_weight" error={errors.tare_weight}>
-                    <Input id="tare_weight" type="number" step="0.01" value={data.tare_weight} onChange={(e) => setData('tare_weight', e.target.value)} />
+                <FormField label="Tare weight (tons)" htmlFor="tare_weight" error={errors.tare_weight}>
+                    <Input id="tare_weight" type="number" step="0.01" inputMode="decimal" value={data.tare_weight} onChange={(e) => setData('tare_weight', e.target.value)} />
                 </FormField>
                 <FormField label="GPS Device ID" htmlFor="gps_device_id" error={errors.gps_device_id}>
                     <Input id="gps_device_id" value={data.gps_device_id} onChange={(e) => setData('gps_device_id', e.target.value)} placeholder="Optional tracking device ID" />
@@ -181,15 +182,15 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                     error={errors.gvm_tonnes}
                     description="The total permissible weight of the vehicle including load"
                 >
-                    <Input id="gvm_tonnes" type="number" step="0.01" value={data.gvm_tonnes} onChange={(e) => onGvmChange(e.target.value)} placeholder="e.g., 34.5" />
+                    <Input id="gvm_tonnes" type="number" step="0.01" inputMode="decimal" value={data.gvm_tonnes} onChange={(e) => onGvmChange(e.target.value)} placeholder="e.g., 34.5" />
                 </FormField>
                 <FormField
-                    label="MDC Rate Card"
+                    label="MDC rate card"
                     htmlFor="mdc_rate_card_id"
                     error={errors.mdc_rate_card_id}
                     description={
                         suggested
-                            ? `💡 Suggested based on GVM: ${suggested.category_name} (${formatMoney(suggested.rate_per_100km, 'N$')}/100km)`
+                            ? `Suggested based on GVM: ${suggested.category_name} (${formatMoney(suggested.rate_per_100km, 'N$')}/100km)`
                             : 'Enter GVM above to get rate suggestion'
                     }
                 >
@@ -204,20 +205,20 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                 </FormField>
             </FormSection>
 
-            <FormSection title="Compliance & Expiry Dates">
-                <FormField label="Insurance Expiry" htmlFor="insurance_expiry" error={errors.insurance_expiry}>
+            <FormSection title="Compliance & expiry dates">
+                <FormField label="Insurance expiry" htmlFor="insurance_expiry" error={errors.insurance_expiry}>
                     <Input id="insurance_expiry" type="date" value={data.insurance_expiry} onChange={(e) => setData('insurance_expiry', e.target.value)} />
                 </FormField>
-                <FormField label="License Disc Expiry" htmlFor="disc_expiry" error={errors.disc_expiry}>
+                <FormField label="License disc expiry" htmlFor="disc_expiry" error={errors.disc_expiry}>
                     <Input id="disc_expiry" type="date" value={data.disc_expiry} onChange={(e) => setData('disc_expiry', e.target.value)} />
                 </FormField>
-                <FormField label="Roadworthy Expiry" htmlFor="roadworthy_expiry" error={errors.roadworthy_expiry}>
+                <FormField label="Roadworthy expiry" htmlFor="roadworthy_expiry" error={errors.roadworthy_expiry}>
                     <Input id="roadworthy_expiry" type="date" value={data.roadworthy_expiry} onChange={(e) => setData('roadworthy_expiry', e.target.value)} />
                 </FormField>
             </FormSection>
 
-            <FormSection title="Document Uploads">
-                <FormField label="License Disc (Image)" htmlFor="license_disc_upload" error={errors.license_disc_upload}>
+            <FormSection title="Document uploads">
+                <FormField label="License disc (image)" htmlFor="license_disc_upload" error={errors.license_disc_upload}>
                     <FileInput
                         id="license_disc_upload"
                         accept="image/*"
@@ -227,7 +228,7 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                         onChange={(file) => setData('license_disc_upload', file)}
                     />
                 </FormField>
-                <FormField label="Insurance Certificate (Image)" htmlFor="insurance_upload" error={errors.insurance_upload}>
+                <FormField label="Insurance certificate (image)" htmlFor="insurance_upload" error={errors.insurance_upload}>
                     <FileInput
                         id="insurance_upload"
                         accept="image/*"
@@ -239,30 +240,30 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                 </FormField>
             </FormSection>
 
-            <FormSection title="Service Schedule">
-                <FormField label="Next Service Date" htmlFor="next_service_date" error={errors.next_service_date}>
+            <FormSection title="Service schedule">
+                <FormField label="Next service date" htmlFor="next_service_date" error={errors.next_service_date}>
                     <Input id="next_service_date" type="date" value={data.next_service_date} onChange={(e) => setData('next_service_date', e.target.value)} />
                 </FormField>
-                <FormField label="Next Service Mileage (km)" htmlFor="next_service_mileage" error={errors.next_service_mileage}>
-                    <Input id="next_service_mileage" type="number" value={data.next_service_mileage} onChange={(e) => setData('next_service_mileage', e.target.value)} />
+                <FormField label="Next service mileage (km)" htmlFor="next_service_mileage" error={errors.next_service_mileage}>
+                    <Input id="next_service_mileage" type="number" inputMode="numeric" value={data.next_service_mileage} onChange={(e) => setData('next_service_mileage', e.target.value)} />
                 </FormField>
             </FormSection>
 
-            <FormSection title="Additional Notes" columns={1}>
+            <FormSection title="Additional notes" columns={1}>
                 <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                     <Textarea id="notes" rows={4} value={data.notes} onChange={(e) => setData('notes', e.target.value)} placeholder="Additional information about this vehicle..." />
                 </FormField>
             </FormSection>
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? 'Update Vehicle' : 'Create Vehicle'}
+                    {editing ? 'Update vehicle' : 'Create vehicle'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

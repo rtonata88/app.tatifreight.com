@@ -1,12 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
-import {
-    ArrowLeft,
-    Calendar,
-    CircleDollarSign,
-    FileText,
-    MapPin,
-    Pencil,
-} from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageContainer } from "@/components/page-container";
 import { PageHeader } from "@/components/page-header";
@@ -139,18 +132,18 @@ export default function VehicleShow({
             <Head title={`Vehicle ${vehicle.reg_number}`} />
             <PageContainer>
                 <PageHeader
-                    title="Vehicle Details"
+                    title="Vehicle details"
                     actions={
                         <>
                             <Button asChild variant="ghost">
                                 <Link href={index()}>
-                                    <ArrowLeft /> Back to Fleet
+                                    <ArrowLeft /> Back to fleet
                                 </Link>
                             </Button>
                             {can.edit && (
                                 <Button asChild>
                                     <Link href={edit(vehicle.id)}>
-                                        <Pencil /> Edit Vehicle
+                                        <Pencil /> Edit vehicle
                                     </Link>
                                 </Button>
                             )}
@@ -163,12 +156,11 @@ export default function VehicleShow({
                     <CardContent className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-4">
-                                <h2 className="text-2xl font-bold">
+                                <h2 className="font-mono text-2xl font-bold">
                                     {vehicle.reg_number}
                                 </h2>
                                 <StatusBadge
                                     tone={statusTone[vehicle.status] ?? "gray"}
-                                    className="px-2.5 py-1 text-sm"
                                 >
                                     {humanize(vehicle.status)}
                                 </StatusBadge>
@@ -199,47 +191,36 @@ export default function VehicleShow({
                 </Card>
 
                 {/* Statistics */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-2 lg:grid-cols-4">
                     <StatCard
-                        label="Total Bookings"
+                        label="Total bookings"
                         value={stats.total_bookings}
-                        icon={Calendar}
-                        className="bg-blue-50 dark:bg-blue-900/20"
-                        valueClassName="font-bold text-blue-700 dark:text-blue-300"
                     />
                     <StatCard
-                        label="MDC Outstanding"
+                        label="MDC outstanding"
                         value={formatMoney(stats.total_mdc_outstanding, "N$")}
-                        icon={CircleDollarSign}
-                        className="bg-purple-50 dark:bg-purple-900/20"
-                        valueClassName="font-bold text-purple-700 dark:text-purple-300"
+                        tone="warning"
                     />
                     <StatCard
-                        label="Total Expenses"
+                        label="Total expenses"
                         value={formatMoney(stats.total_expenses, "N$")}
-                        icon={FileText}
-                        className="bg-green-50 dark:bg-green-900/20"
-                        valueClassName="font-bold text-green-700 dark:text-green-300"
                     />
                     <StatCard
-                        label="Total Distance"
+                        label="Total distance"
                         value={`${formatNumber(stats.total_distance)} km`}
-                        icon={MapPin}
-                        className="bg-amber-50 dark:bg-amber-900/20"
-                        valueClassName="font-bold text-amber-700 dark:text-amber-300"
                     />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     {/* Left column: vehicle details */}
                     <div className="space-y-6 lg:col-span-2">
-                        <DetailCard title="Basic Information">
-                            <Detail label="Registration Number">
-                                {vehicle.reg_number}
+                        <DetailCard title="Basic information">
+                            <Detail label="Registration number">
+                                <span className="font-mono">{vehicle.reg_number}</span>
                             </Detail>
-                            <Detail label="Vehicle Type">{vehicle.type}</Detail>
+                            <Detail label="Vehicle type">{vehicle.type}</Detail>
                             {vehicle.vin && (
-                                <Detail label="VIN">{vehicle.vin}</Detail>
+                                <Detail label="VIN"><span className="font-mono">{vehicle.vin}</span></Detail>
                             )}
                             {vehicle.make && (
                                 <Detail label="Make">{vehicle.make}</Detail>
@@ -250,7 +231,7 @@ export default function VehicleShow({
                             {vehicle.year && (
                                 <Detail label="Year">{vehicle.year}</Detail>
                             )}
-                            <Detail label="Current Mileage">
+                            <Detail label="Current mileage">
                                 {formatNumber(vehicle.current_mileage)} km
                             </Detail>
                             {vehicle.gps_device_id && (
@@ -267,13 +248,13 @@ export default function VehicleShow({
                                 </Detail>
                             )}
                             {!!vehicle.load_capacity && (
-                                <Detail label="Load Capacity">
+                                <Detail label="Load capacity">
                                     {formatNumber(vehicle.load_capacity, 2)}{" "}
                                     tonnes
                                 </Detail>
                             )}
                             {!!vehicle.tare_weight && (
-                                <Detail label="Tare Weight">
+                                <Detail label="Tare weight">
                                     {formatNumber(vehicle.tare_weight, 2)} kg
                                 </Detail>
                             )}
@@ -281,12 +262,12 @@ export default function VehicleShow({
                                 <Detail
                                     label={
                                         vehicle.mdc_rate_card.suggested
-                                            ? "MDC Rate Card (Suggested)"
-                                            : "MDC Rate Card"
+                                            ? "MDC rate card (suggested)"
+                                            : "MDC rate card"
                                     }
                                 >
                                     {vehicle.mdc_rate_card.category_name}
-                                    <span className="block text-xs font-normal text-muted-foreground">
+                                    <span className="block font-mono text-xs font-normal text-muted-foreground tabular-nums">
                                         {formatMoney(
                                             vehicle.mdc_rate_card
                                                 .rate_per_100km,
@@ -298,25 +279,25 @@ export default function VehicleShow({
                             )}
                         </DetailCard>
 
-                        <DetailCard title="Compliance & Expiry Dates">
+                        <DetailCard title="Compliance & expiry dates">
                             <ExpiryDetail
-                                label="Insurance Expiry"
+                                label="Insurance expiry"
                                 expiry={vehicle.insurance_expiry}
                             />
                             <ExpiryDetail
-                                label="License Disc Expiry"
+                                label="License disc expiry"
                                 expiry={vehicle.disc_expiry}
                             />
                             <ExpiryDetail
-                                label="Roadworthy Expiry"
+                                label="Roadworthy expiry"
                                 expiry={vehicle.roadworthy_expiry}
                             />
                             {vehicle.next_service_date && (
                                 <ExpiryDetail
-                                    label="Next Service Date"
+                                    label="Next service date"
                                     expiry={vehicle.next_service_date}
                                     pastLabel="Overdue"
-                                    soonLabel="Due Soon"
+                                    soonLabel="Due soon"
                                     extra={
                                         !!vehicle.next_service_mileage && (
                                             <p className="text-xs text-muted-foreground">
@@ -349,7 +330,7 @@ export default function VehicleShow({
                     {/* Right column: related data */}
                     <div className="space-y-6">
                         <VehicleRecentList
-                            title="Recent Bookings"
+                            title="Recent bookings"
                             items={bookings}
                             viewAllHref={bookingsIndex.url({ query: { vehicle: vehicle.id } })}
                             empty="No bookings yet"
@@ -357,7 +338,7 @@ export default function VehicleShow({
                                 key: booking.id,
                                 main: (
                                     <>
-                                        <p className="font-medium">
+                                        <p className="font-mono font-medium">
                                             {booking.booking_number}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
@@ -382,7 +363,7 @@ export default function VehicleShow({
                         />
 
                         <VehicleRecentList
-                            title="Recent Logbook Entries"
+                            title="Recent logbook entries"
                             items={logbooks}
                             viewAllHref={
                                 logbookIndex({ query: { vehicle: vehicle.id } })
@@ -410,7 +391,7 @@ export default function VehicleShow({
                         />
 
                         <VehicleRecentList
-                            title="Recent MDC Charges"
+                            title="Recent MDC charges"
                             items={mdcCalculations}
                             viewAllHref={mdcIndex.url({ query: { vehicle: vehicle.id } })}
                             empty="No MDC charges yet"
@@ -418,7 +399,7 @@ export default function VehicleShow({
                                 key: mdc.id,
                                 main: (
                                     <>
-                                        <p className="font-medium">
+                                        <p className="font-mono font-medium tabular-nums">
                                             {formatMoney(mdc.mdc_amount, "N$")}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
@@ -444,7 +425,7 @@ export default function VehicleShow({
 
                         {inspections.length > 0 && (
                             <VehicleRecentList
-                                title="Recent Inspections"
+                                title="Recent inspections"
                                 items={inspections}
                                 renderItem={(inspection) => ({
                                     key: inspection.id,
@@ -518,7 +499,7 @@ function ExpiryDetail({
     label,
     expiry,
     pastLabel = "Expired",
-    soonLabel = "Expiring Soon",
+    soonLabel = "Expiring soon",
     extra,
 }: {
     label: string;
@@ -535,9 +516,9 @@ function ExpiryDetail({
                     <p
                         className={
                             expiry.past
-                                ? "font-medium text-red-600 dark:text-red-400"
+                                ? "font-medium text-destructive"
                                 : expiry.soon
-                                  ? "font-medium text-amber-600 dark:text-amber-400"
+                                  ? "font-medium text-warning"
                                   : "font-medium"
                         }
                     >

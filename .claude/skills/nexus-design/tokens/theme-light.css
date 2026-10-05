@@ -1,0 +1,116 @@
+/* ==========================================================================
+   Nexus Design System — Slate (light) theme · THE DEFAULT
+   Grounded in the app's own tokens: docs/design-system-prd.md
+   #f8f9fa page · #ffffff card · #4e73df primary · slate text · DM Sans.
+
+   Usage:  <html class="nx-light">   (default — professional ERP)
+           <html class="nx-ink">     (dark alternative)
+           <html class="nx-paper">   (printed documents)
+   ========================================================================== */
+
+.nx-light {
+    /* ---- Surfaces (from --ep-bg-*) --------------------------------- */
+    --nx-ink:           #f8f9fa;   /* page */
+    --nx-ink-elevated:  #f1f3f5;   /* table head, section fill */
+    --nx-ink-card:      #ffffff;   /* card */
+    --nx-ink-rail:      #ffffff;   /* rail */
+    --nx-ink-hover:     #f1f3f5;   /* row hover */
+
+    /* ---- Accent (from --ep-primary) -------------------------------- */
+    --nx-brass:         #4e73df;
+    --nx-brass-hi:      #6f8de8;
+    --nx-brass-lo:      #3b5bc0;
+    --nx-brass-wash:    rgba(78, 115, 223, 0.06);
+    --nx-brass-wash-2:  rgba(78, 115, 223, 0.10);
+
+    /* ---- Text (from --ep-text-*) ----------------------------------- */
+    --nx-fg-1: #2d3748;
+    --nx-fg-2: #4a5568;
+    --nx-fg-3: #6c757d;
+    --nx-fg-4: #a0aec0;
+
+    /* ---- Rules (from --ep-border) ---------------------------------- */
+    --nx-rule:        rgba(0, 0, 0, 0.08);
+    --nx-rule-strong: rgba(0, 0, 0, 0.14);
+    --nx-rule-brass:  rgba(78, 115, 223, 0.32);
+
+    /* ---- State (from --ep-success/warning/danger/info) ------------- */
+    --nx-pos:  #28a745;
+    --nx-warn: #b45309;   /* the PRD's readable amber, not #ffc107 */
+    --nx-neg:  #dc3545;
+    --nx-info: #17a2b8;
+    --nx-pos-wash:  rgba(40, 167, 69, 0.10);
+    --nx-warn-wash: rgba(255, 193, 7, 0.14);
+    --nx-neg-wash:  rgba(220, 53, 69, 0.10);
+    --nx-info-wash: rgba(23, 162, 184, 0.10);
+
+    /* ---- Charts ---------------------------------------------------- */
+    --nx-chart-1: #4e73df;
+    --nx-chart-2: #28a745;
+    --nx-chart-3: #17a2b8;
+    --nx-chart-4: #f59e0b;
+    --nx-chart-5: #dc3545;
+    --nx-chart-6: #6c757d;
+
+    /* ---- Lift: light mode uses the app's soft shadows -------------- */
+    --nx-lift-0: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --nx-lift-1: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.10);
+    --nx-lift-brass: 0 0 0 1px var(--nx-rule-brass), 0 0.5rem 1rem rgba(78, 115, 223, 0.14);
+    --nx-lift-overlay: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18);
+    --nx-lift-popover: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.14);
+
+    /* ---- shadcn/ui aliases ----------------------------------------- */
+    --background:          var(--nx-ink);
+    --foreground:          var(--nx-fg-1);
+    --card:                var(--nx-ink-card);
+    --card-foreground:     var(--nx-fg-1);
+    --popover:             var(--nx-ink-card);
+    --popover-foreground:  var(--nx-fg-1);
+    --primary:             var(--nx-brass);
+    --primary-foreground:  #ffffff;
+    --secondary:           var(--nx-ink-elevated);
+    --secondary-foreground: var(--nx-fg-1);
+    --muted:               var(--nx-ink-elevated);
+    --muted-foreground:    var(--nx-fg-3);
+    --accent:              var(--nx-brass-wash-2);
+    --accent-foreground:   var(--nx-brass-lo);
+    --destructive:         var(--nx-neg);
+    --destructive-foreground: #ffffff;
+    --success:             var(--nx-pos);
+    --warning:             var(--nx-warn);
+    --info:                var(--nx-info);
+    --border:              var(--nx-rule);
+    --input:               var(--nx-rule-strong);
+    --ring:                var(--nx-brass);
+    --radius:              var(--nx-r-4);
+
+    --sidebar:                     var(--nx-ink-rail);
+    --sidebar-foreground:          var(--nx-fg-2);
+    --sidebar-primary:             var(--nx-brass);
+    --sidebar-primary-foreground:  #ffffff;
+    --sidebar-accent:              var(--nx-brass-wash-2);
+    --sidebar-accent-foreground:   var(--nx-brass-lo);
+    --sidebar-border:              var(--nx-rule);
+    --sidebar-ring:                var(--nx-brass);
+
+    --chart-1: var(--nx-chart-1);
+    --chart-2: var(--nx-chart-2);
+    --chart-3: var(--nx-chart-3);
+    --chart-4: var(--nx-chart-4);
+    --chart-5: var(--nx-chart-5);
+
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--nx-font-body);
+    font-size: var(--nx-fs-body);
+    line-height: var(--nx-lh-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Cards carry a soft shadow in light mode, not a bare hairline. */
+.nx-light [class~="nx-card-lift"] { box-shadow: var(--nx-lift-0); }
+
+/* The italic display subtitle is a serif affectation the ERP does not need:
+   in light mode the page subtitle is plain DM Sans. */
+.nx-light .nx-eyebrow { letter-spacing: 0.06em; }

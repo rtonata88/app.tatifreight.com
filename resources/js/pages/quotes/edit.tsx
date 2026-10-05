@@ -52,7 +52,7 @@ export default function QuotesEdit({ quote, hasBooking, clients, vehicles, taxRa
         router.post(convertToBooking(quote.id).url, { open_booking: true }, { preserveScroll: true, onFinish: () => setConverting(false) });
     };
 
-    const title = `Edit Quote: ${quote.quote_number}`;
+    const title = `Edit quote: ${quote.quote_number}`;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -79,10 +79,10 @@ export default function QuotesEdit({ quote, hasBooking, clients, vehicles, taxRa
                             )}
                             {quote.status === 'approved' && !hasBooking && (
                                 <Button onClick={convert} disabled={converting}>
-                                    {converting ? <Spinner /> : <ArrowRight />} Convert to Booking
+                                    {converting ? <Spinner /> : <ArrowRight />} Convert to booking
                                 </Button>
                             )}
-                            {hasBooking && <span className="text-sm text-green-600 dark:text-green-400">✓ Converted to Booking</span>}
+                            {hasBooking && <StatusBadge tone="green">Converted to booking</StatusBadge>}
                         </>
                     }
                 />
@@ -116,7 +116,7 @@ export default function QuotesEdit({ quote, hasBooking, clients, vehicles, taxRa
                                     </div>
                                     {quote.sent_at && (
                                         <div>
-                                            <p className="text-sm font-medium">Sent to Client</p>
+                                            <p className="text-sm font-medium">Sent to client</p>
                                             <p className="text-sm text-muted-foreground">{quote.sent_at}</p>
                                         </div>
                                     )}

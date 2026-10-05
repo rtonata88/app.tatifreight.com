@@ -1,6 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { emptyLineItem, InvoiceLineItems, type InvoiceLineItem } from '@/components/invoices/invoice-line-items';
@@ -125,14 +126,14 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
 
     const bankAccountField = (
         <FormField
-            label="Bank Account"
+            label="Bank account"
             htmlFor="company_bank_account_id"
             error={errors.company_bank_account_id}
             description="Select which bank account details to display on this invoice"
             className="md:col-span-2"
         >
             <NativeSelect id="company_bank_account_id" value={data.company_bank_account_id ?? ''} onChange={(e) => setData('company_bank_account_id', e.target.value)}>
-                <option value="">Use Primary Account</option>
+                <option value="">Use primary account</option>
                 {bankAccounts.map((account) => (
                     <option key={account.id} value={account.id}>
                         {account.bank_name} - {account.account_number}
@@ -145,9 +146,9 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Invoice Details" columns={editing ? 3 : 2}>
+            <FormSection title="Invoice details" columns={editing ? 3 : 2}>
                 {!editing && (
-                    <FormField label="Load from Completed Booking (Optional)" htmlFor="booking_id" error={errors.booking_id} description="Auto-populate invoice from a completed booking">
+                    <FormField label="Load from completed booking (optional)" htmlFor="booking_id" error={errors.booking_id} description="Auto-populate invoice from a completed booking">
                         <NativeSelect id="booking_id" value={data.booking_id} onChange={(e) => onBookingChange(e.target.value)}>
                             <option value="">Select a completed booking...</option>
                             {bookings.map((booking) => (
@@ -170,11 +171,11 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
                     </NativeSelect>
                 </FormField>
 
-                <FormField label="Invoice Date" required htmlFor="invoice_date" error={errors.invoice_date}>
+                <FormField label="Invoice date" required htmlFor="invoice_date" error={errors.invoice_date}>
                     <Input id="invoice_date" type="date" value={data.invoice_date} onChange={(e) => setData('invoice_date', e.target.value)} aria-invalid={!!errors.invoice_date} />
                 </FormField>
 
-                <FormField label="Due Date" required htmlFor="due_date" error={errors.due_date}>
+                <FormField label="Due date" required htmlFor="due_date" error={errors.due_date}>
                     <Input id="due_date" type="date" value={data.due_date} onChange={(e) => setData('due_date', e.target.value)} aria-invalid={!!errors.due_date} />
                 </FormField>
 
@@ -214,7 +215,7 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
 
             {beforeNotes}
 
-            <FormSection title="Internal Notes" columns={1}>
+            <FormSection title="Internal notes" columns={1}>
                 <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                     <Textarea
                         id="notes"
@@ -226,15 +227,15 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
                 </FormField>
             </FormSection>
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? 'Update Invoice' : 'Create Invoice'}
+                    {editing ? 'Update invoice' : 'Create invoice'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

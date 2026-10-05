@@ -2,9 +2,9 @@ import { Form, Head } from '@inertiajs/react';
 import { ShieldBan, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
+import { StatusBadge } from '@/components/status-badge';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
 import AppLayout from '@/layouts/app-layout';
@@ -51,11 +51,11 @@ export default function TwoFactor({
                     <Heading
                         variant="small"
                         title="Two-factor authentication"
-                        description="Manage your two-factor authentication settings"
+                        description="Manage your two-factor authentication settings."
                     />
                     {twoFactorEnabled ? (
                         <div className="flex flex-col items-start justify-start space-y-4">
-                            <Badge variant="default">Enabled</Badge>
+                            <StatusBadge tone="green">Enabled</StatusBadge>
                             <p className="text-muted-foreground">
                                 With two-factor authentication enabled, you will
                                 be prompted for a secure, random pin during
@@ -85,7 +85,7 @@ export default function TwoFactor({
                         </div>
                     ) : (
                         <div className="flex flex-col items-start justify-start space-y-4">
-                            <Badge variant="destructive">Disabled</Badge>
+                            <StatusBadge tone="red">Disabled</StatusBadge>
                             <p className="text-muted-foreground">
                                 When you enable two-factor authentication, you
                                 will be prompted for a secure pin during login.

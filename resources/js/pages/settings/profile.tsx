@@ -40,7 +40,7 @@ export default function Profile({
                     <Heading
                         variant="small"
                         title="Profile information"
-                        description="Update your name and email address"
+                        description="Update your name and email address."
                     />
 
                     <Form
@@ -100,7 +100,7 @@ export default function Profile({
                                                 <Link
                                                     href={send()}
                                                     as="button"
-                                                    className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                                    className="text-foreground underline decoration-muted-foreground/40 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-current!"
                                                 >
                                                     Click here to resend the
                                                     verification email.
@@ -109,7 +109,7 @@ export default function Profile({
 
                                             {status ===
                                                 'verification-link-sent' && (
-                                                <div className="mt-2 text-sm font-medium text-green-600">
+                                                <div className="mt-2 text-sm font-medium text-success">
                                                     A new verification link has
                                                     been sent to your email
                                                     address.
@@ -123,7 +123,7 @@ export default function Profile({
                                         disabled={processing}
                                         data-test="update-profile-button"
                                     >
-                                        Save
+                                        Save profile
                                     </Button>
 
                                     <Transition
@@ -133,7 +133,7 @@ export default function Profile({
                                         leave="transition ease-in-out"
                                         leaveTo="opacity-0"
                                     >
-                                        <p className="text-sm text-neutral-600">
+                                        <p className="text-sm text-muted-foreground">
                                             Saved
                                         </p>
                                     </Transition>

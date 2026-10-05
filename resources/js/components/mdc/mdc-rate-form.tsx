@@ -1,5 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,10 +56,10 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
         <form onSubmit={submit} className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Rate Information</CardTitle>
+                    <CardTitle>Rate information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <FormField label="Category Name" required htmlFor="category_name" error={errors.category_name} description="Descriptive name for this GVM category">
+                    <FormField label="Category name" required htmlFor="category_name" error={errors.category_name} description="Descriptive name for this GVM category">
                         <Input
                             id="category_name"
                             value={data.category_name}
@@ -73,6 +74,7 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
                             <Input
                                 id="min_gvm_tonnes"
                                 type="number"
+                                inputMode="decimal"
                                 step="0.01"
                                 value={data.min_gvm_tonnes}
                                 onChange={(e) => setData('min_gvm_tonnes', e.target.value)}
@@ -84,6 +86,7 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
                             <Input
                                 id="max_gvm_tonnes"
                                 type="number"
+                                inputMode="decimal"
                                 step="0.01"
                                 value={data.max_gvm_tonnes}
                                 onChange={(e) => setData('max_gvm_tonnes', e.target.value)}
@@ -103,6 +106,7 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
                         <Input
                             id="rate_per_100km"
                             type="number"
+                            inputMode="decimal"
                             step="0.01"
                             value={data.rate_per_100km}
                             onChange={(e) => setData('rate_per_100km', e.target.value)}
@@ -111,8 +115,8 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
                         />
                     </FormField>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <FormField label="Effective From" required htmlFor="effective_from" error={errors.effective_from}>
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                        <FormField label="Effective from" required htmlFor="effective_from" error={errors.effective_from}>
                             <Input
                                 id="effective_from"
                                 type="date"
@@ -121,7 +125,7 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
                                 aria-invalid={!!errors.effective_from}
                             />
                         </FormField>
-                        <FormField label="Effective To" htmlFor="effective_to" error={errors.effective_to} description="Leave empty for ongoing">
+                        <FormField label="Effective to" htmlFor="effective_to" error={errors.effective_to} description="Leave empty for ongoing">
                             <Input
                                 id="effective_to"
                                 type="date"
@@ -151,15 +155,16 @@ export function MdcRateForm({ rate, defaultEffectiveFrom = '' }: Props) {
                 </CardContent>
             </Card>
 
-            <div className="flex justify-end gap-4">
+            {/* Desktop keeps Cancel, then Save, on the right. */}
+            <FormActions className="md:flex-row-reverse md:justify-start md:gap-4">
+                <Button type="submit" disabled={processing}>
+                    {processing && <Spinner />}
+                    {rate ? 'Update MDC rate' : 'Create MDC rate'}
+                </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-                <Button type="submit" disabled={processing}>
-                    {processing && <Spinner />}
-                    {rate ? 'Update MDC Rate' : 'Create MDC Rate'}
-                </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

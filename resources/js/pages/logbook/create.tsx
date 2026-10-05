@@ -17,7 +17,7 @@ type Props = LogbookFormOptions & {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: "Logbook", href: index() },
-    { title: "New Entry", href: create() },
+    { title: "New entry", href: create() },
 ];
 
 export default function LogbookCreate({
@@ -28,10 +28,10 @@ export default function LogbookCreate({
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="New Logbook Entry" />
+            <Head title="New logbook entry" />
             <PageContainer>
                 <PageHeader
-                    title="New Logbook Entry"
+                    title="New logbook entry"
                     actions={
                         <Button asChild variant="ghost">
                             <Link href={index()}>

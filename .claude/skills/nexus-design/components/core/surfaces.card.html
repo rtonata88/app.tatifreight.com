@@ -1,0 +1,54 @@
+<!-- @dsCard group="Components" viewport="700x230" name="Core · Status, badges, cards" subtitle="Status taxonomy, count badges, card with brass emphasis" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; }
+  body { padding: 22px 24px; }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script>window.__nxBase = "../../";</script>
+<script src="../../ds-shim.js"></script>
+<script type="text/babel">
+const NS = window.__nxNS();
+const { StatusPill, Badge, Card, Avatar } = NS;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <>
+    <div className="row">
+      <StatusPill status="active" /><StatusPill status="pending" /><StatusPill status="completed" />
+      <StatusPill status="declined" /><StatusPill status="overdue">31 days overdue</StatusPill>
+      <StatusPill status="inactive" />
+    </div>
+    <div className="row">
+      <Badge>184 quotations</Badge>
+      <Badge tone="brass" mono>QT-2026-0184</Badge>
+      <Badge tone="positive">Verified</Badge>
+      <Badge tone="warning">Awaiting KYC</Badge>
+      <Badge tone="negative">Disciplinary</Badge>
+      <Badge tone="info">Capital</Badge>
+      <Avatar name="Selma Kaunatjike" size={28} status="active" />
+      <Avatar name="Tangeni Shipanga" size={28} brass />
+    </div>
+    <div className="cards">
+      <Card title="Resting card" subtitle="Hairline at 8%" padding="sm">
+        <span className="nx-meta">Standard surface for every panel.</span>
+      </Card>
+      <Card title="Emphasis card" subtitle="Brass hairline + wash" padding="sm" emphasis>
+        <span className="nx-meta">One per screen, on the most important panel.</span>
+      </Card>
+    </div>
+  </>
+);
+</script>
+</body>
+</html>

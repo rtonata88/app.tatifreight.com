@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { BadgeDollarSign, Ban, CheckCircle2, Globe, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
+import { BadgeDollarSign, Ban, CheckCircle2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataPagination } from '@/components/data-pagination';
 import { EmptyState } from '@/components/empty-state';
@@ -40,7 +40,7 @@ type Props = {
     can: { create: boolean; edit: boolean; delete: boolean };
 };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Rate Cards', href: index() }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Rate cards', href: index() }];
 
 export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters: initialFilters, can }: Props) {
     const { filters, setFilter } = useFilters(index().url, initialFilters);
@@ -50,26 +50,26 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Rate Card Management" />
+            <Head title="Rate card management" />
             <PageContainer>
                 <PageHeader
-                    title="Rate Card Management"
+                    title="Rate card management"
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> New Rate Card
+                                    <Plus /> New rate card
                                 </Link>
                             </Button>
                         )
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <StatCard label="Active Rates" value={stats.active} icon={CheckCircle2} valueClassName="text-green-700 dark:text-green-400" />
-                    <StatCard label="Inactive Rates" value={stats.inactive} icon={Ban} />
-                    <StatCard label="Client-Specific" value={stats.client_specific} icon={Users} valueClassName="text-blue-700 dark:text-blue-400" />
-                    <StatCard label="General Rates" value={stats.general} icon={Globe} valueClassName="text-purple-700 dark:text-purple-400" />
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-4">
+                    <StatCard label="Active rates" value={stats.active} tone="positive" />
+                    <StatCard label="Inactive rates" value={stats.inactive} />
+                    <StatCard label="Client-specific" value={stats.client_specific} />
+                    <StatCard label="General rates" value={stats.general} />
                 </div>
 
                 <Card>
@@ -80,7 +80,7 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                 <Input className="pl-9" value={filters.search} onChange={(e) => setFilter('search', e.target.value)} placeholder="Search rate cards..." />
                             </div>
                             <NativeSelect value={filters.vehicle_type} onChange={(e) => setFilter('vehicle_type', e.target.value)} aria-label="Filter by vehicle type">
-                                <option value="">All Vehicle Types</option>
+                                <option value="">All vehicle types</option>
                                 {vehicleTypes.map((t) => (
                                     <option key={t.value} value={t.value}>
                                         {t.label}
@@ -88,12 +88,12 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                 ))}
                             </NativeSelect>
                             <NativeSelect value={filters.rate_type} onChange={(e) => setFilter('rate_type', e.target.value)} aria-label="Filter by rate type">
-                                <option value="">All Rate Types</option>
+                                <option value="">All rate types</option>
                                 <option value="hourly">Hourly</option>
                                 <option value="daily">Daily</option>
-                                <option value="per_km">Per Kilometer</option>
+                                <option value="per_km">Per kilometer</option>
                                 <option value="tonnage">Tonnage</option>
-                                <option value="load_specific">Load Specific</option>
+                                <option value="load_specific">Load specific</option>
                             </NativeSelect>
                         </div>
 
@@ -110,17 +110,17 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                                 <StatusBadge tone={card.is_active ? 'green' : 'gray'}>{card.is_active ? 'Active' : 'Inactive'}</StatusBadge>
                                             </div>
                                             <div className="grid grid-cols-2 gap-3 border-t pt-3">
-                                                <Field label="Vehicle Type">{card.vehicle_type}</Field>
+                                                <Field label="Vehicle type">{card.vehicle_type}</Field>
                                                 <Field label="Client">
                                                     <ClientCell card={card} />
                                                 </Field>
-                                                <Field label="Rate Type">
+                                                <Field label="Rate type">
                                                     <StatusBadge tone="gray">{humanize(card.rate_type)}</StatusBadge>
                                                 </Field>
                                                 <Field label="Rate">
-                                                    <span className="font-medium">{formatMoney(card.rate, 'N$')}</span>
+                                                    <span className="font-mono font-medium tabular-nums">{formatMoney(card.rate, 'N$')}</span>
                                                 </Field>
-                                                <Field label="Effective Period" className="col-span-2">
+                                                <Field label="Effective period" className="col-span-2">
                                                     <Period card={card} />
                                                 </Field>
                                             </div>
@@ -137,11 +137,11 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>Name</TableHead>
-                                                <TableHead>Vehicle Type</TableHead>
+                                                <TableHead>Vehicle type</TableHead>
                                                 <TableHead>Client</TableHead>
-                                                <TableHead>Rate Type</TableHead>
-                                                <TableHead>Rate</TableHead>
-                                                <TableHead>Effective Period</TableHead>
+                                                <TableHead>Rate type</TableHead>
+                                                <TableHead className="text-right">Rate</TableHead>
+                                                <TableHead>Effective period</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -159,7 +159,7 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                                     <TableCell>
                                                         <StatusBadge tone="gray">{humanize(card.rate_type)}</StatusBadge>
                                                     </TableCell>
-                                                    <TableCell className="font-medium">{formatMoney(card.rate, 'N$')}</TableCell>
+                                                    <TableCell className="text-right font-mono font-medium tabular-nums">{formatMoney(card.rate, 'N$')}</TableCell>
                                                     <TableCell>
                                                         <Period card={card} />
                                                     </TableCell>
@@ -191,14 +191,14 @@ function Name({ card }: { card: RateCardRow }) {
     return (
         <div>
             <strong>{card.name}</strong>
-            {card.includes_mdc && <span className="ml-1 text-xs text-blue-600 dark:text-blue-400">(incl. MDC)</span>}
+            {card.includes_mdc && <span className="ml-1 text-xs text-info">(incl. MDC)</span>}
         </div>
     );
 }
 
 function ClientCell({ card }: { card: RateCardRow }) {
     if (!card.client) {
-        return <span className="text-sm text-muted-foreground">General Rate</span>;
+        return <span className="text-sm text-muted-foreground">General rate</span>;
     }
     return (
         <div>
@@ -210,7 +210,7 @@ function ClientCell({ card }: { card: RateCardRow }) {
 
 function Period({ card }: { card: RateCardRow }) {
     return (
-        <div className="text-sm">
+        <div className="font-mono text-sm">
             <div>{card.effective_from ? formatDate(card.effective_from) : ''}</div>
             <div className="text-muted-foreground">{card.effective_to ? `to ${formatDate(card.effective_to)}` : 'No end date'}</div>
         </div>

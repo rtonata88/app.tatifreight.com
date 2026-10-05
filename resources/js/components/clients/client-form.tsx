@@ -1,5 +1,6 @@
 import { Link, useForm } from "@inertiajs/react";
 import type { FormEvent } from "react";
+import { FormActions } from "@/components/form-actions";
 import { FormField } from "@/components/form-field";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
@@ -87,9 +88,9 @@ export function ClientForm({ client }: { client?: EditableClient }) {
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Basic Information">
+            <FormSection title="Basic information">
                 <FormField
-                    label="Contact Name"
+                    label="Contact name"
                     required
                     htmlFor="name"
                     error={errors.name}
@@ -103,7 +104,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                     />
                 </FormField>
                 <FormField
-                    label="Company Name"
+                    label="Company name"
                     htmlFor="company_name"
                     error={errors.company_name}
                 >
@@ -118,7 +119,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                     />
                 </FormField>
                 <FormField
-                    label="Email Address"
+                    label="Email address"
                     required
                     htmlFor="email"
                     error={errors.email}
@@ -126,6 +127,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                     <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         value={data.email}
                         onChange={(e) => setData("email", e.target.value)}
                         placeholder={ph("client@example.com")}
@@ -133,37 +135,39 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                     />
                 </FormField>
                 <FormField
-                    label="Phone Number"
+                    label="Phone number"
                     htmlFor="phone"
                     error={errors.phone}
                 >
                     <Input
                         id="phone"
                         type="tel"
+                        autoComplete="tel"
                         value={data.phone}
                         onChange={(e) => setData("phone", e.target.value)}
-                        placeholder={ph("+27 12 345 6789")}
+                        placeholder={ph("+264 81 123 4567")}
                         aria-invalid={!!errors.phone}
                     />
                 </FormField>
                 <FormField
-                    label="Secondary Phone"
+                    label="Secondary phone"
                     htmlFor="secondary_phone"
                     error={errors.secondary_phone}
                 >
                     <Input
                         id="secondary_phone"
                         type="tel"
+                        autoComplete="tel"
                         value={data.secondary_phone}
                         onChange={(e) =>
                             setData("secondary_phone", e.target.value)
                         }
-                        placeholder={ph("+27 12 345 6789")}
+                        placeholder={ph("+264 81 123 4567")}
                         aria-invalid={!!errors.secondary_phone}
                     />
                 </FormField>
                 <FormField
-                    label="Tax Number (VAT)"
+                    label="Tax number (VAT)"
                     htmlFor="tax_number"
                     error={errors.tax_number}
                 >
@@ -177,9 +181,9 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                 </FormField>
             </FormSection>
 
-            <FormSection title="Address Information" columns={1}>
+            <FormSection title="Address information" columns={1}>
                 <FormField
-                    label="Street Address"
+                    label="Street address"
                     htmlFor="address"
                     error={errors.address}
                 >
@@ -197,7 +201,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                             id="city"
                             value={data.city}
                             onChange={(e) => setData("city", e.target.value)}
-                            placeholder={ph("Johannesburg")}
+                            placeholder={ph("Windhoek")}
                         />
                     </FormField>
                     <FormField
@@ -210,7 +214,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                             value={data.region}
                             onChange={(e) => setData("region", e.target.value)}
                         >
-                            <option value="">Select Region</option>
+                            <option value="">Select region</option>
                             {REGIONS.map((region) => (
                                 <option key={region} value={region}>
                                     {region}
@@ -219,25 +223,26 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                         </NativeSelect>
                     </FormField>
                     <FormField
-                        label="Postal Code"
+                        label="Postal code"
                         htmlFor="postal_code"
                         error={errors.postal_code}
                     >
                         <Input
                             id="postal_code"
+                            inputMode="numeric"
                             value={data.postal_code}
                             onChange={(e) =>
                                 setData("postal_code", e.target.value)
                             }
-                            placeholder={ph("2000")}
+                            placeholder={ph("10005")}
                         />
                     </FormField>
                 </div>
             </FormSection>
 
-            <FormSection title="Client Classification & Terms">
+            <FormSection title="Client classification & terms">
                 <FormField
-                    label="Client Type"
+                    label="Client type"
                     required
                     htmlFor="classification"
                     error={errors.classification}
@@ -254,14 +259,14 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                             setData("classification", e.target.value)
                         }
                     >
-                        <option value="adhoc">Ad-hoc (Pay per booking)</option>
+                        <option value="adhoc">Ad-hoc (pay per booking)</option>
                         <option value="contract">
-                            Contract (Long-term agreement)
+                            Contract (long-term agreement)
                         </option>
                     </NativeSelect>
                 </FormField>
                 <FormField
-                    label="Credit Limit (N$)"
+                    label="Credit limit (N$)"
                     htmlFor="credit_limit"
                     error={errors.credit_limit}
                     description={
@@ -274,6 +279,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                         id="credit_limit"
                         type="number"
                         step="0.01"
+                        inputMode="decimal"
                         value={data.credit_limit}
                         onChange={(e) =>
                             setData("credit_limit", e.target.value)
@@ -283,7 +289,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                     />
                 </FormField>
                 <FormField
-                    label="Payment Terms (Days)"
+                    label="Payment terms (days)"
                     required
                     htmlFor="payment_terms_days"
                     error={errors.payment_terms_days}
@@ -296,6 +302,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                     <Input
                         id="payment_terms_days"
                         type="number"
+                        inputMode="numeric"
                         value={data.payment_terms_days}
                         onChange={(e) =>
                             setData("payment_terms_days", e.target.value)
@@ -321,7 +328,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                 </FormField>
             </FormSection>
 
-            <FormSection title="Additional Notes" columns={1}>
+            <FormSection title="Additional notes" columns={1}>
                 <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                     <Textarea
                         id="notes"
@@ -335,15 +342,15 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                 </FormField>
             </FormSection>
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? "Update Client" : "Create Client"}
+                    {editing ? "Update client" : "Create client"}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

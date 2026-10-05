@@ -23,12 +23,12 @@ export type MdcRow = {
 
 export function PaymentStatusBadge({ status }: { status: string }) {
     if (status === 'paid') {
-        return <StatusBadge tone="green">✓ Paid</StatusBadge>;
+        return <StatusBadge tone="green">Paid</StatusBadge>;
     }
     if (status === 'partially_paid') {
-        return <StatusBadge tone="amber">⚠ Partial</StatusBadge>;
+        return <StatusBadge tone="amber">Partial</StatusBadge>;
     }
-    return <StatusBadge tone="red">✗ Unpaid</StatusBadge>;
+    return <StatusBadge tone="red">Unpaid</StatusBadge>;
 }
 
 /** Logbook date + route ("Windhoek → Walvis Bay"), optionally the booking number. */
@@ -43,7 +43,7 @@ export function LogbookCell({ logbook, showBooking = false }: { logbook: MdcRow[
             <div className="text-xs text-muted-foreground">
                 {logbook.origin_from} → {logbook.origin_to}
             </div>
-            {showBooking && logbook.booking_number && <div className="text-xs text-blue-600 dark:text-blue-400">Booking: {logbook.booking_number}</div>}
+            {showBooking && logbook.booking_number && <div className="text-xs text-primary">Booking: <span className="font-mono">{logbook.booking_number}</span></div>}
         </div>
     );
 }
@@ -68,7 +68,7 @@ export function VehicleCell({ vehicle }: { vehicle: MdcRow['vehicle'] }) {
 
     return (
         <div>
-            <div className="font-medium">{vehicle.reg_number}</div>
+            <div className="font-mono font-medium">{vehicle.reg_number}</div>
             {vehicle.type && <div className="text-xs text-muted-foreground">{vehicle.type}</div>}
         </div>
     );

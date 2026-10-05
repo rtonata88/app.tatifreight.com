@@ -39,7 +39,9 @@ const applyTheme = (appearance: Appearance): void => {
 
     const isDark = isDarkMode(appearance);
 
-    document.documentElement.classList.toggle('dark', isDark);
+    // Nexus themes: Slate (nx-light) for light, Ink (nx-ink) for dark.
+    document.documentElement.classList.toggle('nx-ink', isDark);
+    document.documentElement.classList.toggle('nx-light', !isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
 

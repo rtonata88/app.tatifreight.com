@@ -12,11 +12,11 @@ import { formatMoney } from '@/lib/format';
 import { store as storePayment } from '@/routes/invoices/payments';
 
 export const PAYMENT_METHODS = [
-    { value: 'bank_transfer', label: 'Bank Transfer' },
+    { value: 'bank_transfer', label: 'Bank transfer' },
     { value: 'cash', label: 'Cash' },
     { value: 'cheque', label: 'Cheque' },
     { value: 'eft', label: 'EFT' },
-    { value: 'card', label: 'Credit/Debit Card' },
+    { value: 'card', label: 'Credit/debit card' },
 ];
 
 type Props = {
@@ -73,16 +73,17 @@ export function RecordPaymentDialog({ invoiceId, amountDue, today, open, onOpenC
             <DialogContent>
                 <form onSubmit={submit} className="space-y-6">
                     <DialogHeader>
-                        <DialogTitle>Record Payment</DialogTitle>
+                        <DialogTitle>Record payment</DialogTitle>
                     </DialogHeader>
 
                     <div className="space-y-4">
-                        <FormField label="Payment Amount (R)" required htmlFor="paymentAmount" error={errors.paymentAmount} description={`Maximum: ${formatMoney(amountDue, 'N$')}`}>
+                        <FormField label="Payment amount (N$)" required htmlFor="paymentAmount" error={errors.paymentAmount} description={`Maximum: ${formatMoney(amountDue, 'N$')}`}>
                             <Input
                                 id="paymentAmount"
                                 type="number"
                                 step="0.01"
                                 min="0.01"
+                                inputMode="decimal"
                                 max={amountDue}
                                 value={data.paymentAmount}
                                 onChange={(e) => setData('paymentAmount', e.target.value)}
@@ -90,11 +91,11 @@ export function RecordPaymentDialog({ invoiceId, amountDue, today, open, onOpenC
                             />
                         </FormField>
 
-                        <FormField label="Payment Date" required htmlFor="paymentDate" error={errors.paymentDate}>
+                        <FormField label="Payment date" required htmlFor="paymentDate" error={errors.paymentDate}>
                             <Input id="paymentDate" type="date" value={data.paymentDate} onChange={(e) => setData('paymentDate', e.target.value)} aria-invalid={!!errors.paymentDate} />
                         </FormField>
 
-                        <FormField label="Payment Method" required htmlFor="paymentMethod" error={errors.paymentMethod}>
+                        <FormField label="Payment method" required htmlFor="paymentMethod" error={errors.paymentMethod}>
                             <NativeSelect id="paymentMethod" value={data.paymentMethod} onChange={(e) => setData('paymentMethod', e.target.value)}>
                                 {PAYMENT_METHODS.map((method) => (
                                     <option key={method.value} value={method.value}>
@@ -104,7 +105,7 @@ export function RecordPaymentDialog({ invoiceId, amountDue, today, open, onOpenC
                             </NativeSelect>
                         </FormField>
 
-                        <FormField label="Transaction Reference" htmlFor="transactionReference" error={errors.transactionReference}>
+                        <FormField label="Transaction reference" htmlFor="transactionReference" error={errors.transactionReference}>
                             <Input
                                 id="transactionReference"
                                 value={data.transactionReference}

@@ -1,13 +1,24 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
+import { Ellipsis, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
+import { useState } from 'react';
 import { RoleBadge } from '@/components/admin/role-badge';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataPagination } from '@/components/data-pagination';
 import { EmptyState } from '@/components/empty-state';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -38,16 +49,28 @@ export default function UsersIndex({ users, filters: initialFilters }: Props) {
 
     const deleteUser = (user: UserRow, done: () => void) => router.delete(destroy(user.id).url, { preserveScroll: true, onFinish: done });
 
+    // Phones: delete lives in the card's overflow menu, so the confirm dialog is page-level.
+    const [deleting, setDeleting] = useState<UserRow | null>(null);
+    const [processing, setProcessing] = useState(false);
+    const confirmDelete = () => {
+        if (!deleting) return;
+        setProcessing(true);
+        deleteUser(deleting, () => {
+            setProcessing(false);
+            setDeleting(null);
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="User Management" />
+            <Head title="User management" />
             <PageContainer>
                 <PageHeader
-                    title="User Management"
+                    title="User management"
                     actions={
                         <Button asChild>
                             <Link href={create()}>
-                                <Plus /> Add User
+                                <Plus /> Add user
                             </Link>
                         </Button>
                     }
@@ -66,7 +89,7 @@ export default function UsersIndex({ users, filters: initialFilters }: Props) {
                                 />
                             </div>
                             <NativeSelect value={filters.role} onChange={(e) => setFilter('role', e.target.value)} aria-label="Filter by role">
-                                <option value="">All Roles</option>
+                                <option value="">All roles</option>
                                 <option value="admin">Admin</option>
                                 <option value="manager">Manager</option>
                                 <option value="dispatcher">Dispatcher</option>
@@ -89,10 +112,28 @@ export default function UsersIndex({ users, filters: initialFilters }: Props) {
                                             </div>
                                             <div className="flex items-center justify-between gap-2 border-t pt-3">
                                                 <Roles roles={user.roles} />
-                                                <span className="text-sm text-muted-foreground">{formatDate(user.created_at)}</span>
+                                                <span className="font-mono text-sm text-muted-foreground">{formatDate(user.created_at)}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-2 border-t pt-3">
-                                                <RowActions user={user} onDelete={deleteUser} stretch />
+                                            <div className="flex gap-2 border-t pt-3">
+                                                <Button asChild variant="outline" className="flex-1">
+                                                    <Link href={edit(user.id)}>
+                                                        <Pencil /> Edit
+                                                    </Link>
+                                                </Button>
+                                                {!user.is_self && (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button size="icon" variant="ghost" aria-label={`More actions for ${user.name}`}>
+                                                                <Ellipsis />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="min-w-40">
+                                                            <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(user)}>
+                                                                <Trash2 /> Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -118,7 +159,7 @@ export default function UsersIndex({ users, filters: initialFilters }: Props) {
                                                     <TableCell>
                                                         <Roles roles={user.roles} />
                                                     </TableCell>
-                                                    <TableCell className="text-sm text-muted-foreground">{formatDate(user.created_at)}</TableCell>
+                                                    <TableCell className="font-mono text-sm text-muted-foreground">{formatDate(user.created_at)}</TableCell>
                                                     <TableCell>
                                                         <div className="flex justify-end gap-1">
                                                             <RowActions user={user} onDelete={deleteUser} />
@@ -135,6 +176,21 @@ export default function UsersIndex({ users, filters: initialFilters }: Props) {
                         <DataPagination paginator={users} />
                     </CardContent>
                 </Card>
+
+                <AlertDialog open={deleting !== null} onOpenChange={(open) => !open && !processing && setDeleting(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>Are you sure you want to delete this user?</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
+                            <Button variant="destructive" disabled={processing} onClick={confirmDelete}>
+                                Delete
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </PageContainer>
         </AppLayout>
     );
@@ -154,12 +210,10 @@ function Roles({ roles }: { roles: string[] }) {
     );
 }
 
-function RowActions({ user, onDelete, stretch = false }: { user: UserRow; onDelete: (user: UserRow, done: () => void) => void; stretch?: boolean }) {
-    const className = stretch ? 'flex-1' : undefined;
-
+function RowActions({ user, onDelete }: { user: UserRow; onDelete: (user: UserRow, done: () => void) => void }) {
     return (
         <>
-            <Button asChild size="sm" variant="ghost" className={className}>
+            <Button asChild size="sm" variant="ghost">
                 <Link href={edit(user.id)}>
                     <Pencil /> Edit
                 </Link>
@@ -167,7 +221,7 @@ function RowActions({ user, onDelete, stretch = false }: { user: UserRow; onDele
             {!user.is_self && (
                 <ConfirmDialog
                     trigger={
-                        <Button size="sm" variant="destructive" className={className}>
+                        <Button size="sm" variant="destructive">
                             <Trash2 /> Delete
                         </Button>
                     }

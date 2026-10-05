@@ -31,23 +31,23 @@ export default function BookingsEdit({ clients, vehicles, drivers, booking }: Pr
     ];
 
     const timestamps = [
-        { label: 'Confirmed At', value: booking.confirmed_at },
-        { label: 'Started At', value: booking.started_at },
-        { label: 'Completed At', value: booking.completed_at },
-        { label: 'Cancelled At', value: booking.cancelled_at },
+        { label: 'Confirmed at', value: booking.confirmed_at },
+        { label: 'Started at', value: booking.started_at },
+        { label: 'Completed at', value: booking.completed_at },
+        { label: 'Cancelled at', value: booking.cancelled_at },
     ].filter((item) => item.value);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit Booking: ${booking.booking_number}`} />
+            <Head title={`Edit booking: ${booking.booking_number}`} />
             <PageContainer>
                 <PageHeader
-                    title={`Edit Booking: ${booking.booking_number}`}
+                    title={`Edit booking: ${booking.booking_number}`}
                     actions={<StatusBadge tone={bookingStatusTone[booking.status] ?? 'gray'}>{humanize(booking.status)}</StatusBadge>}
                 />
                 <BookingForm clients={clients} vehicles={vehicles} drivers={drivers} booking={booking}>
                     {timestamps.length > 0 && (
-                        <FormSection title="Status Timestamps">
+                        <FormSection title="Status timestamps">
                             {timestamps.map((item) => (
                                 <div key={item.label}>
                                     <p className="text-sm font-medium">{item.label}</p>

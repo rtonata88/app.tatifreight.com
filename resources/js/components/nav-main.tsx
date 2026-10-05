@@ -10,7 +10,11 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { toUrl } from '@/lib/utils';
 import type { NavGroup, NavItem } from '@/types';
 
-function useIsActive() {
+/* A Nexus rail row: flush to the rail edge, 2px accent bar and accent wash when active. */
+const ROW =
+    'h-auto rounded-none border-l-2 border-transparent px-[18px] py-3 md:py-2 text-body font-medium text-sidebar-foreground data-[active=true]:border-primary data-[active=true]:bg-sidebar-accent data-[active=true]:font-semibold [&>svg]:opacity-70 data-[active=true]:[&>svg]:opacity-100';
+
+export function useIsActive() {
     const { currentUrl, isCurrentUrl } = useCurrentUrl();
 
     return (item: NavItem) =>
@@ -22,14 +26,18 @@ export function NavMain({ items = [], title = 'Platform' }: { items: NavItem[]; 
     const isActive = useIsActive();
 
     return (
-        <SidebarGroup className="px-2 py-0">
-            {title && <SidebarGroupLabel>{title}</SidebarGroupLabel>}
-            <SidebarMenu>
+        <SidebarGroup className="px-0 py-2">
+            {title && (
+                <SidebarGroupLabel className="h-auto rounded-none px-5 pb-2 text-[10px] font-semibold tracking-label text-muted-foreground uppercase">
+                    {title}
+                </SidebarGroupLabel>
+            )}
+            <SidebarMenu className="gap-0">
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild isActive={isActive(item)} tooltip={{ children: item.title }}>
+                        <SidebarMenuButton asChild isActive={isActive(item)} tooltip={{ children: item.title }} className={ROW}>
                             <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
+                                {item.icon && <item.icon strokeWidth={1.6} />}
                                 <span>{item.title}</span>
                             </Link>
                         </SidebarMenuButton>

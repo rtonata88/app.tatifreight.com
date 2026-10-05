@@ -1,5 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { Button } from '@/components/ui/button';
@@ -83,9 +84,9 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Rate Card Details">
+            <FormSection title="Rate card details">
                 <FormField
-                    label="Rate Card Name"
+                    label="Rate card name"
                     required
                     htmlFor="name"
                     error={errors.name}
@@ -101,7 +102,7 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
                     />
                 </FormField>
 
-                <FormField label="Vehicle Type" required htmlFor="vehicle_type_id" error={errors.vehicle_type_id}>
+                <FormField label="Vehicle type" required htmlFor="vehicle_type_id" error={errors.vehicle_type_id}>
                     <NativeSelect id="vehicle_type_id" value={data.vehicle_type_id} onChange={(e) => setData('vehicle_type_id', e.target.value)} aria-invalid={!!errors.vehicle_type_id}>
                         <option value="">Select vehicle type</option>
                         {vehicleTypes.map((t) => (
@@ -113,13 +114,13 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
                 </FormField>
 
                 <FormField
-                    label="Client (Optional)"
+                    label="Client (optional)"
                     htmlFor="client_id"
                     error={errors.client_id}
                     description={editing ? 'Client-specific rate or general rate' : 'Leave blank for general rate, or select a client for custom pricing'}
                 >
                     <NativeSelect id="client_id" value={data.client_id} onChange={(e) => setData('client_id', e.target.value)} aria-invalid={!!errors.client_id}>
-                        <option value="">General Rate (all clients)</option>
+                        <option value="">General rate (all clients)</option>
                         {clients.map((c) => (
                             <option key={c.value} value={c.value}>
                                 {c.label}
@@ -130,23 +131,24 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
             </FormSection>
 
             <FormSection title="Pricing">
-                <FormField label="Rate Type" required htmlFor="rate_type" error={errors.rate_type}>
+                <FormField label="Rate type" required htmlFor="rate_type" error={errors.rate_type}>
                     <NativeSelect id="rate_type" value={data.rate_type} onChange={(e) => setData('rate_type', e.target.value)} aria-invalid={!!errors.rate_type}>
                         <option value="">Select rate type</option>
-                        <option value="hourly">Hourly Rate</option>
-                        <option value="daily">Daily Rate</option>
-                        <option value="per_km">Per Kilometer</option>
-                        <option value="tonnage">Per Ton</option>
-                        <option value="load_specific">Load Specific</option>
+                        <option value="hourly">Hourly rate</option>
+                        <option value="daily">Daily rate</option>
+                        <option value="per_km">Per kilometer</option>
+                        <option value="tonnage">Per ton</option>
+                        <option value="load_specific">Load specific</option>
                     </NativeSelect>
                 </FormField>
 
-                <FormField label="Rate (R)" required htmlFor="rate" error={errors.rate}>
+                <FormField label="Rate (N$)" required htmlFor="rate" error={errors.rate}>
                     <Input
                         id="rate"
                         type="number"
                         step="0.01"
                         min="0.01"
+                        inputMode="decimal"
                         placeholder={editing ? undefined : '0.00'}
                         value={data.rate}
                         onChange={(e) => setData('rate', e.target.value)}
@@ -156,7 +158,7 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
 
                 <CheckboxField
                     id="includes_mdc"
-                    label="Rate includes MDC (Mass Distance Charge)"
+                    label="Rate includes MDC (mass distance charge)"
                     checked={data.includes_mdc}
                     onChange={(checked) => setData('includes_mdc', checked)}
                     error={errors.includes_mdc}
@@ -164,12 +166,12 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
                 />
             </FormSection>
 
-            <FormSection title="Effective Period">
-                <FormField label="Effective From" required htmlFor="effective_from" error={errors.effective_from} description={editing ? undefined : 'When this rate becomes active'}>
+            <FormSection title="Effective period">
+                <FormField label="Effective from" required htmlFor="effective_from" error={errors.effective_from} description={editing ? undefined : 'When this rate becomes active'}>
                     <Input id="effective_from" type="date" value={data.effective_from} onChange={(e) => setData('effective_from', e.target.value)} aria-invalid={!!errors.effective_from} />
                 </FormField>
 
-                <FormField label="Effective To" htmlFor="effective_to" error={errors.effective_to} description="Leave blank for no end date">
+                <FormField label="Effective to" htmlFor="effective_to" error={errors.effective_to} description="Leave blank for no end date">
                     <Input id="effective_to" type="date" value={data.effective_to} onChange={(e) => setData('effective_to', e.target.value)} aria-invalid={!!errors.effective_to} />
                 </FormField>
 
@@ -183,7 +185,7 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
                 />
             </FormSection>
 
-            <FormSection title="Additional Notes" columns={1}>
+            <FormSection title="Additional notes" columns={1}>
                 <FormField label="Notes" htmlFor="notes" error={errors.notes}>
                     <Textarea
                         id="notes"
@@ -196,27 +198,27 @@ export function RateCardForm({ vehicleTypes, clients, rateCard, defaultEffective
             </FormSection>
 
             {rateCard?.created_at && (
-                <FormSection title="Audit Trail">
+                <FormSection title="Audit trail">
                     <div>
                         <p className="text-sm text-muted-foreground">Created</p>
-                        <p className="text-sm font-medium">{dateTimeComma(rateCard.created_at)}</p>
+                        <p className="font-mono text-sm font-medium">{dateTimeComma(rateCard.created_at)}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Last Updated</p>
-                        <p className="text-sm font-medium">{dateTimeComma(rateCard.updated_at)}</p>
+                        <p className="text-sm text-muted-foreground">Last updated</p>
+                        <p className="font-mono text-sm font-medium">{dateTimeComma(rateCard.updated_at)}</p>
                     </div>
                 </FormSection>
             )}
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {editing ? 'Update Rate Card' : 'Create Rate Card'}
+                    {editing ? 'Update rate card' : 'Create rate card'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

@@ -14,7 +14,7 @@ export default function Register() {
     return (
         <AuthLayout
             title="Create an account"
-            description="Enter your details below to create your account"
+            description="Enter your details below to create your account."
         >
             <Head title="Register" />
             <Form
@@ -90,6 +90,7 @@ export default function Register() {
 
                             <Button
                                 type="submit"
+                                size="lg"
                                 className="mt-2 w-full"
                                 tabIndex={5}
                                 data-test="register-user-button"

@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\CompanySetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -40,6 +42,15 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            // The wordmark in the rail and on the sign-in screens: the uploaded logo, else the name.
+            'company' => function () {
+                $settings = CompanySetting::first();
+
+                return [
+                    'name' => $settings?->company_name ?: config('app.name'),
+                    'logo_url' => $settings?->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
+                ];
+            },
             'auth' => [
                 'user' => $user,
                 // Permission and role names drive what the sidebar and pages show.

@@ -1,8 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, Banknote, BarChart3, Calendar, ClipboardList, DollarSign, FileText, MapPin, MoreHorizontal, Search } from 'lucide-react';
+import { Banknote, BarChart3, FileText, MapPin, MoreHorizontal, Search } from 'lucide-react';
 import { DataPagination } from '@/components/data-pagination';
 import { ClientCell, DistanceCell, LogbookCell, PaymentStatusBadge, VehicleCell, type MdcRow } from '@/components/mdc/mdc-shared';
 import { FormField } from '@/components/form-field';
+import { Notice } from '@/components/notice';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
@@ -37,7 +38,7 @@ type Props = {
     };
 };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'MDC Charges', href: index() }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'MDC charges', href: index() }];
 
 const emptyMessage = 'No MDC calculations found for the selected period.';
 
@@ -47,44 +48,46 @@ export default function MdcIndex({ mdcCalculations, vehicles, can, filters: init
     // removes the date filter instead of falling back to the current month (as Livewire did).
     const setDate = (key: 'date_from' | 'date_to', value: string) => setFilters((current) => ({ ...current, [key]: value, range: 'custom' }));
 
-    const level = stats.total_accumulated > 50000 ? 'red' : stats.total_accumulated > 25000 ? 'orange' : 'yellow';
-    const alertClasses = {
-        red: 'border-red-500 bg-red-50 text-red-800 dark:bg-red-500/10 dark:text-red-300',
-        orange: 'border-orange-500 bg-orange-50 text-orange-800 dark:bg-orange-500/10 dark:text-orange-300',
-        yellow: 'border-yellow-500 bg-yellow-50 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300',
-    }[level];
-    const alertIconClasses = { red: 'text-red-400', orange: 'text-orange-400', yellow: 'text-yellow-400' }[level];
+    // Above N$50,000 the reminder reads as an error; below that it is a warning.
+    const alertTone = stats.total_accumulated > 50000 ? 'error' : 'warning';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="MDC Charges" />
+            <Head title="MDC charges" />
             <PageContainer>
                 <PageHeader
-                    title="MDC Charges"
+                    title="MDC charges"
                     actions={
                         <>
                             <div className="hidden gap-2 md:flex">
                                 {can.recordPayment && (
                                     <Button asChild>
                                         <Link href={recordPayment()}>
-                                            <Banknote /> Record Payment
+                                            <Banknote /> Record payment
                                         </Link>
                                     </Button>
                                 )}
                                 <Button asChild variant="ghost">
                                     <Link href={payments()}>
-                                        <FileText /> Payment History
+                                        <FileText /> Payment history
                                     </Link>
                                 </Button>
                                 {can.viewReport && (
                                     <Button asChild variant="ghost">
                                         <Link href={mdcReport()}>
-                                            <BarChart3 /> View Report
+                                            <BarChart3 /> View report
                                         </Link>
                                     </Button>
                                 )}
                             </div>
-                            <div className="md:hidden">
+                            <div className="flex gap-2 md:hidden">
+                                {can.recordPayment && (
+                                    <Button asChild>
+                                        <Link href={recordPayment()}>
+                                            <Banknote /> Record payment
+                                        </Link>
+                                    </Button>
+                                )}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" aria-label="Actions">
@@ -92,22 +95,15 @@ export default function MdcIndex({ mdcCalculations, vehicles, can, filters: init
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="min-w-40">
-                                        {can.recordPayment && (
-                                            <DropdownMenuItem asChild>
-                                                <Link href={recordPayment()}>
-                                                    <Banknote /> Record Payment
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        )}
                                         <DropdownMenuItem asChild>
                                             <Link href={payments()}>
-                                                <FileText /> Payment History
+                                                <FileText /> Payment history
                                             </Link>
                                         </DropdownMenuItem>
                                         {can.viewReport && (
                                             <DropdownMenuItem asChild>
                                                 <Link href={mdcReport()}>
-                                                    <BarChart3 /> View Report
+                                                    <BarChart3 /> View report
                                                 </Link>
                                             </DropdownMenuItem>
                                         )}
@@ -118,51 +114,38 @@ export default function MdcIndex({ mdcCalculations, vehicles, can, filters: init
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-4">
                     <StatCard
-                        label="Total Accumulated"
+                        label="Total accumulated"
                         value={formatMoney(stats.total_accumulated)}
                         hint="Owed to RFANAM"
-                        icon={DollarSign}
-                        valueClassName="text-red-700 dark:text-red-400"
+                        tone="negative"
+                        emphasis
                     />
+                    <StatCard label="This month" value={formatMoney(stats.this_month)} hint="Current period" />
                     <StatCard
-                        label="This Month"
-                        value={formatMoney(stats.this_month)}
-                        hint="Current period"
-                        icon={Calendar}
-                        valueClassName="text-blue-700 dark:text-blue-400"
-                    />
-                    <StatCard
-                        label="Total Calculations"
+                        label="Total calculations"
                         value={stats.total_count}
                         hint={`Avg: ${formatMoney(stats.average_per_calculation)}`}
-                        icon={ClipboardList}
-                        valueClassName="text-purple-700 dark:text-purple-400"
                     />
                     <StatCard
-                        label="Total Distance"
+                        label="Total distance"
                         value={`${formatNumber(stats.total_distance)} km`}
                         hint={`${formatNumber(stats.total_mass / 1000, 1)}t total mass`}
-                        icon={MapPin}
-                        valueClassName="text-green-700 dark:text-green-400"
                     />
                 </div>
 
                 {stats.total_accumulated > 10000 && (
-                    <div className={cn('flex gap-3 rounded-lg border-l-4 p-4', alertClasses)}>
-                        <AlertTriangle className={cn('size-5 shrink-0', alertIconClasses)} />
-                        <p className="text-sm font-medium">
-                            <strong>Attention:</strong> You have accumulated {formatMoney(stats.total_accumulated)} in MDC charges. Consider making a payment to
-                            RFANAM to avoid large outstanding balances.
-                        </p>
-                    </div>
+                    <Notice tone={alertTone} title="Attention">
+                        You have accumulated <span className="font-mono tabular-nums">{formatMoney(stats.total_accumulated)}</span> in MDC charges. Consider
+                        making a payment to RFANAM to avoid large outstanding balances.
+                    </Notice>
                 )}
 
                 <Card>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                            <FormField label="Search" htmlFor="search">
+                        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                            <FormField label="Search" htmlFor="search" className="col-span-2 md:col-span-1">
                                 <div className="relative">
                                     <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
@@ -174,15 +157,15 @@ export default function MdcIndex({ mdcCalculations, vehicles, can, filters: init
                                     />
                                 </div>
                             </FormField>
-                            <FormField label="From Date" htmlFor="date_from">
+                            <FormField label="From date" htmlFor="date_from">
                                 <Input id="date_from" type="date" value={filters.date_from} onChange={(e) => setDate('date_from', e.target.value)} />
                             </FormField>
-                            <FormField label="To Date" htmlFor="date_to">
+                            <FormField label="To date" htmlFor="date_to">
                                 <Input id="date_to" type="date" value={filters.date_to} onChange={(e) => setDate('date_to', e.target.value)} />
                             </FormField>
-                            <FormField label="Vehicle" htmlFor="vehicle">
+                            <FormField label="Vehicle" htmlFor="vehicle" className="col-span-2 md:col-span-1">
                                 <NativeSelect id="vehicle" value={filters.vehicle} onChange={(e) => setFilter('vehicle', e.target.value)}>
-                                    <option value="">All Vehicles</option>
+                                    <option value="">All vehicles</option>
                                     {vehicles.map((vehicle) => (
                                         <option key={vehicle.value} value={vehicle.value}>
                                             {vehicle.label}
@@ -207,13 +190,13 @@ export default function MdcIndex({ mdcCalculations, vehicles, can, filters: init
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Date</TableHead>
-                                        <TableHead>Logbook Entry</TableHead>
+                                        <TableHead>Logbook entry</TableHead>
                                         <TableHead>Client</TableHead>
                                         <TableHead>Vehicle</TableHead>
                                         <TableHead>Distance</TableHead>
-                                        <TableHead>MDC Amount</TableHead>
-                                        <TableHead>Paid</TableHead>
-                                        <TableHead>Outstanding</TableHead>
+                                        <TableHead className="text-right">MDC amount</TableHead>
+                                        <TableHead className="text-right">Paid</TableHead>
+                                        <TableHead className="text-right">Outstanding</TableHead>
                                         <TableHead>Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -240,17 +223,17 @@ export default function MdcIndex({ mdcCalculations, vehicles, can, filters: init
                                                 <TableCell>
                                                     <DistanceCell row={mdc} />
                                                 </TableCell>
-                                                <TableCell className="font-bold">{formatMoney(mdc.mdc_amount)}</TableCell>
-                                                <TableCell>
-                                                    <span className={cn('text-sm', mdc.amount_paid > 0 ? 'font-medium text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+                                                <TableCell className="text-right font-mono font-bold tabular-nums">{formatMoney(mdc.mdc_amount)}</TableCell>
+                                                <TableCell className="text-right font-mono tabular-nums">
+                                                    <span className={cn('text-sm', mdc.amount_paid > 0 ? 'font-medium text-success' : 'text-muted-foreground')}>
                                                         {formatMoney(mdc.amount_paid)}
                                                     </span>
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="text-right font-mono tabular-nums">
                                                     <span
                                                         className={cn(
                                                             'text-sm',
-                                                            mdc.outstanding_amount > 0 ? 'font-medium text-amber-700 dark:text-amber-400' : 'text-muted-foreground',
+                                                            mdc.outstanding_amount > 0 ? 'font-medium text-warning' : 'text-muted-foreground',
                                                         )}
                                                     >
                                                         {formatMoney(mdc.outstanding_amount)}
@@ -283,8 +266,8 @@ function MdcCard({ mdc }: { mdc: MdcRow }) {
                     {mdc.logbook && <div className="text-sm text-muted-foreground">{formatDate(mdc.logbook.date)}</div>}
                 </div>
                 <div className="text-right">
-                    <div className="text-sm text-muted-foreground">MDC Amount</div>
-                    <div className="text-xl font-bold text-red-700 dark:text-red-400">{formatMoney(mdc.mdc_amount)}</div>
+                    <div className="text-sm text-muted-foreground">MDC amount</div>
+                    <div className="font-mono text-xl font-bold text-destructive tabular-nums">{formatMoney(mdc.mdc_amount)}</div>
                 </div>
             </div>
 
@@ -320,7 +303,7 @@ function MdcCard({ mdc }: { mdc: MdcRow }) {
                 </div>
                 <div>
                     <div className="text-xs text-muted-foreground">Paid</div>
-                    <div className={cn('font-medium', mdc.amount_paid > 0 ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+                    <div className={cn('font-mono font-medium tabular-nums', mdc.amount_paid > 0 ? 'text-success' : 'text-muted-foreground')}>
                         {formatMoney(mdc.amount_paid)}
                     </div>
                 </div>
@@ -329,7 +312,7 @@ function MdcCard({ mdc }: { mdc: MdcRow }) {
             {mdc.outstanding_amount > 0 && (
                 <div className="flex items-center justify-between border-t pt-3">
                     <span className="text-sm text-muted-foreground">Outstanding</span>
-                    <span className="text-lg font-bold text-amber-700 dark:text-amber-400">{formatMoney(mdc.outstanding_amount)}</span>
+                    <span className="font-mono text-lg font-bold text-warning tabular-nums">{formatMoney(mdc.outstanding_amount)}</span>
                 </div>
             )}
         </div>

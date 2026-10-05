@@ -1,0 +1,34 @@
+/* ==========================================================================
+   Nexus Design System — spacing + layout
+   ERP density: tighter than a marketing surface, still generous for a table app.
+   ========================================================================== */
+
+:root {
+    --nx-s-1:  4px;
+    --nx-s-2:  8px;
+    --nx-s-3:  12px;
+    --nx-s-4:  16px;
+    --nx-s-5:  20px;
+    --nx-s-6:  24px;
+    --nx-s-7:  32px;
+    --nx-s-8:  40px;
+    --nx-s-9:  56px;
+    --nx-s-10: 80px;
+
+    --nx-card-pad:     24px;   /* card padding */
+    --nx-card-pad-lg:  32px;   /* dossier / document card */
+    --nx-gutter:       32px;   /* page gutter */
+    --nx-section-gap:  32px;   /* between page sections */
+
+    --nx-row-h:      36px;   /* table row — more rows per screen */
+    --nx-row-h-sm:   30px;   /* dense table row */
+    --nx-control-h:  36px;   /* input, select, button */
+    --nx-control-h-sm: 28px;
+    --nx-control-h-lg: 44px;
+
+    --nx-rail:         248px;  /* sidebar, expanded */
+    --nx-rail-collapsed: 64px;
+    --nx-topbar:       56px;
+    --nx-page-max:     1440px;
+    --nx-doc-max:      760px;  /* printed document column */
+}

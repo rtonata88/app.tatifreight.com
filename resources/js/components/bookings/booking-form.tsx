@@ -1,6 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { Button } from '@/components/ui/button';
@@ -112,7 +113,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <FormSection title="Client & Vehicle Selection">
+            <FormSection title="Client & vehicle selection">
                 <FormField label="Client" required htmlFor="client_id" error={errors.client_id}>
                     <NativeSelect
                         id="client_id"
@@ -153,7 +154,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 </FormField>
 
                 <FormField
-                    label="Assign Driver"
+                    label="Assign driver"
                     htmlFor="driver_id"
                     error={errors.driver_id}
                     description={booking ? undefined : 'You can assign a driver now or later'}
@@ -174,7 +175,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 </FormField>
 
                 {booking && (
-                    <FormField label="Booking Status" required htmlFor="status" error={errors.status}>
+                    <FormField label="Booking status" required htmlFor="status" error={errors.status}>
                         <NativeSelect
                             id="status"
                             value={data.status}
@@ -183,7 +184,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                         >
                             <option value="pending">Pending</option>
                             <option value="confirmed">Confirmed</option>
-                            <option value="in_progress">In Progress</option>
+                            <option value="in_progress">In progress</option>
                             <option value="completed">Completed</option>
                             <option value="cancelled">Cancelled</option>
                         </NativeSelect>
@@ -191,8 +192,8 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 )}
             </FormSection>
 
-            <FormSection title="Booking Dates">
-                <FormField label="Start Date & Time" required htmlFor="start_date" error={errors.start_date}>
+            <FormSection title="Booking dates">
+                <FormField label="Start date & time" required htmlFor="start_date" error={errors.start_date}>
                     <Input
                         id="start_date"
                         type="datetime-local"
@@ -201,7 +202,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                         aria-invalid={!!errors.start_date}
                     />
                 </FormField>
-                <FormField label="End Date & Time" required htmlFor="end_date" error={errors.end_date}>
+                <FormField label="End date & time" required htmlFor="end_date" error={errors.end_date}>
                     <Input
                         id="end_date"
                         type="datetime-local"
@@ -211,7 +212,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                     />
                 </FormField>
 
-                <FormField label="Recurring Booking" error={errors.is_recurring} className="md:col-span-2">
+                <FormField label="Recurring booking" error={errors.is_recurring} className="md:col-span-2">
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id="is_recurring"
@@ -225,7 +226,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 </FormField>
 
                 {data.is_recurring && (
-                    <FormField label="Recurring Frequency" htmlFor="recurring_frequency" error={errors.recurring_frequency} className="md:col-span-2">
+                    <FormField label="Recurring frequency" htmlFor="recurring_frequency" error={errors.recurring_frequency} className="md:col-span-2">
                         <NativeSelect
                             id="recurring_frequency"
                             value={data.recurring_frequency}
@@ -240,8 +241,8 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 )}
             </FormSection>
 
-            <FormSection title="Trip Details">
-                <FormField label="Pickup Location" htmlFor="pickup_location" error={errors.pickup_location} className="md:col-span-2">
+            <FormSection title="Trip details">
+                <FormField label="Pickup location" htmlFor="pickup_location" error={errors.pickup_location} className="md:col-span-2">
                     <Input
                         id="pickup_location"
                         value={data.pickup_location}
@@ -250,7 +251,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                         aria-invalid={!!errors.pickup_location}
                     />
                 </FormField>
-                <FormField label="Delivery Location" htmlFor="delivery_location" error={errors.delivery_location} className="md:col-span-2">
+                <FormField label="Delivery location" htmlFor="delivery_location" error={errors.delivery_location} className="md:col-span-2">
                     <Input
                         id="delivery_location"
                         value={data.delivery_location}
@@ -264,6 +265,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                         id="distance_km"
                         type="number"
                         step="0.01"
+                        inputMode="decimal"
                         value={data.distance_km}
                         onChange={(e) => setData('distance_km', e.target.value)}
                         placeholder="0.00"
@@ -271,7 +273,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                     />
                 </FormField>
                 <FormField
-                    label="Load Weight (tons)"
+                    label="Load weight (tons)"
                     htmlFor="load_weight"
                     error={errors.load_weight}
                     description="Weight of cargo to be transported"
@@ -280,6 +282,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                         id="load_weight"
                         type="number"
                         step="0.01"
+                        inputMode="decimal"
                         value={data.load_weight}
                         onChange={(e) => setData('load_weight', e.target.value)}
                         placeholder="0.00"
@@ -290,12 +293,12 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 {data.vehicle_id && data.distance_km && data.load_weight && (
                     <div className="flex items-center gap-2 md:col-span-2">
                         <Button type="button" variant="ghost" size="sm" onClick={calculateEstimatedMdc}>
-                            Calculate Estimated MDC
+                            Calculate estimated MDC
                         </Button>
                     </div>
                 )}
 
-                <FormField label="Cargo Description" htmlFor="cargo_description" error={errors.cargo_description} className="md:col-span-2">
+                <FormField label="Cargo description" htmlFor="cargo_description" error={errors.cargo_description} className="md:col-span-2">
                     <Textarea
                         id="cargo_description"
                         rows={3}
@@ -306,8 +309,8 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                 </FormField>
             </FormSection>
 
-            <FormSection title="Additional Information" columns={1}>
-                <FormField label="Special Instructions" htmlFor="special_instructions" error={errors.special_instructions}>
+            <FormSection title="Additional information" columns={1}>
+                <FormField label="Special instructions" htmlFor="special_instructions" error={errors.special_instructions}>
                     <Textarea
                         id="special_instructions"
                         rows={3}
@@ -316,7 +319,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
                         placeholder="Any special handling instructions or requirements..."
                     />
                 </FormField>
-                <FormField label="Internal Notes" htmlFor="notes" error={errors.notes}>
+                <FormField label="Internal notes" htmlFor="notes" error={errors.notes}>
                     <Textarea
                         id="notes"
                         rows={3}
@@ -329,15 +332,15 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
 
             {children}
 
-            <div className="flex gap-3">
+            <FormActions>
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {booking ? 'Update Booking' : 'Create Booking'}
+                    {booking ? 'Update booking' : 'Create booking'}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>
                 </Button>
-            </div>
+            </FormActions>
         </form>
     );
 }

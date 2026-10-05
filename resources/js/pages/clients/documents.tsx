@@ -77,28 +77,28 @@ export default function ClientDocuments({ client, documents, can }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Client Documents - ${displayName}`} />
+            <Head title={`Client documents - ${displayName}`} />
             <PageContainer>
                 <PageHeader
-                    title="Client Documents"
+                    title="Client documents"
                     description={displayName}
                     actions={
                         <>
                             <Button asChild variant="ghost">
                                 <Link href={index()}>
-                                    <ArrowLeft /> Back to Clients
+                                    <ArrowLeft /> Back to clients
                                 </Link>
                             </Button>
                             {can.create && (
                                 <Button onClick={() => setUploadOpen(true)}>
-                                    <Upload /> Upload Document
+                                    <Upload /> Upload document
                                 </Button>
                             )}
                         </>
                     }
                 />
 
-                <Card className="bg-blue-50 dark:bg-blue-500/10">
+                <Card>
                     <CardContent className="flex items-center gap-4">
                         <div className="min-w-0 flex-1">
                             <div className="font-semibold">{displayName}</div>
@@ -119,7 +119,7 @@ export default function ClientDocuments({ client, documents, can }: Props) {
                             <EmptyState
                                 icon={FolderOpen}
                                 title="No documents uploaded yet."
-                                description='Click "Upload Document" to add documents for this client.'
+                                description='Use "Upload document" to add documents for this client.'
                             />
                         ) : (
                             <>
@@ -172,7 +172,7 @@ export default function ClientDocuments({ client, documents, can }: Props) {
                                             <TableRow>
                                                 <TableHead>Document</TableHead>
                                                 <TableHead>Category</TableHead>
-                                                <TableHead>File Info</TableHead>
+                                                <TableHead>File info</TableHead>
                                                 <TableHead>Uploaded</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -271,7 +271,7 @@ function FileInfo({ document }: { document: DocumentRow }) {
 function Uploaded({ document }: { document: DocumentRow }) {
     return (
         <div className="text-sm">
-            <div>{formatDate(document.created_at)}</div>
+            <div className="font-mono">{formatDate(document.created_at)}</div>
             <div className="text-muted-foreground">
                 by {document.uploader ?? "Unknown"}
             </div>

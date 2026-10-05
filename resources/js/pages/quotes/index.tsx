@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowRight, CheckCircle2, Clock, Copy, Download, Eye, FileText, Mail, MoreHorizontal, Pencil, Plus, Search, Send, SquarePen, Trash2, XCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Clock, Copy, Download, Eye, FileText, MoreHorizontal, Pencil, Plus, Search, Send, Trash2, XCircle } from 'lucide-react';
 import { Fragment, useState, type ReactNode } from 'react';
 import { DataPagination } from '@/components/data-pagination';
 import { EmptyState } from '@/components/empty-state';
@@ -93,19 +93,19 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> New Quote
+                                    <Plus /> New quote
                                 </Link>
                             </Button>
                         )
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-5">
-                    <StatCard label="Draft" value={stats.draft} icon={SquarePen} />
-                    <StatCard label="Sent" value={stats.sent} icon={Mail} valueClassName="text-blue-700 dark:text-blue-400" />
-                    <StatCard label="Approved" value={stats.approved} icon={CheckCircle2} valueClassName="text-green-700 dark:text-green-400" />
-                    <StatCard label="Rejected" value={stats.rejected} icon={XCircle} valueClassName="text-red-700 dark:text-red-400" />
-                    <StatCard label="Expired" value={stats.expired} icon={Clock} valueClassName="text-orange-700 dark:text-orange-400" />
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-5">
+                    <StatCard label="Draft" value={stats.draft} />
+                    <StatCard label="Sent" value={stats.sent} tone="info" />
+                    <StatCard label="Approved" value={stats.approved} tone="positive" />
+                    <StatCard label="Rejected" value={stats.rejected} tone="negative" />
+                    <StatCard label="Expired" value={stats.expired} tone="warning" />
                 </div>
 
                 <Card>
@@ -121,7 +121,7 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                                 />
                             </div>
                             <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)} aria-label="Filter by status">
-                                <option value="">All Statuses</option>
+                                <option value="">All statuses</option>
                                 <option value="draft">Draft</option>
                                 <option value="sent">Sent</option>
                                 <option value="approved">Approved</option>
@@ -140,16 +140,22 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                                         <div key={quote.id} className="space-y-3 rounded-lg border p-4">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <div className="text-lg font-bold">
-                                                        {quote.quote_number}
+                                                    <div className="font-mono text-lg font-bold">
+                                                        {can.edit ? (
+                                                            <Link href={edit(quote.id)} className="underline-offset-4 hover:underline">
+                                                                {quote.quote_number}
+                                                            </Link>
+                                                        ) : (
+                                                            quote.quote_number
+                                                        )}
                                                         {quote.version > 1 && <span className="text-xs font-normal text-muted-foreground"> (v{quote.version})</span>}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">{quote.created_by}</div>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-sm text-muted-foreground">Total</div>
-                                                    <div className="text-xl font-bold text-blue-700 dark:text-blue-400">{formatMoney(quote.total)}</div>
-                                                    <div className="text-xs text-muted-foreground">excl VAT: {formatMoney(quote.subtotal)}</div>
+                                                    <div className="font-condensed text-xl font-bold tabular-nums">{formatMoney(quote.total)}</div>
+                                                    <div className="text-xs text-muted-foreground">excl VAT: <span className="font-mono tabular-nums">{formatMoney(quote.subtotal)}</span></div>
                                                 </div>
                                             </div>
                                             <StatusBadge tone={quoteStatusTone[quote.status] ?? 'gray'}>{humanize(quote.status)}</StatusBadge>
@@ -160,15 +166,15 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                                             </div>
                                             <div className="grid grid-cols-2 gap-3 border-t pt-3">
                                                 <div>
-                                                    <div className="text-xs text-muted-foreground">Valid Until</div>
-                                                    <div className={`text-sm font-medium ${isLapsed(quote) ? 'text-red-600 dark:text-red-400' : ''}`}>
+                                                    <div className="text-xs text-muted-foreground">Valid until</div>
+                                                    <div className={`font-mono text-sm font-medium ${isLapsed(quote) ? 'text-destructive' : ''}`}>
                                                         {formatDate(quote.valid_until, 'N/A')}
                                                     </div>
-                                                    {isLapsed(quote) && <div className="text-xs text-red-600 dark:text-red-400">Expired</div>}
+                                                    {isLapsed(quote) && <div className="text-xs text-destructive">Expired</div>}
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">Created</div>
-                                                    <div className="text-sm font-medium">{formatDate(quote.created_at)}</div>
+                                                    <div className="font-mono text-sm font-medium">{formatDate(quote.created_at)}</div>
                                                 </div>
                                             </div>
                                             <div className="border-t pt-3">
@@ -190,9 +196,9 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                                             <TableRow>
                                                 <TableHead>Quote #</TableHead>
                                                 <TableHead>Client</TableHead>
-                                                <TableHead>Created By</TableHead>
-                                                <TableHead>Valid Until</TableHead>
-                                                <TableHead>Total</TableHead>
+                                                <TableHead>Created by</TableHead>
+                                                <TableHead>Valid until</TableHead>
+                                                <TableHead className="text-right">Total</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -200,7 +206,7 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                                         <TableBody>
                                             {quotes.data.map((quote) => (
                                                 <TableRow key={quote.id}>
-                                                    <TableCell>
+                                                    <TableCell className="font-mono">
                                                         <strong>{quote.quote_number}</strong>
                                                         {quote.version > 1 && <span className="text-xs text-muted-foreground"> (v{quote.version})</span>}
                                                     </TableCell>
@@ -210,10 +216,10 @@ export default function QuotesIndex({ quotes, filters: initialFilters, stats, ca
                                                     </TableCell>
                                                     <TableCell className="text-sm">{quote.created_by}</TableCell>
                                                     <TableCell className="text-sm">
-                                                        {quote.valid_until ? formatDate(quote.valid_until) : ''}
-                                                        {isLapsed(quote) && <span className="text-xs text-red-600 dark:text-red-400"> (Expired)</span>}
+                                                        <span className="font-mono">{quote.valid_until ? formatDate(quote.valid_until) : ''}</span>
+                                                        {isLapsed(quote) && <span className="text-xs text-destructive"> (Expired)</span>}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-right font-mono tabular-nums">
                                                         <div className="font-medium">{formatMoney(quote.total)}</div>
                                                         <div className="text-xs text-muted-foreground">excl VAT: {formatMoney(quote.subtotal)}</div>
                                                     </TableCell>
@@ -295,31 +301,31 @@ function QuoteActions({
         if (quote.status === 'draft') {
             items.push(
                 <DropdownMenuItem key="send" onSelect={() => onPost(send(quote.id).url)}>
-                    <Send /> Mark as Sent
+                    <Send /> Mark as sent
                 </DropdownMenuItem>,
             );
         }
         if (quote.status === 'sent') {
             items.push(
                 <DropdownMenuItem key="approve" onSelect={() => onPost(approve(quote.id).url)}>
-                    <CheckCircle2 /> Mark as Approved
+                    <CheckCircle2 /> Mark as approved
                 </DropdownMenuItem>,
                 <DropdownMenuItem key="reject" onSelect={() => onPost(reject(quote.id).url)}>
-                    <XCircle /> Mark as Rejected
+                    <XCircle /> Mark as rejected
                 </DropdownMenuItem>,
             );
         }
         if (['draft', 'sent'].includes(quote.status) && quote.valid_until_past) {
             items.push(
                 <DropdownMenuItem key="expire" onSelect={() => onPost(expire(quote.id).url)}>
-                    <Clock /> Mark as Expired
+                    <Clock /> Mark as expired
                 </DropdownMenuItem>,
             );
         }
         items.push(
             <DropdownMenuItem key="edit" asChild>
                 <Link href={edit(quote.id)}>
-                    <Pencil /> Edit Quote
+                    <Pencil /> Edit quote
                 </Link>
             </DropdownMenuItem>,
         );
@@ -331,7 +337,7 @@ function QuoteActions({
     if (can.createBookings && quote.status === 'approved' && !quote.has_booking) {
         tail.push(
             <DropdownMenuItem key="convert" onSelect={() => onPost(convertToBooking(quote.id).url)}>
-                <ArrowRight /> Convert to Booking
+                <ArrowRight /> Convert to booking
             </DropdownMenuItem>,
         );
     }
@@ -347,7 +353,7 @@ function QuoteActions({
     if (can.delete) {
         groups.push([
             <DropdownMenuItem key="delete" variant="destructive" onSelect={onDelete}>
-                <Trash2 /> Delete Quote
+                <Trash2 /> Delete quote
             </DropdownMenuItem>,
         ]);
     }

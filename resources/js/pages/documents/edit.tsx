@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import { ExternalLink, FileIcon } from "lucide-react";
+import { Download, ExternalLink, FileIcon } from "lucide-react";
 import {
     DocumentForm,
     type EditableDocument,
@@ -8,6 +8,7 @@ import { FormSection } from "@/components/form-section";
 import { PageContainer } from "@/components/page-container";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
@@ -62,59 +63,112 @@ export default function DocumentsEdit({
         { title: document.title, href: edit(document.id) },
     ];
 
+    const uploadedAt = (value: string | null) =>
+        formatDateTime(value).replace(/ (\d{2}:\d{2})$/, ", $1");
+
     const history =
         versions.length > 0 ? (
-            <FormSection title="Version History" columns={1}>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Version</TableHead>
-                            <TableHead>File Name</TableHead>
-                            <TableHead>Uploaded</TableHead>
-                            <TableHead>Size</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {versions.map((version) => (
-                            <TableRow key={version.id}>
-                                <TableCell>v{version.version}</TableCell>
-                                <TableCell>{version.file_name}</TableCell>
-                                <TableCell>
-                                    {formatDateTime(version.created_at).replace(
-                                        / (\d{2}:\d{2})$/,
-                                        ", $1",
-                                    )}
+            <FormSection title="Version history" columns={1}>
+                {/* Phones: cards */}
+                <div className="space-y-3 md:hidden">
+                    {versions.map((version) => (
+                        <div
+                            key={version.id}
+                            className="space-y-3 rounded-lg border bg-card p-4"
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <p className="min-w-0 text-sm font-medium break-all">
+                                    {version.file_name}
+                                </p>
+                                <span className="font-mono text-sm">
+                                    v{version.version}
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                <div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Uploaded
+                                    </div>
+                                    {uploadedAt(version.created_at)}
                                     <div className="text-xs text-muted-foreground">
                                         by {version.uploaded_by}
                                     </div>
-                                </TableCell>
-                                <TableCell>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Size
+                                    </div>
                                     {version.file_size_formatted}
-                                </TableCell>
-                                <TableCell>
-                                    <a
-                                        href={version.file_url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-sm text-primary underline-offset-4 hover:underline"
-                                    >
-                                        Download
-                                    </a>
-                                </TableCell>
+                                </div>
+                            </div>
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                            >
+                                <a
+                                    href={version.file_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    <Download /> Download
+                                </a>
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Tablets and up: table */}
+                <div className="hidden md:block">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Version</TableHead>
+                                <TableHead>File name</TableHead>
+                                <TableHead>Uploaded</TableHead>
+                                <TableHead>Size</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {versions.map((version) => (
+                                <TableRow key={version.id}>
+                                    <TableCell className="font-mono">v{version.version}</TableCell>
+                                    <TableCell>{version.file_name}</TableCell>
+                                    <TableCell>
+                                        {uploadedAt(version.created_at)}
+                                        <div className="text-xs text-muted-foreground">
+                                            by {version.uploaded_by}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {version.file_size_formatted}
+                                    </TableCell>
+                                    <TableCell>
+                                        <a
+                                            href={version.file_url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-sm text-primary underline-offset-4 hover:underline"
+                                        >
+                                            Download
+                                        </a>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </FormSection>
         ) : null;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Edit Document" />
+            <Head title="Edit document" />
             <PageContainer>
                 <PageHeader
-                    title="Edit Document"
+                    title="Edit document"
                     actions={
                         <>
                             {document.is_expired ? (
@@ -122,7 +176,7 @@ export default function DocumentsEdit({
                             ) : (
                                 document.is_expiring_soon && (
                                     <StatusBadge tone="yellow">
-                                        Expiring Soon
+                                        Expiring soon
                                     </StatusBadge>
                                 )
                             )}
@@ -137,11 +191,11 @@ export default function DocumentsEdit({
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Current File</CardTitle>
+                        <CardTitle>Current file</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-start gap-4 rounded border bg-muted/50 p-4">
-                            <FileIcon className="size-12 shrink-0 text-blue-500" />
+                        <div className="flex items-start gap-4 rounded border bg-muted p-4">
+                            <FileIcon className="size-12 shrink-0 text-muted-foreground" strokeWidth={1.6} />
                             <div className="min-w-0 flex-1">
                                 <p className="font-medium break-all">
                                     {document.file_name}

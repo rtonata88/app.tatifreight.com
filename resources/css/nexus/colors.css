@@ -1,0 +1,64 @@
+/* ==========================================================================
+   Nexus Design System — colour
+   Ink + Brass + Paper. One accent. Every other colour is state, never hierarchy.
+   ========================================================================== */
+
+:root {
+    /* ---- Ink surfaces (default mode) --------------------------------- */
+    --nx-ink:            #0E0D0B;   /* page */
+    --nx-ink-elevated:   #15130F;   /* section / table head */
+    --nx-ink-card:       #1A1814;   /* card */
+    --nx-ink-rail:       #0A0907;   /* sidebar rail */
+    --nx-ink-hover:      #201D18;   /* row hover */
+
+    /* ---- Brass — the only accent ------------------------------------- */
+    --nx-brass:          #B68A3E;
+    --nx-brass-hi:       #D6B782;
+    --nx-brass-lo:       #8A6826;
+    --nx-brass-wash:     rgba(182, 138, 62, 0.06);
+    --nx-brass-wash-2:   rgba(182, 138, 62, 0.12);
+
+    /* ---- Paper surfaces (light mode + all printed documents) --------- */
+    --nx-paper:           #F2EDE3;
+    --nx-paper-elevated:  #F6F1E6;
+    --nx-paper-card:      #FBF7EE;
+    --nx-paper-hover:     #EEE8DB;
+    --nx-ink-on-paper:    #1A1813;
+
+    /* ---- Text on ink ------------------------------------------------- */
+    --nx-fg-1: #F2EDE3;   /* primary */
+    --nx-fg-2: #C8BDA3;   /* secondary */
+    --nx-fg-3: #8A8068;   /* muted labels */
+    --nx-fg-4: #5C5440;   /* hint / placeholder */
+
+    /* ---- Text on paper ----------------------------------------------- */
+    --nx-pfg-1: #1A1813;
+    --nx-pfg-2: #4A4335;
+    --nx-pfg-3: #78705C;
+    --nx-pfg-4: #A79E88;
+
+    /* ---- Hairlines — the structural workhorse ------------------------ */
+    --nx-rule:         rgba(242, 237, 227, 0.08);
+    --nx-rule-strong:  rgba(242, 237, 227, 0.16);
+    --nx-rule-brass:   rgba(182, 138, 62, 0.32);
+    --nx-rule-paper:        rgba(26, 24, 19, 0.10);
+    --nx-rule-paper-strong: rgba(26, 24, 19, 0.20);
+
+    /* ---- State (muted earth tones) ----------------------------------- */
+    --nx-pos:  #6FA86A;   /* moss   — active, approved, paid, credit */
+    --nx-warn: #C99441;   /* amber  — pending, draft, submitted */
+    --nx-neg:  #B5524C;   /* oxblood— declined, overdue, debit */
+    --nx-info: #6B8AB8;   /* slate  — completed, informational */
+    --nx-pos-wash:  rgba(111, 168, 106, 0.12);
+    --nx-warn-wash: rgba(201, 148, 65, 0.12);
+    --nx-neg-wash:  rgba(181, 82, 76, 0.12);
+    --nx-info-wash: rgba(107, 138, 184, 0.12);
+
+    /* ---- Chart series (ordered; ledger-safe on ink and paper) -------- */
+    --nx-chart-1: #B68A3E;   /* brass — the primary series */
+    --nx-chart-2: #6FA86A;
+    --nx-chart-3: #6B8AB8;
+    --nx-chart-4: #C99441;
+    --nx-chart-5: #B5524C;
+    --nx-chart-6: #8A8068;
+}

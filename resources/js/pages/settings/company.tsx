@@ -4,6 +4,7 @@ import type { ComponentProps, FormEvent } from 'react';
 import { BankAccountDetails, type BankAccount } from '@/components/admin/bank-account-details';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FileInput } from '@/components/file-input';
+import { FormActions } from '@/components/form-actions';
 import { FormField } from '@/components/form-field';
 import { FormSection } from '@/components/form-section';
 import { PageContainer } from '@/components/page-container';
@@ -52,7 +53,7 @@ type Props = {
 
 type FormValues = Record<TextField, string> & { logo_upload: File | null; signature_upload: File | null };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Company Settings', href: company() }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Company settings', href: company() }];
 
 export default function CompanySettings({ settings, bankAccounts }: Props) {
     const form = useForm<FormValues>({
@@ -79,42 +80,42 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Company Settings" />
+            <Head title="Company settings" />
             <PageContainer>
-                <PageHeader title="Company Settings" description="Manage your company information, branding, and document settings" />
+                <PageHeader title="Company settings" description="Manage your company information, branding and document settings." />
 
                 <form onSubmit={submit} className="space-y-6">
-                    <FormSection title="Company Information">
-                        <FormField label="Company Name" required htmlFor="company_name" error={errors.company_name}>
+                    <FormSection title="Company information">
+                        <FormField label="Company name" required htmlFor="company_name" error={errors.company_name}>
                             {text('company_name', { placeholder: 'TAATI Transport' })}
                         </FormField>
-                        <FormField label="VAT Number" htmlFor="vat_number" error={errors.vat_number} description="Your VAT registration number">
+                        <FormField label="VAT number" htmlFor="vat_number" error={errors.vat_number} description="Your VAT registration number.">
                             {text('vat_number', { placeholder: '123456789' })}
                         </FormField>
                         <FormField
-                            label="Registration Number"
+                            label="Registration number"
                             htmlFor="registration_number"
                             error={errors.registration_number}
-                            description="Business registration number"
+                            description="Business registration number."
                         >
                             {text('registration_number', { placeholder: 'REG123456' })}
                         </FormField>
                         <FormField label="Email" htmlFor="email" error={errors.email}>
-                            {text('email', { type: 'email', placeholder: 'info@taati.com.na' })}
+                            {text('email', { type: 'email', autoComplete: 'email', placeholder: 'info@taati.com.na' })}
                         </FormField>
                         <FormField label="Phone" htmlFor="phone" error={errors.phone}>
-                            {text('phone', { placeholder: '+264 61 123 4567' })}
+                            {text('phone', { type: 'tel', autoComplete: 'tel', placeholder: '+264 61 123 4567' })}
                         </FormField>
-                        <FormField label="Secondary Phone" htmlFor="secondary_phone" error={errors.secondary_phone}>
-                            {text('secondary_phone', { placeholder: '+264 61 987 6543' })}
+                        <FormField label="Secondary phone" htmlFor="secondary_phone" error={errors.secondary_phone}>
+                            {text('secondary_phone', { type: 'tel', autoComplete: 'tel', placeholder: '+264 61 987 6543' })}
                         </FormField>
                         <FormField label="Website" htmlFor="website" error={errors.website}>
                             {text('website', { type: 'url', placeholder: 'https://taati.com.na' })}
                         </FormField>
                     </FormSection>
 
-                    <FormSection title="Address Information">
-                        <FormField label="Street Address" htmlFor="address" error={errors.address} className="md:col-span-2">
+                    <FormSection title="Address">
+                        <FormField label="Street address" htmlFor="address" error={errors.address} className="md:col-span-2">
                             <Textarea
                                 id="address"
                                 rows={2}
@@ -126,8 +127,8 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
                         <FormField label="City" htmlFor="city" error={errors.city}>
                             {text('city', { placeholder: 'Windhoek' })}
                         </FormField>
-                        <FormField label="Postal Code" htmlFor="postal_code" error={errors.postal_code}>
-                            {text('postal_code', { placeholder: '9000' })}
+                        <FormField label="Postal code" htmlFor="postal_code" error={errors.postal_code}>
+                            {text('postal_code', { inputMode: 'numeric', placeholder: '9000' })}
                         </FormField>
                         <FormField label="Country" htmlFor="country" error={errors.country}>
                             {text('country', { placeholder: 'Namibia' })}
@@ -136,10 +137,10 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
 
                     <ImageUploadSection
                         id="logo_upload"
-                        title="Company Logo"
-                        description="Upload your company logo (will appear on PDFs and documents)"
+                        title="Company logo"
+                        description="Upload your company logo. It appears on PDFs and documents."
                         noun="Logo"
-                        help="Recommended: PNG or JPG, max 2MB, transparent background preferred"
+                        help="PNG or JPG, max 2MB. A transparent background works best."
                         currentUrl={settings.logo_url}
                         imageClassName="max-h-32"
                         file={data.logo_upload}
@@ -150,10 +151,10 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
 
                     <ImageUploadSection
                         id="signature_upload"
-                        title="Authorized Signature"
-                        description="Upload authorized signature image (will appear on invoices and official documents)"
+                        title="Authorised signature"
+                        description="Upload the authorised signature. It appears on invoices and official documents."
                         noun="Signature"
-                        help="Recommended: PNG with transparent background, max 2MB. Signature of authorized person."
+                        help="PNG with a transparent background, max 2MB. Signature of the authorised person."
                         currentUrl={settings.signature_url}
                         imageClassName="max-h-24 bg-white p-2"
                         file={data.signature_upload}
@@ -165,12 +166,12 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
                     <Card>
                         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="space-y-1.5">
-                                <CardTitle>Banking Details</CardTitle>
-                                <CardDescription>Bank account information for payments (will appear on quotes and invoices)</CardDescription>
+                                <CardTitle>Banking details</CardTitle>
+                                <CardDescription>Bank account details for payments. They appear on quotes and invoices.</CardDescription>
                             </div>
                             <Button asChild>
                                 <Link href={bankAccountsRoute()}>
-                                    <Plus /> Manage Bank Accounts
+                                    <Plus /> Manage bank accounts
                                 </Link>
                             </Button>
                         </CardHeader>
@@ -185,28 +186,28 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
                                 <div className="py-8 text-center text-muted-foreground">
                                     <p className="mb-4">No bank accounts configured yet.</p>
                                     <Button asChild>
-                                        <Link href={bankAccountsRoute()}>Add Your First Bank Account</Link>
+                                        <Link href={bankAccountsRoute()}>Add your first bank account</Link>
                                     </Button>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
 
-                    <FormSection title="Document Footers" description="Custom footer text for quotes and invoices">
-                        <FormField label="Quote Footer" htmlFor="quote_footer" error={errors.quote_footer} description="Appears at the bottom of quote PDFs">
+                    <FormSection title="Document footers" description="Custom footer text for quotes and invoices.">
+                        <FormField label="Quote footer" htmlFor="quote_footer" error={errors.quote_footer} description="Appears at the bottom of quote PDFs.">
                             <Textarea
                                 id="quote_footer"
                                 rows={3}
                                 value={data.quote_footer}
                                 onChange={(e) => setData('quote_footer', e.target.value)}
-                                placeholder="Thank you for your business!"
+                                placeholder="Thank you for your business."
                             />
                         </FormField>
                         <FormField
-                            label="Invoice Footer"
+                            label="Invoice footer"
                             htmlFor="invoice_footer"
                             error={errors.invoice_footer}
-                            description="Appears at the bottom of invoice PDFs"
+                            description="Appears at the bottom of invoice PDFs."
                         >
                             <Textarea
                                 id="invoice_footer"
@@ -218,12 +219,12 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
                         </FormField>
                     </FormSection>
 
-                    <div className="flex gap-3">
+                    <FormActions>
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}
-                            Save Settings
+                            Save settings
                         </Button>
-                    </div>
+                    </FormActions>
                 </form>
             </PageContainer>
         </AppLayout>
@@ -259,13 +260,13 @@ function ImageUploadSection({
         <FormSection title={title} description={description} columns={1}>
             {currentUrl && (
                 <div>
-                    <p className="mb-2 text-sm text-muted-foreground">Current {noun}:</p>
+                    <p className="mb-2 text-sm text-muted-foreground">Current {noun.toLowerCase()}:</p>
                     <div className="flex flex-col items-start gap-2">
                         <img src={currentUrl} alt={`Current ${noun.toLowerCase()}`} className={`max-w-xs rounded border ${imageClassName}`} />
                         <ConfirmDialog
                             trigger={
                                 <Button type="button" variant="destructive" size="sm">
-                                    Delete {noun}
+                                    Delete {noun.toLowerCase()}
                                 </Button>
                             }
                             description={`Are you sure you want to delete the ${noun.toLowerCase()}?`}
@@ -274,7 +275,7 @@ function ImageUploadSection({
                     </div>
                 </div>
             )}
-            <FormField label={`${currentUrl ? 'Replace' : 'Upload'} ${noun}`} htmlFor={id} error={error} description={help}>
+            <FormField label={`${currentUrl ? 'Replace' : 'Upload'} ${noun.toLowerCase()}`} htmlFor={id} error={error} description={help}>
                 <FileInput id={id} accept="image/*" preview file={file} onChange={onChange} aria-invalid={!!error} />
             </FormField>
         </FormSection>

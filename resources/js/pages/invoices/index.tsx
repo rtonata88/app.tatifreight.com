@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { CircleAlert, CircleCheck, CircleDollarSign, Download, Ellipsis, Eye, Pencil, Plus, Search, Send, SquarePen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { CircleCheck, Download, Ellipsis, Eye, Pencil, Plus, Search, Send, Trash2 } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { invoiceStatusTone, statusLabel } from '@/components/invoices/invoice-status';
 import { DataPagination } from '@/components/data-pagination';
 import { PageContainer } from '@/components/page-container';
@@ -85,12 +85,14 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
         });
     };
 
-    const actions = (invoice: InvoiceRow) => (
+    const actions = (invoice: InvoiceRow, trigger?: ReactNode) => (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="ghost" className="size-8" aria-label={`Actions for ${invoice.invoice_number}`}>
-                    <Ellipsis />
-                </Button>
+                {trigger ?? (
+                    <Button size="icon" variant="ghost" className="size-8" aria-label={`Actions for ${invoice.invoice_number}`}>
+                        <Ellipsis />
+                    </Button>
+                )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-40">
                 {can.view && (
@@ -117,12 +119,12 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                         </DropdownMenuItem>
                         {invoice.status === 'draft' && (
                             <DropdownMenuItem onSelect={() => post(send(invoice.id).url)}>
-                                <Send /> Send Invoice
+                                <Send /> Send invoice
                             </DropdownMenuItem>
                         )}
                         {['sent', 'unpaid', 'partial', 'overdue'].includes(invoice.status) && (
                             <DropdownMenuItem onSelect={() => post(markPaid(invoice.id).url)}>
-                                <CircleCheck /> Mark as Paid
+                                <CircleCheck /> Mark as paid
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
@@ -147,7 +149,7 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> New Invoice
+                                    <Plus /> New invoice
                                 </Link>
                             </Button>
                         )
@@ -155,31 +157,11 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                 />
 
                 {/* Statistics cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-                    <StatCard label="Draft" value={stats.draft} icon={SquarePen} className="bg-muted/50" />
-                    <StatCard
-                        label="Unpaid"
-                        value={stats.unpaid}
-                        hint={money(stats.total_unpaid)}
-                        icon={CircleDollarSign}
-                        className="bg-yellow-50 dark:bg-yellow-500/10"
-                        valueClassName="text-yellow-700 dark:text-yellow-400"
-                    />
-                    <StatCard
-                        label="Overdue"
-                        value={stats.overdue}
-                        hint={money(stats.total_overdue)}
-                        icon={CircleAlert}
-                        className="bg-red-50 dark:bg-red-500/10"
-                        valueClassName="text-red-700 dark:text-red-400"
-                    />
-                    <StatCard
-                        label="Paid"
-                        value={stats.paid}
-                        icon={CircleCheck}
-                        className="bg-green-50 dark:bg-green-500/10"
-                        valueClassName="text-green-700 dark:text-green-400"
-                    />
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-4">
+                    <StatCard label="Draft" value={stats.draft} />
+                    <StatCard label="Unpaid" value={stats.unpaid} hint={<span className="font-mono tabular-nums">{money(stats.total_unpaid)}</span>} tone="warning" />
+                    <StatCard label="Overdue" value={stats.overdue} hint={<span className="font-mono tabular-nums">{money(stats.total_overdue)}</span>} tone="negative" />
+                    <StatCard label="Paid" value={stats.paid} tone="positive" />
                 </div>
 
                 <Card>
@@ -195,7 +177,7 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                                 />
                             </div>
                             <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)} aria-label="Filter by status">
-                                <option value="">All Statuses</option>
+                                <option value="">All statuses</option>
                                 <option value="draft">Draft</option>
                                 <option value="sent">Sent</option>
                                 <option value="unpaid">Unpaid</option>
@@ -215,35 +197,48 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                                         <div key={invoice.id} className="space-y-3 rounded-lg border p-4">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <div className="font-semibold">{invoice.invoice_number}</div>
-                                                    {invoice.booking_number && <div className="text-xs text-muted-foreground">{invoice.booking_number}</div>}
+                                                    {can.edit ? (
+                                                        <Link href={edit(invoice.id)} className="font-mono font-semibold underline-offset-4 hover:underline">
+                                                            {invoice.invoice_number}
+                                                        </Link>
+                                                    ) : (
+                                                        <div className="font-mono font-semibold">{invoice.invoice_number}</div>
+                                                    )}
+                                                    {invoice.booking_number && <div className="font-mono text-xs text-muted-foreground">{invoice.booking_number}</div>}
                                                 </div>
-                                                <div className="flex items-center gap-1">
-                                                    <StatusBadge tone={invoiceStatusTone[invoice.status] ?? 'gray'}>{statusLabel(invoice.status)}</StatusBadge>
-                                                    {actions(invoice)}
-                                                </div>
+                                                <StatusBadge tone={invoiceStatusTone[invoice.status] ?? 'gray'}>{statusLabel(invoice.status)}</StatusBadge>
                                             </div>
                                             <div className="border-t pt-3">
                                                 <ClientCell invoice={invoice} />
                                             </div>
                                             <div className="grid grid-cols-2 gap-3 border-t pt-3 text-sm">
                                                 <div>
-                                                    <div className="text-xs text-muted-foreground">Invoice Date</div>
-                                                    {formatDate(invoice.invoice_date, '')}
+                                                    <div className="text-xs text-muted-foreground">Invoice date</div>
+                                                    <span className="font-mono">{formatDate(invoice.invoice_date, '')}</span>
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs text-muted-foreground">Due Date</div>
+                                                    <div className="text-xs text-muted-foreground">Due date</div>
                                                     <DueDate invoice={invoice} />
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">Total</div>
-                                                    <div className="font-medium">{money(invoice.total)}</div>
+                                                    <div className="font-mono font-medium tabular-nums">{money(invoice.total)}</div>
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">Paid</div>
                                                     <PaidCell invoice={invoice} />
                                                 </div>
                                             </div>
+                                            {(can.view || can.edit || can.delete) && (
+                                                <div className="border-t pt-3">
+                                                    {actions(
+                                                        invoice,
+                                                        <Button size="sm" variant="ghost" className="w-full">
+                                                            <Ellipsis /> Actions
+                                                        </Button>,
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -255,10 +250,10 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                                             <TableRow>
                                                 <TableHead>Invoice #</TableHead>
                                                 <TableHead>Client</TableHead>
-                                                <TableHead>Invoice Date</TableHead>
-                                                <TableHead>Due Date</TableHead>
-                                                <TableHead>Total</TableHead>
-                                                <TableHead>Paid</TableHead>
+                                                <TableHead>Invoice date</TableHead>
+                                                <TableHead>Due date</TableHead>
+                                                <TableHead className="text-right">Total</TableHead>
+                                                <TableHead className="text-right">Paid</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -266,19 +261,19 @@ export default function InvoicesIndex({ invoices, filters: initialFilters, stats
                                         <TableBody>
                                             {invoices.data.map((invoice) => (
                                                 <TableRow key={invoice.id}>
-                                                    <TableCell>
+                                                    <TableCell className="font-mono">
                                                         <strong>{invoice.invoice_number}</strong>
-                                                        {invoice.booking_number && <div className="text-xs text-muted-foreground">{invoice.booking_number}</div>}
+                                                        {invoice.booking_number && <div className="font-mono text-xs text-muted-foreground">{invoice.booking_number}</div>}
                                                     </TableCell>
                                                     <TableCell>
                                                         <ClientCell invoice={invoice} />
                                                     </TableCell>
-                                                    <TableCell className="text-sm">{formatDate(invoice.invoice_date, '')}</TableCell>
+                                                    <TableCell className="font-mono text-sm">{formatDate(invoice.invoice_date, '')}</TableCell>
                                                     <TableCell className="text-sm">
                                                         <DueDate invoice={invoice} />
                                                     </TableCell>
-                                                    <TableCell className="font-medium">{money(invoice.total)}</TableCell>
-                                                    <TableCell className="text-sm">
+                                                    <TableCell className="text-right font-mono font-medium tabular-nums">{money(invoice.total)}</TableCell>
+                                                    <TableCell className="text-right text-sm">
                                                         <PaidCell invoice={invoice} />
                                                     </TableCell>
                                                     <TableCell>
@@ -329,17 +324,17 @@ function ClientCell({ invoice }: { invoice: InvoiceRow }) {
 function DueDate({ invoice }: { invoice: InvoiceRow }) {
     return (
         <span>
-            {formatDate(invoice.due_date, '')}
-            {invoice.is_overdue && <span className="text-xs text-red-600 dark:text-red-400"> (Overdue)</span>}
+            <span className="font-mono">{formatDate(invoice.due_date, '')}</span>
+            {invoice.is_overdue && <span className="text-xs text-destructive"> (Overdue)</span>}
         </span>
     );
 }
 
 function PaidCell({ invoice }: { invoice: InvoiceRow }) {
     return (
-        <div>
+        <div className="font-mono tabular-nums">
             <span className="font-medium">{money(invoice.amount_paid)}</span>
-            {invoice.amount_due > 0 && <div className="text-xs text-red-600 dark:text-red-400">Due: {money(invoice.amount_due)}</div>}
+            {invoice.amount_due > 0 && <div className="text-xs text-destructive">Due: {money(invoice.amount_due)}</div>}
         </div>
     );
 }

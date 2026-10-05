@@ -6,8 +6,8 @@ export function DateRangeFields({
     dateFrom,
     dateTo,
     onChange,
-    fromLabel = 'From Date',
-    toLabel = 'To Date',
+    fromLabel = 'From date',
+    toLabel = 'To date',
 }: {
     dateFrom: string;
     dateTo: string;

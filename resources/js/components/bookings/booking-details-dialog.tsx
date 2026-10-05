@@ -68,30 +68,30 @@ export function BookingDetailsDialog({ booking, canEdit, onClose }: { booking: C
                         <DialogHeader>
                             <div className="flex items-start justify-between gap-4 pr-6">
                                 <div>
-                                    <DialogTitle>Booking Details</DialogTitle>
-                                    <p className="mt-1 text-sm font-semibold">{booking.booking_number}</p>
+                                    <DialogTitle>Booking details</DialogTitle>
+                                    <p className="mt-1 font-mono text-sm font-semibold">{booking.booking_number}</p>
                                     {booking.created_by && (
                                         <DialogDescription className="mt-1 text-xs">
                                             Created by {booking.created_by} on {booking.created_at}
                                         </DialogDescription>
                                     )}
                                 </div>
-                                <StatusBadge tone={calendarStatusTone[booking.status] ?? 'gray'} className="px-3 py-1 text-sm">
+                                <StatusBadge tone={calendarStatusTone[booking.status] ?? 'gray'}>
                                     {humanize(booking.status)}
                                 </StatusBadge>
                             </div>
                         </DialogHeader>
 
                         <div className="space-y-6">
-                            <Section title="Client Information" className="bg-muted/60">
+                            <Section title="Client information" className="bg-muted/60">
                                 {booking.client.company_name && <Item label="Company">{booking.client.company_name}</Item>}
-                                <Item label="Contact Person">{booking.client.name}</Item>
+                                <Item label="Contact person">{booking.client.name}</Item>
                                 {booking.client.phone && <Item label="Phone">{booking.client.phone}</Item>}
                                 {booking.client.email && <Item label="Email">{booking.client.email}</Item>}
                             </Section>
 
-                            <Section title="Vehicle Information" className="bg-blue-50 dark:bg-blue-900/20">
-                                <Item label="Registration">{booking.vehicle.reg_number}</Item>
+                            <Section title="Vehicle information" className="bg-muted/60">
+                                <Item label="Registration"><span className="font-mono">{booking.vehicle.reg_number}</span></Item>
                                 <Item label="Type">{booking.vehicle.type}</Item>
                                 {booking.vehicle.make && (
                                     <Item label="Make/Model">
@@ -100,32 +100,32 @@ export function BookingDetailsDialog({ booking, canEdit, onClose }: { booking: C
                                 )}
                             </Section>
 
-                            <Section title="Trip Details" className="bg-green-50 dark:bg-green-900/20">
-                                <Item label="Start Date">{booking.start_display}</Item>
-                                <Item label="End Date">{booking.end_display}</Item>
+                            <Section title="Trip details" className="bg-muted/60">
+                                <Item label="Start date">{booking.start_display}</Item>
+                                <Item label="End date">{booking.end_display}</Item>
                                 <Item label="Duration">{booking.duration_days} days</Item>
                                 {!!booking.distance_km && <Item label="Distance">{formatNumber(booking.distance_km, 0)} km</Item>}
                                 {booking.pickup_location && (
-                                    <Item label="Pickup Location" wide>
+                                    <Item label="Pickup location" wide>
                                         {booking.pickup_location}
                                     </Item>
                                 )}
                             </Section>
 
                             {booking.driver && (
-                                <Section title="Driver Information" className="bg-purple-50 dark:bg-purple-900/20">
+                                <Section title="Driver information" className="bg-muted/60">
                                     <Item label="Driver">{booking.driver.name}</Item>
                                     {booking.driver.email && <Item label="Email">{booking.driver.email}</Item>}
                                 </Section>
                             )}
 
                             {booking.invoice && (
-                                <Section title="Financial Details" className="bg-amber-50 dark:bg-amber-900/20">
+                                <Section title="Financial details" className="bg-muted/60">
                                     <div>
-                                        <span className="text-muted-foreground">Invoice Total:</span>
-                                        <p className="text-lg font-medium">{formatMoney(booking.invoice.total, 'N$')}</p>
+                                        <span className="text-muted-foreground">Invoice total:</span>
+                                        <p className="font-mono text-lg font-medium tabular-nums">{formatMoney(booking.invoice.total, 'N$')}</p>
                                     </div>
-                                    <Item label="Invoice Status">
+                                    <Item label="Invoice status">
                                         <StatusBadge tone={invoiceStatusTone[booking.invoice.status] ?? 'gray'}>
                                             {ucfirst(booking.invoice.status)}
                                         </StatusBadge>
@@ -147,7 +147,7 @@ export function BookingDetailsDialog({ booking, canEdit, onClose }: { booking: C
                             </Button>
                             {canEdit && (
                                 <Button asChild>
-                                    <Link href={edit(booking.id)}>Edit Booking</Link>
+                                    <Link href={edit(booking.id)}>Edit booking</Link>
                                 </Button>
                             )}
                         </DialogFooter>

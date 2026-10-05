@@ -2,6 +2,7 @@
 import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
+import { Notice } from '@/components/notice';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,14 +15,14 @@ export default function ForgotPassword({ status }: { status?: string }) {
     return (
         <AuthLayout
             title="Forgot password"
-            description="Enter your email to receive a password reset link"
+            description="Enter your email to receive a password reset link."
         >
             <Head title="Forgot password" />
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <Notice tone="success" className="mb-4">
                     {status}
-                </div>
+                </Notice>
             )}
 
             <div className="space-y-6">
@@ -34,7 +35,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     id="email"
                                     type="email"
                                     name="email"
-                                    autoComplete="off"
+                                    autoComplete="email"
                                     autoFocus
                                     placeholder="email@example.com"
                                 />
@@ -44,6 +45,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                             <div className="my-6 flex items-center justify-start">
                                 <Button
+                                    size="lg"
                                     className="w-full"
                                     disabled={processing}
                                     data-test="email-password-reset-link-button"
@@ -51,7 +53,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
                                     )}
-                                    Email password reset link
+                                    Send reset link
                                 </Button>
                             </div>
                         </>

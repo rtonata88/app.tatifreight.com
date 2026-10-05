@@ -81,21 +81,21 @@ export default function ClientStatement({
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Clients", href: index() },
-        { title: "Customer Statement", href: statement(client.id) },
+        { title: "Customer statement", href: statement(client.id) },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Customer Statement - ${displayName}`} />
+            <Head title={`Customer statement - ${displayName}`} />
             <PageContainer>
                 <PageHeader
-                    title="Customer Statement"
+                    title="Customer statement"
                     description={displayName}
                     actions={
                         <>
                             <Button asChild variant="ghost">
                                 <Link href={index()}>
-                                    <ArrowLeft /> Back to Clients
+                                    <ArrowLeft /> Back to clients
                                 </Link>
                             </Button>
                             {/* Plain link: the PDF controller reads dateFrom / dateTo from the query string. */}
@@ -117,11 +117,12 @@ export default function ClientStatement({
                     }
                 />
 
-                <Card>
+                {/* Phones: the balance figures come first, client details after. */}
+                <Card className="max-md:order-1">
                     <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         <div>
                             <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-                                Client Information
+                                Client information
                             </h3>
                             <div className="space-y-1 text-sm">
                                 {client.company_name && (
@@ -167,7 +168,7 @@ export default function ClientStatement({
                         </div>
                         <div>
                             <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-                                Account Details
+                                Account details
                             </h3>
                             <div className="space-y-1 text-sm">
                                 <div>
@@ -175,8 +176,10 @@ export default function ClientStatement({
                                     {ucfirst(client.classification)}
                                 </div>
                                 <div>
-                                    <strong>Credit Limit:</strong>{" "}
-                                    {money(client.credit_limit)}
+                                    <strong>Credit limit:</strong>{" "}
+                                    <span className="font-mono tabular-nums">
+                                        {money(client.credit_limit)}
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <strong>Status:</strong>
@@ -195,9 +198,9 @@ export default function ClientStatement({
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardContent className="flex flex-wrap items-end gap-4">
-                        <FormField label="Date From" htmlFor="dateFrom">
+                <Card className="max-md:order-1">
+                    <CardContent className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap md:gap-4">
+                        <FormField label="Date from" htmlFor="dateFrom">
                             <Input
                                 id="dateFrom"
                                 type="date"
@@ -207,7 +210,7 @@ export default function ClientStatement({
                                 }
                             />
                         </FormField>
-                        <FormField label="Date To" htmlFor="dateTo">
+                        <FormField label="Date to" htmlFor="dateTo">
                             <Input
                                 id="dateTo"
                                 type="date"
@@ -220,39 +223,24 @@ export default function ClientStatement({
                     </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-3">
                     <StatCard
-                        label="Total Invoiced"
+                        label="Total invoiced"
                         value={money(totalInvoiced)}
-                        className="bg-blue-50 dark:bg-blue-500/10"
-                        valueClassName="text-3xl font-bold text-blue-700 dark:text-blue-300"
                     />
+                    <StatCard label="Total paid" value={money(totalPaid)} />
                     <StatCard
-                        label="Total Paid"
-                        value={money(totalPaid)}
-                        className="bg-green-50 dark:bg-green-500/10"
-                        valueClassName="text-3xl font-bold text-green-700 dark:text-green-300"
-                    />
-                    <StatCard
-                        label="Outstanding Balance"
+                        label="Outstanding balance"
                         value={money(totalOutstanding)}
-                        className={
-                            outstanding
-                                ? "bg-red-50 dark:bg-red-500/10"
-                                : "bg-muted"
-                        }
-                        valueClassName={cn(
-                            "text-3xl font-bold",
-                            outstanding
-                                ? "text-red-700 dark:text-red-300"
-                                : "text-foreground",
-                        )}
+                        tone={outstanding ? "negative" : "neutral"}
+                        emphasis
+                        className="max-md:order-first"
                     />
                 </div>
 
-                <Card>
+                <Card className="max-md:order-1">
                     <CardHeader>
-                        <CardTitle>Transaction History</CardTitle>
+                        <CardTitle>Transaction history</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {transactions.length === 0 ? (
@@ -260,110 +248,195 @@ export default function ClientStatement({
                                 No transactions found for the selected period.
                             </div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="uppercase">
-                                            Date
-                                        </TableHead>
-                                        <TableHead className="uppercase">
-                                            Reference
-                                        </TableHead>
-                                        <TableHead className="uppercase">
-                                            Description
-                                        </TableHead>
-                                        <TableHead className="text-right uppercase">
-                                            Debit
-                                        </TableHead>
-                                        <TableHead className="text-right uppercase">
-                                            Credit
-                                        </TableHead>
-                                        <TableHead className="text-right uppercase">
-                                            Balance
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
+                            <>
+                                <ul className="divide-y md:hidden">
                                     {transactions.map((transaction, i) => (
-                                        <TableRow
+                                        <li
                                             key={`${transaction.type}-${transaction.reference}-${i}`}
-                                            className={cn(
-                                                transaction.type ===
-                                                    "payment" &&
-                                                    "bg-green-50 dark:bg-green-500/10",
-                                            )}
+                                            className="flex items-start justify-between gap-4 py-3"
                                         >
-                                            <TableCell className="whitespace-nowrap">
-                                                {formatDate(transaction.date)}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {transaction.reference}
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                                {transaction.description}
-                                            </TableCell>
-                                            <TableCell
-                                                className={cn(
-                                                    "text-right",
-                                                    transaction.debit > 0
-                                                        ? "font-semibold text-red-600 dark:text-red-400"
-                                                        : "text-muted-foreground",
+                                            <div className="min-w-0">
+                                                <div className="font-mono text-sm">
+                                                    <span className="text-muted-foreground">
+                                                        {formatDate(
+                                                            transaction.date,
+                                                        )}
+                                                    </span>{" "}
+                                                    <span className="font-medium">
+                                                        {transaction.reference}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-0.5 text-sm text-muted-foreground">
+                                                    {transaction.description}
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 text-right">
+                                                {transaction.debit > 0 ? (
+                                                    <div className="font-mono font-semibold tabular-nums text-destructive">
+                                                        {money(
+                                                            transaction.debit,
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="font-mono font-semibold tabular-nums text-success">
+                                                        {money(
+                                                            transaction.credit,
+                                                        )}
+                                                    </div>
                                                 )}
-                                            >
-                                                {transaction.debit > 0
-                                                    ? money(transaction.debit)
-                                                    : "-"}
-                                            </TableCell>
-                                            <TableCell
-                                                className={cn(
-                                                    "text-right",
-                                                    transaction.credit > 0
-                                                        ? "font-semibold text-green-600 dark:text-green-400"
-                                                        : "text-muted-foreground",
-                                                )}
-                                            >
-                                                {transaction.credit > 0
-                                                    ? money(transaction.credit)
-                                                    : "-"}
-                                            </TableCell>
-                                            <TableCell
-                                                className={cn(
-                                                    "text-right font-bold",
-                                                    transaction.balance > 0 &&
-                                                        "text-red-700 dark:text-red-300",
-                                                )}
-                                            >
-                                                {money(transaction.balance)}
-                                            </TableCell>
-                                        </TableRow>
+                                                <div
+                                                    className={cn(
+                                                        "mt-0.5 font-mono text-xs tabular-nums text-muted-foreground",
+                                                        transaction.balance >
+                                                            0 &&
+                                                            "text-destructive",
+                                                    )}
+                                                >
+                                                    Bal{" "}
+                                                    {money(transaction.balance)}
+                                                </div>
+                                            </div>
+                                        </li>
                                     ))}
-                                </TableBody>
-                                <TableFooter>
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={3}
-                                            className="font-bold"
-                                        >
-                                            TOTAL
-                                        </TableCell>
-                                        <TableCell className="text-right font-bold text-red-600 dark:text-red-400">
-                                            {money(totalInvoiced)}
-                                        </TableCell>
-                                        <TableCell className="text-right font-bold text-green-600 dark:text-green-400">
-                                            {money(totalPaid)}
-                                        </TableCell>
-                                        <TableCell
+                                    <li className="flex items-center justify-between gap-4 pt-3 font-bold">
+                                        <span>Balance</span>
+                                        <span
                                             className={cn(
-                                                "text-right font-bold",
+                                                "font-mono tabular-nums",
                                                 outstanding &&
-                                                    "text-red-700 dark:text-red-300",
+                                                    "text-destructive",
                                             )}
                                         >
                                             {money(totalOutstanding)}
-                                        </TableCell>
-                                    </TableRow>
-                                </TableFooter>
-                            </Table>
+                                        </span>
+                                    </li>
+                                </ul>
+                                <div className="hidden md:block">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="uppercase">
+                                                    Date
+                                                </TableHead>
+                                                <TableHead className="uppercase">
+                                                    Reference
+                                                </TableHead>
+                                                <TableHead className="uppercase">
+                                                    Description
+                                                </TableHead>
+                                                <TableHead className="text-right uppercase">
+                                                    Debit
+                                                </TableHead>
+                                                <TableHead className="text-right uppercase">
+                                                    Credit
+                                                </TableHead>
+                                                <TableHead className="text-right uppercase">
+                                                    Balance
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {transactions.map(
+                                                (transaction, i) => (
+                                                    <TableRow
+                                                        key={`${transaction.type}-${transaction.reference}-${i}`}
+                                                        className={cn(
+                                                            transaction.type ===
+                                                                "payment" &&
+                                                                "bg-(--nx-pos-wash)",
+                                                        )}
+                                                    >
+                                                        <TableCell className="font-mono whitespace-nowrap">
+                                                            {formatDate(
+                                                                transaction.date,
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="font-mono font-medium">
+                                                            {
+                                                                transaction.reference
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground">
+                                                            {
+                                                                transaction.description
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell
+                                                            className={cn(
+                                                                "text-right font-mono tabular-nums",
+                                                                transaction.debit >
+                                                                    0
+                                                                    ? "font-semibold text-destructive"
+                                                                    : "text-muted-foreground",
+                                                            )}
+                                                        >
+                                                            {transaction.debit >
+                                                            0
+                                                                ? money(
+                                                                      transaction.debit,
+                                                                  )
+                                                                : "-"}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            className={cn(
+                                                                "text-right font-mono tabular-nums",
+                                                                transaction.credit >
+                                                                    0
+                                                                    ? "font-semibold text-success"
+                                                                    : "text-muted-foreground",
+                                                            )}
+                                                        >
+                                                            {transaction.credit >
+                                                            0
+                                                                ? money(
+                                                                      transaction.credit,
+                                                                  )
+                                                                : "-"}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            className={cn(
+                                                                "text-right font-mono font-bold tabular-nums",
+                                                                transaction.balance >
+                                                                    0 &&
+                                                                    "text-destructive",
+                                                            )}
+                                                        >
+                                                            {money(
+                                                                transaction.balance,
+                                                            )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ),
+                                            )}
+                                        </TableBody>
+                                        <TableFooter>
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={3}
+                                                    className="font-bold"
+                                                >
+                                                    Total
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono font-bold tabular-nums text-destructive">
+                                                    {money(totalInvoiced)}
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono font-bold tabular-nums text-success">
+                                                    {money(totalPaid)}
+                                                </TableCell>
+                                                <TableCell
+                                                    className={cn(
+                                                        "text-right font-mono font-bold tabular-nums",
+                                                        outstanding &&
+                                                            "text-destructive",
+                                                    )}
+                                                >
+                                                    {money(totalOutstanding)}
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableFooter>
+                                    </Table>
+                                </div>
+                            </>
                         )}
                     </CardContent>
                 </Card>

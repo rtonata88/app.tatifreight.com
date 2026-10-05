@@ -34,7 +34,7 @@ export default function Password() {
                     <Heading
                         variant="small"
                         title="Update password"
-                        description="Ensure your account is using a long, random password to stay secure"
+                        description="Use a long, random password to keep your account secure."
                     />
 
                     <Form
@@ -130,7 +130,7 @@ export default function Password() {
                                         leave="transition ease-in-out"
                                         leaveTo="opacity-0"
                                     >
-                                        <p className="text-sm text-neutral-600">
+                                        <p className="text-sm text-muted-foreground">
                                             Saved
                                         </p>
                                     </Transition>

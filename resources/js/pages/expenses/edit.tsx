@@ -23,9 +23,9 @@ export default function ExpensesEdit({ vehicles, bookings, expense }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Edit Expense" />
+            <Head title="Edit expense" />
             <PageContainer>
-                <PageHeader title="Edit Expense" actions={<StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>} />
+                <PageHeader title="Edit expense" actions={<StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>} />
                 <ExpenseForm vehicles={vehicles} bookings={bookings} expense={expense} />
             </PageContainer>
         </AppLayout>

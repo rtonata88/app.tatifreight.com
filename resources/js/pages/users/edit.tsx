@@ -19,9 +19,9 @@ export default function UsersEdit({ roles, user }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit User: ${user.name}`} />
+            <Head title={`Edit user: ${user.name}`} />
             <PageContainer>
-                <PageHeader title={`Edit User: ${user.name}`} />
+                <PageHeader title={`Edit user: ${user.name}`} />
                 <UserForm roles={roles} user={user} />
             </PageContainer>
         </AppLayout>

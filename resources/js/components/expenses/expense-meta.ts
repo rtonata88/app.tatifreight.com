@@ -8,7 +8,7 @@ export const expenseCategories: { value: string; label: string }[] = [
     { value: 'tolls', label: 'Tolls' },
     { value: 'insurance', label: 'Insurance' },
     { value: 'licenses', label: 'Licenses' },
-    { value: 'wages', label: 'Driver Wages' },
+    { value: 'wages', label: 'Driver wages' },
     { value: 'other', label: 'Other' },
 ];
 

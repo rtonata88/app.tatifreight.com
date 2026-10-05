@@ -18,15 +18,15 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Invoices', href: index() },
-    { title: 'New Invoice', href: create() },
+    { title: 'New invoice', href: create() },
 ];
 
 export default function InvoicesCreate({ clients, bookings, vehicles, bankAccounts, defaults, today, taxRate }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create New Invoice" />
+            <Head title="Create new invoice" />
             <PageContainer>
-                <PageHeader title="Create New Invoice" />
+                <PageHeader title="Create new invoice" />
                 <InvoiceForm
                     clients={clients}
                     bookings={bookings}

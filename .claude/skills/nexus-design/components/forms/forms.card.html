@@ -1,0 +1,72 @@
+<!-- @dsCard group="Components" viewport="700x360" name="Forms" subtitle="Bare inputs — uppercase label, hairline underline, brass focus" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; }
+  body { padding: 22px 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
+  .full { grid-column: span 2; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script>window.__nxBase = "../../";</script>
+<script src="../../ds-shim.js"></script>
+<script type="text/babel">
+const NS = window.__nxNS();
+const { FormField, Input, Select, Textarea, Checkbox } = NS;
+
+function Demo() {
+  const [ref, setRef] = React.useState('EXP-2026-0442');
+  const [amount, setAmount] = React.useState('12480.00');
+  const [cat, setCat] = React.useState('Subsistence');
+  const [note, setNote] = React.useState('');
+  const [billable, setBillable] = React.useState(true);
+  const [vat, setVat] = React.useState(true);
+  const [st, setSt] = React.useState('draft');
+  return (
+    <div className="grid">
+      <FormField label="Reference" required>
+        <Input value={ref} onChange={e => setRef(e.target.value)} mono />
+      </FormField>
+      <FormField label="Amount" hint="Inclusive of VAT">
+        <Input value={amount} onChange={e => setAmount(e.target.value)} prefix="NAD" align="right" mono />
+      </FormField>
+      <FormField label="Expense category">
+        <Select value={cat} onChange={e => setCat(e.target.value)}
+          options={['Travel', 'Subsistence', 'Subconsultants', 'Plant hire']} />
+      </FormField>
+      <FormField label="Cost centre" error="Select a cost centre before submitting.">
+        <Select value="" onChange={() => {}} placeholder="Select a cost centre" options={['Windhoek', 'Walvis Bay']} invalid />
+      </FormField>
+      <FormField label="Description" className="full" span={2}>
+        <Textarea value={note} onChange={e => setNote(e.target.value)} rows={2} placeholder="What was purchased, and for which project" />
+      </FormField>
+      <FormField label="VAT treatment">
+        <div style={{ height: 'var(--nx-control-h)', display: 'flex', alignItems: 'center' }}>
+          <Switch id="vat" checked={vat} onChange={() => setVat(!vat)} label="Amount includes VAT (15%)" />
+        </div>
+      </FormField>
+      <div>
+        <Checkbox id="billable" checked={billable} onChange={() => setBillable(!billable)}
+          label="Billable to client" hint="Appears on the next invoice run." />
+      </div>
+      <FormField label="Initial status" span={2}>
+        <RadioPills name="st" value={st} onChange={setSt} options={[
+          { value: 'draft', label: 'Draft', description: 'Save for later' },
+          { value: 'pending', label: 'Submit', description: 'For approval' },
+        ]} />
+      </FormField>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

@@ -14,15 +14,15 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Bookings', href: index() },
-    { title: 'New Booking', href: create() },
+    { title: 'New booking', href: create() },
 ];
 
 export default function BookingsCreate({ clients, vehicles, drivers }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create New Booking" />
+            <Head title="Create new booking" />
             <PageContainer>
-                <PageHeader title="Create New Booking" />
+                <PageHeader title="Create new booking" />
                 <BookingForm clients={clients} vehicles={vehicles} drivers={drivers} />
             </PageContainer>
         </AppLayout>

@@ -13,15 +13,15 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Vehicles', href: index() },
-    { title: 'Add Vehicle', href: create() },
+    { title: 'Add vehicle', href: create() },
 ];
 
 export default function VehiclesCreate({ vehicleTypes, mdcRateCards }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Add New Vehicle" />
+            <Head title="Add new vehicle" />
             <PageContainer>
-                <PageHeader title="Add New Vehicle" />
+                <PageHeader title="Add new vehicle" />
                 <VehicleForm vehicleTypes={vehicleTypes} mdcRateCards={mdcRateCards} />
             </PageContainer>
         </AppLayout>

@@ -74,12 +74,14 @@ export function LogbookForm({
         <form onSubmit={submit} className="space-y-6">
             <Card>
                 <CardContent>
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {/* Two columns on phones too, so origin/destination and start/end odometer sit side by side. */}
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:gap-6">
                         <FormField
                             label="Date"
                             required
                             htmlFor="date"
                             error={errors.date}
+                            className="col-span-2 md:col-span-1"
                         >
                             <Input
                                 id="date"
@@ -97,6 +99,7 @@ export function LogbookForm({
                             required
                             htmlFor="vehicle_id"
                             error={errors.vehicle_id}
+                            className="col-span-2 md:col-span-1"
                         >
                             <NativeSelect
                                 id="vehicle_id"
@@ -123,6 +126,7 @@ export function LogbookForm({
                             required
                             htmlFor="driver_id"
                             error={errors.driver_id}
+                            className="col-span-2 md:col-span-1"
                         >
                             <NativeSelect
                                 id="driver_id"
@@ -145,9 +149,10 @@ export function LogbookForm({
                         </FormField>
 
                         <FormField
-                            label="Link to Booking (Optional)"
+                            label="Link to booking (optional)"
                             htmlFor="booking_id"
                             error={errors.booking_id}
+                            className="col-span-2 md:col-span-1"
                         >
                             <NativeSelect
                                 id="booking_id"
@@ -170,7 +175,7 @@ export function LogbookForm({
                         </FormField>
 
                         <FormField
-                            label="Origin From"
+                            label="Origin from"
                             required
                             htmlFor="origin_from"
                             error={errors.origin_from}
@@ -187,7 +192,7 @@ export function LogbookForm({
                         </FormField>
 
                         <FormField
-                            label="Origin To"
+                            label="Origin to"
                             required
                             htmlFor="origin_to"
                             error={errors.origin_to}
@@ -204,7 +209,7 @@ export function LogbookForm({
                         </FormField>
 
                         <FormField
-                            label="Start Odometer Reading (km)"
+                            label="Start odometer reading (km)"
                             required
                             htmlFor="start_odometer"
                             error={errors.start_odometer}
@@ -214,17 +219,18 @@ export function LogbookForm({
                                 id="start_odometer"
                                 type="number"
                                 step="0.01"
+                                inputMode="decimal"
                                 value={data.start_odometer}
                                 onChange={(e) =>
                                     setData("start_odometer", e.target.value)
                                 }
-                                placeholder="Enter start odometer reading"
+                                placeholder="e.g., 152300"
                                 aria-invalid={!!errors.start_odometer}
                             />
                         </FormField>
 
                         <FormField
-                            label="End Odometer Reading (km)"
+                            label="End odometer reading (km)"
                             required
                             htmlFor="end_odometer"
                             error={errors.end_odometer}
@@ -234,11 +240,12 @@ export function LogbookForm({
                                 id="end_odometer"
                                 type="number"
                                 step="0.01"
+                                inputMode="decimal"
                                 value={data.end_odometer}
                                 onChange={(e) =>
                                     setData("end_odometer", e.target.value)
                                 }
-                                placeholder="Enter end odometer reading"
+                                placeholder="e.g., 152780"
                                 aria-invalid={!!errors.end_odometer}
                             />
                         </FormField>
@@ -247,7 +254,7 @@ export function LogbookForm({
                             label="Purpose"
                             htmlFor="purpose"
                             error={errors.purpose}
-                            className="md:col-span-2"
+                            className="col-span-2"
                         >
                             <Textarea
                                 id="purpose"
@@ -265,7 +272,7 @@ export function LogbookForm({
                             label="Notes"
                             htmlFor="notes"
                             error={errors.notes}
-                            className="md:col-span-2"
+                            className="col-span-2"
                         >
                             <Textarea
                                 id="notes"
@@ -285,7 +292,7 @@ export function LogbookForm({
             <div className="flex gap-3">
                 <Button type="submit" disabled={processing}>
                     {processing && <Spinner />}
-                    {logbook ? "Update Entry" : "Create Entry"}
+                    {logbook ? "Update entry" : "Create entry"}
                 </Button>
                 <Button asChild variant="ghost">
                     <Link href={index()}>Cancel</Link>

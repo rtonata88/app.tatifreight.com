@@ -26,15 +26,15 @@ export default function LogbookEdit({
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Logbook", href: index() },
-        { title: "Edit Entry", href: edit(logbook.id) },
+        { title: "Edit entry", href: edit(logbook.id) },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Edit Logbook Entry" />
+            <Head title="Edit logbook entry" />
             <PageContainer>
                 <PageHeader
-                    title="Edit Logbook Entry"
+                    title="Edit logbook entry"
                     actions={
                         <Button asChild variant="ghost">
                             <Link href={index()}>

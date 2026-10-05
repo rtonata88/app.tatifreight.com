@@ -8,15 +8,15 @@ import type { BreadcrumbItem } from "@/types";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: "Clients", href: index() },
-    { title: "Add Client", href: create() },
+    { title: "Add client", href: create() },
 ];
 
 export default function ClientsCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Add New Client" />
+            <Head title="Add new client" />
             <PageContainer>
-                <PageHeader title="Add New Client" />
+                <PageHeader title="Add new client" />
                 <ClientForm />
             </PageContainer>
         </AppLayout>

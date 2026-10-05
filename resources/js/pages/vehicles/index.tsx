@@ -55,15 +55,15 @@ export default function VehiclesIndex({ vehicles, filters: initialFilters, can }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Fleet Management" />
+            <Head title="Fleet management" />
             <PageContainer>
                 <PageHeader
-                    title="Fleet Management"
+                    title="Fleet management"
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> Add Vehicle
+                                    <Plus /> Add vehicle
                                 </Link>
                             </Button>
                         )
@@ -83,9 +83,9 @@ export default function VehiclesIndex({ vehicles, filters: initialFilters, can }
                                 />
                             </div>
                             <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
-                                <option value="">All Statuses</option>
+                                <option value="">All statuses</option>
                                 <option value="available">Available</option>
-                                <option value="in_use">In Use</option>
+                                <option value="in_use">In use</option>
                                 <option value="maintenance">Maintenance</option>
                                 <option value="retired">Retired</option>
                             </NativeSelect>
@@ -101,7 +101,7 @@ export default function VehiclesIndex({ vehicles, filters: initialFilters, can }
                                         <div key={vehicle.id} className="space-y-3 rounded-lg border p-4">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <div className="text-lg font-semibold">{vehicle.reg_number}</div>
+                                                    <div className="font-mono text-lg font-semibold">{vehicle.reg_number}</div>
                                                     <div className="text-sm text-muted-foreground">{vehicle.type}</div>
                                                 </div>
                                                 <StatusBadge tone={statusTone[vehicle.status] ?? 'gray'}>{humanize(vehicle.status)}</StatusBadge>
@@ -116,7 +116,7 @@ export default function VehiclesIndex({ vehicles, filters: initialFilters, can }
                                                     <div className="text-sm font-medium">{formatNumber(vehicle.current_mileage)} km</div>
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs text-muted-foreground">Insurance Expiry</div>
+                                                    <div className="text-xs text-muted-foreground">Insurance expiry</div>
                                                     <InsuranceExpiry vehicle={vehicle} />
                                                 </div>
                                             </div>
@@ -132,19 +132,19 @@ export default function VehiclesIndex({ vehicles, filters: initialFilters, can }
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Reg Number</TableHead>
+                                                <TableHead>Reg number</TableHead>
                                                 <TableHead>Type</TableHead>
-                                                <TableHead>Make &amp; Model</TableHead>
+                                                <TableHead>Make &amp; model</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Mileage</TableHead>
-                                                <TableHead>Insurance Expiry</TableHead>
+                                                <TableHead>Insurance expiry</TableHead>
                                                 <TableHead className="text-right">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {vehicles.data.map((vehicle) => (
                                                 <TableRow key={vehicle.id}>
-                                                    <TableCell className="font-semibold">{vehicle.reg_number}</TableCell>
+                                                    <TableCell className="font-mono font-semibold">{vehicle.reg_number}</TableCell>
                                                     <TableCell>{vehicle.type}</TableCell>
                                                     <TableCell>
                                                         {vehicle.make} {vehicle.model}
@@ -185,7 +185,8 @@ function InsuranceExpiry({ vehicle }: { vehicle: VehicleRow }) {
 
     return (
         <span className="inline-flex flex-wrap items-center gap-2 text-sm">
-            <span className={vehicle.insurance_expired ? 'font-medium text-red-600 dark:text-red-400' : ''}>{formatDate(vehicle.insurance_expiry)}</span>
+            <span className={vehicle.insurance_expired ? 'font-medium text-destructive'
+ : ''}>{formatDate(vehicle.insurance_expiry)}</span>
             {vehicle.insurance_expired && <StatusBadge tone="red">Expired</StatusBadge>}
         </span>
     );

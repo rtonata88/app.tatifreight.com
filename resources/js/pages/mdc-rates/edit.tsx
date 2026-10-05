@@ -12,15 +12,15 @@ type Props = {
 
 export default function MdcRatesEdit({ mdcRateCard }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'MDC Rates', href: index() },
+        { title: 'MDC rates', href: index() },
         { title: mdcRateCard.category_name, href: edit(mdcRateCard.id) },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Edit MDC Rate Card" />
+            <Head title="Edit MDC rate card" />
             <PageContainer>
-                <PageHeader title="Edit MDC Rate Card" description="Update RFANAM Mass Distance Charge rate" />
+                <PageHeader title="Edit MDC rate card" description="Update RFANAM Mass Distance Charge rate." />
                 <MdcRateForm rate={mdcRateCard} />
             </PageContainer>
         </AppLayout>

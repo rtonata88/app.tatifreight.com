@@ -23,11 +23,11 @@ export const calendarStatusTone: Record<string, BadgeTone> = {
 
 /** Classes for a booking chip in the month grid (and its legend swatch). */
 export const calendarChipClass: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800 border-l-2 border-yellow-500 dark:bg-yellow-500/15 dark:text-yellow-200',
-    confirmed: 'bg-blue-100 text-blue-800 border-l-2 border-blue-500 dark:bg-blue-500/15 dark:text-blue-200',
-    in_progress: 'bg-green-100 text-green-800 border-l-2 border-green-500 dark:bg-green-500/15 dark:text-green-200',
-    completed: 'bg-gray-100 text-gray-800 border-l-2 border-gray-500 dark:bg-gray-500/20 dark:text-gray-200',
-    cancelled: 'bg-red-100 text-red-800 border-l-2 border-red-500 dark:bg-red-500/15 dark:text-red-200',
+    pending: 'bg-(--nx-warn-wash) text-foreground border-l-2 border-warning',
+    confirmed: 'bg-(--nx-info-wash) text-foreground border-l-2 border-info',
+    in_progress: 'bg-(--nx-pos-wash) text-foreground border-l-2 border-success',
+    completed: 'bg-muted text-muted-foreground border-l-2 border-muted-foreground',
+    cancelled: 'bg-(--nx-neg-wash) text-foreground border-l-2 border-destructive',
 };
 
 export const invoiceStatusTone: Record<string, BadgeTone> = {

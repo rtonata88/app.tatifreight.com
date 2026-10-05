@@ -1,5 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
+import { Notice } from '@/components/notice';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ export default function Login({
     return (
         <AuthLayout
             title="Log in to your account"
-            description="Enter your email and password below to log in"
+            description="Enter your email and password below to log in."
         >
             <Head title="Log in" />
 
@@ -88,6 +89,7 @@ export default function Login({
 
                             <Button
                                 type="submit"
+                                size="lg"
                                 className="mt-4 w-full"
                                 tabIndex={4}
                                 disabled={processing}
@@ -111,9 +113,9 @@ export default function Login({
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <Notice tone="success" className="mb-4">
                     {status}
-                </div>
+                </Notice>
             )}
         </AuthLayout>
     );

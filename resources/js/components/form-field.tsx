@@ -16,11 +16,11 @@ type FormFieldProps = {
 /** Label + control + help text + validation error, laid out consistently. */
 export function FormField({ label, htmlFor, error, description, required, className, children }: FormFieldProps) {
     return (
-        <div className={cn('grid gap-2', className)}>
+        <div className={cn('grid gap-1.5', className)}>
             {label && (
                 <Label htmlFor={htmlFor}>
                     {label}
-                    {required && <span className="text-destructive">*</span>}
+                    {required && <span className="-ml-1 text-destructive">*</span>}
                 </Label>
             )}
             {children}

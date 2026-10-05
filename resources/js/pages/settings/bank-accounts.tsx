@@ -17,8 +17,8 @@ import type { BreadcrumbItem } from '@/types';
 type Account = BankAccount & { is_active: boolean };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Company Settings', href: company() },
-    { title: 'Bank Accounts', href: bankAccountsRoute() },
+    { title: 'Company settings', href: company() },
+    { title: 'Bank accounts', href: bankAccountsRoute() },
 ];
 
 export default function BankAccounts({ bankAccounts }: { bankAccounts: Account[] }) {
@@ -37,20 +37,20 @@ export default function BankAccounts({ bankAccounts }: { bankAccounts: Account[]
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Bank Accounts" />
+            <Head title="Bank accounts" />
             <PageContainer>
                 <PageHeader
-                    title="Bank Accounts"
-                    description="Manage your company's bank accounts for payments"
+                    title="Bank accounts"
+                    description="Manage the bank accounts your company receives payments into."
                     actions={
                         <>
                             <Button asChild variant="ghost">
                                 <Link href={company()}>
-                                    <ArrowLeft /> Back to Settings
+                                    <ArrowLeft /> Back to settings
                                 </Link>
                             </Button>
                             <Button onClick={openAdd}>
-                                <Plus /> Add Bank Account
+                                <Plus /> Add bank account
                             </Button>
                         </>
                     }
@@ -61,7 +61,7 @@ export default function BankAccounts({ bankAccounts }: { bankAccounts: Account[]
                         <Card>
                             <CardContent className="py-12 text-center">
                                 <p className="mb-4 text-muted-foreground">No bank accounts configured yet.</p>
-                                <Button onClick={openAdd}>Add Your First Bank Account</Button>
+                                <Button onClick={openAdd}>Add your first bank account</Button>
                             </CardContent>
                         </Card>
                     ) : (
@@ -77,32 +77,32 @@ export default function BankAccounts({ bankAccounts }: { bankAccounts: Account[]
 
 function AccountCard({ account, onEdit }: { account: Account; onEdit: () => void }) {
     const fields: [string, string | null][] = [
-        ['Account Name', account.account_name],
-        ['Account Number', account.account_number],
+        ['Account name', account.account_name],
+        ['Account number', account.account_number],
         ['Currency', account.currency],
         ['Branch', account.branch_name],
-        ['Branch Code', account.branch_code],
-        ['SWIFT Code', account.swift_code],
+        ['Branch code', account.branch_code],
+        ['SWIFT code', account.swift_code],
     ];
 
     const patch = (url: string) => router.patch(url, {}, { preserveScroll: true });
 
     return (
-        <Card className={cn(account.is_primary && 'border-2 border-blue-500')}>
+        <Card className={cn(account.is_primary && 'border-primary')}>
             <CardContent className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex-1">
                     <div className="mb-3 flex flex-wrap items-center gap-3">
-                        <h3 className="text-lg font-semibold">{account.bank_name}</h3>
+                        <h3 className="text-base font-semibold">{account.bank_name}</h3>
                         {account.is_primary && <PrimaryBadge />}
                         {!account.is_active && <InactiveBadge />}
                     </div>
-                    <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-3 md:gap-4">
                         {fields
                             .filter(([, value]) => value)
                             .map(([label, value]) => (
                                 <div key={label}>
-                                    <p className="mb-1 text-xs text-muted-foreground">{label}</p>
-                                    <p className="font-medium">{value}</p>
+                                    <p className="mb-1 nx-label">{label}</p>
+                                    <p className="font-mono font-medium">{value}</p>
                                 </div>
                             ))}
                     </div>
@@ -111,7 +111,7 @@ function AccountCard({ account, onEdit }: { account: Account; onEdit: () => void
                 <div className="flex flex-wrap gap-2">
                     {!account.is_primary && (
                         <Button size="sm" variant="ghost" onClick={() => patch(primary(account.id).url)}>
-                            Set as Primary
+                            Set as primary
                         </Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={onEdit}>

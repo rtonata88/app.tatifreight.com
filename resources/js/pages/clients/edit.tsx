@@ -21,9 +21,9 @@ export default function ClientsEdit({ client }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit Client: ${client.name}`} />
+            <Head title={`Edit client: ${client.name}`} />
             <PageContainer>
-                <PageHeader title={`Edit Client: ${client.name}`} />
+                <PageHeader title={`Edit client: ${client.name}`} />
                 <ClientForm client={client} />
             </PageContainer>
         </AppLayout>

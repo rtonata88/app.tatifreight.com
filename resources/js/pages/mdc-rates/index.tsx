@@ -46,7 +46,7 @@ type Props = {
     can: { create: boolean; edit: boolean; delete: boolean };
 };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'MDC Rates', href: index() }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'MDC rates', href: index() }];
 
 export default function MdcRatesIndex({ mdcRates, totalRates, activeRates, filters: initialFilters, can }: Props) {
     const { filters, setFilter } = useFilters(index().url, initialFilters);
@@ -69,16 +69,16 @@ export default function MdcRatesIndex({ mdcRates, totalRates, activeRates, filte
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="MDC Rate Cards" />
+            <Head title="MDC rate cards" />
             <PageContainer>
                 <PageHeader
-                    title="MDC Rate Cards"
-                    description="Manage RFANAM Mass Distance Charge rates"
+                    title="MDC rate cards"
+                    description="Manage RFANAM Mass Distance Charge rates."
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> Add MDC Rate
+                                    <Plus /> Add MDC rate
                                 </Link>
                             </Button>
                         )
@@ -87,14 +87,14 @@ export default function MdcRatesIndex({ mdcRates, totalRates, activeRates, filte
 
                 <Card>
                     <CardContent className="space-y-6">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="rounded-lg bg-muted p-4">
-                                <div className="text-sm text-muted-foreground">Total Rate Categories</div>
-                                <div className="text-2xl font-bold">{totalRates}</div>
+                                <div className="text-sm text-muted-foreground">Total rate categories</div>
+                                <div className="font-condensed text-2xl font-bold tabular-nums">{totalRates}</div>
                             </div>
-                            <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
-                                <div className="text-sm text-green-600 dark:text-green-400">Active Rates</div>
-                                <div className="text-2xl font-bold text-green-900 dark:text-green-100">{activeRates}</div>
+                            <div className="rounded-lg bg-(--nx-pos-wash) p-4">
+                                <div className="text-sm text-success">Active rates</div>
+                                <div className="font-condensed text-2xl font-bold tabular-nums">{activeRates}</div>
                             </div>
                         </div>
 
@@ -110,92 +110,187 @@ export default function MdcRatesIndex({ mdcRates, totalRates, activeRates, filte
                             </div>
                             <div className="w-full sm:w-48">
                                 <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
-                                    <option value="all">All Status</option>
-                                    <option value="active">Active Only</option>
-                                    <option value="inactive">Inactive Only</option>
+                                    <option value="all">All status</option>
+                                    <option value="active">Active only</option>
+                                    <option value="inactive">Inactive only</option>
                                 </NativeSelect>
                             </div>
                         </div>
 
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Category</TableHead>
-                                    <TableHead>GVM Range</TableHead>
-                                    <TableHead>Rate (N$/100km)</TableHead>
-                                    <TableHead>Effective Period</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {mdcRates.data.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                                            No MDC rates found. Add your first rate to get started.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    mdcRates.data.map((rate) => (
-                                        <TableRow key={rate.id}>
-                                            <TableCell className="whitespace-normal">
+                        {/* Phones: cards */}
+                        <div className="space-y-3 md:hidden">
+                            {mdcRates.data.length === 0 ? (
+                                <p className="py-8 text-center text-sm text-muted-foreground">
+                                    No MDC rates found. Add your first rate to get started.
+                                </p>
+                            ) : (
+                                mdcRates.data.map((rate) => (
+                                    <div key={rate.id} className="space-y-3 rounded-lg border bg-card p-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
                                                 <div className="font-medium">{rate.category_name}</div>
                                                 {rate.notes && <div className="text-xs text-muted-foreground">{rate.notes}</div>}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatNumber(rate.min_gvm_tonnes, 2)}t - {rate.max_gvm_tonnes ? `${formatNumber(rate.max_gvm_tonnes, 2)}t` : '∞'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="font-mono font-semibold">N$ {formatNumber(rate.rate_per_100km, 2)}</span>
-                                            </TableCell>
-                                            <TableCell className="text-sm">
-                                                <div>From: {formatDate(rate.effective_from)}</div>
-                                                {rate.effective_to ? (
-                                                    <div className="text-muted-foreground">To: {formatDate(rate.effective_to)}</div>
-                                                ) : (
-                                                    <div className="text-green-600 dark:text-green-400">Ongoing</div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {rate.is_active ? <StatusBadge tone="green">Active</StatusBadge> : <StatusBadge tone="gray">Inactive</StatusBadge>}
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" aria-label="Actions">
-                                                            <MoreHorizontal />
+                                            </div>
+                                            {rate.is_active ? (
+                                                <StatusBadge tone="green">Active</StatusBadge>
+                                            ) : (
+                                                <StatusBadge tone="gray">Inactive</StatusBadge>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t pt-3">
+                                            <div>
+                                                <div className="text-xs text-muted-foreground">GVM range</div>
+                                                <div className="text-sm tabular-nums">
+                                                    {formatNumber(rate.min_gvm_tonnes, 2)}t -{' '}
+                                                    {rate.max_gvm_tonnes ? `${formatNumber(rate.max_gvm_tonnes, 2)}t` : '∞'}
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs text-muted-foreground">Rate</div>
+                                                <div className="font-mono text-sm font-semibold whitespace-nowrap tabular-nums">
+                                                    N$ {formatNumber(rate.rate_per_100km, 2)}
+                                                    /100km
+                                                </div>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <div className="text-xs text-muted-foreground">Effective period</div>
+                                                <div className="text-sm">
+                                                    {formatDate(rate.effective_from)} –{' '}
+                                                    {rate.effective_to ? (
+                                                        formatDate(rate.effective_to)
+                                                    ) : (
+                                                        <span className="text-success">Ongoing</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {(can.edit || can.delete) && (
+                                            <div className="flex gap-2 border-t pt-3">
+                                                {can.edit && (
+                                                    <>
+                                                        <Button asChild size="sm" variant="outline" className="flex-1">
+                                                            <Link href={edit(rate.id)}>
+                                                                <Pencil /> Edit
+                                                            </Link>
                                                         </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        {can.edit && (
-                                                            <>
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={edit(rate.id)}>
-                                                                        <Pencil /> Edit
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onSelect={() => toggle(rate)}>
-                                                                    {rate.is_active ? <CircleX /> : <CircleCheck />}
-                                                                    {rate.is_active ? 'Deactivate' : 'Activate'}
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                        {can.delete && (
-                                                            <>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(rate)}>
-                                                                    <Trash2 /> Delete
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                        <Button size="sm" variant="outline" className="flex-1" onClick={() => toggle(rate)}>
+                                                            {rate.is_active ? <CircleX /> : <CircleCheck />}
+                                                            {rate.is_active ? 'Deactivate' : 'Activate'}
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                {can.delete && (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" aria-label="More actions">
+                                                                <MoreHorizontal />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(rate)}>
+                                                                <Trash2 /> Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Tablets and up: table */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead>GVM range</TableHead>
+                                        <TableHead className="text-right">Rate (N$/100km)</TableHead>
+                                        <TableHead>Effective period</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {mdcRates.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                                                No MDC rates found. Add your first rate to get started.
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                                    ) : (
+                                        mdcRates.data.map((rate) => (
+                                            <TableRow key={rate.id}>
+                                                <TableCell className="whitespace-normal">
+                                                    <div className="font-medium">{rate.category_name}</div>
+                                                    {rate.notes && <div className="text-xs text-muted-foreground">{rate.notes}</div>}
+                                                </TableCell>
+                                                <TableCell className="tabular-nums">
+                                                    {formatNumber(rate.min_gvm_tonnes, 2)}t -{' '}
+                                                    {rate.max_gvm_tonnes ? `${formatNumber(rate.max_gvm_tonnes, 2)}t` : '∞'}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <span className="font-mono font-semibold tabular-nums">
+                                                        N$ {formatNumber(rate.rate_per_100km, 2)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-sm">
+                                                    <div>From: {formatDate(rate.effective_from)}</div>
+                                                    {rate.effective_to ? (
+                                                        <div className="text-muted-foreground">To: {formatDate(rate.effective_to)}</div>
+                                                    ) : (
+                                                        <div className="text-success">Ongoing</div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {rate.is_active ? (
+                                                        <StatusBadge tone="green">Active</StatusBadge>
+                                                    ) : (
+                                                        <StatusBadge tone="gray">Inactive</StatusBadge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" aria-label="Actions">
+                                                                <MoreHorizontal />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            {can.edit && (
+                                                                <>
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={edit(rate.id)}>
+                                                                            <Pencil /> Edit
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onSelect={() => toggle(rate)}>
+                                                                        {rate.is_active ? <CircleX /> : <CircleCheck />}
+                                                                        {rate.is_active ? 'Deactivate' : 'Activate'}
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                            {can.delete && (
+                                                                <>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(rate)}>
+                                                                        <Trash2 /> Delete
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
 
                         <DataPagination paginator={mdcRates} />
                     </CardContent>

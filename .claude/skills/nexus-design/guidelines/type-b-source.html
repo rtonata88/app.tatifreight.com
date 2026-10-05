@@ -1,0 +1,103 @@
+<!-- @dsCard group="Type candidates" viewport="900x620" subtitle="Humanist and quiet. Built for long reading at small sizes — the least noticeable choice." name="B · Source Sans 3" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&family=Archivo+Narrow:wght@700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; }
+  /* the only change between candidates */
+  .nx-light { --nx-font-body: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif; --nx-font-display: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif; --nx-font-mono: 'Source Code Pro', ui-monospace, monospace; }
+  body { padding: 28px 32px; }
+  .hd { padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .eb { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+  h1 { font-family: var(--nx-font-display); font-weight: 700; font-size: 28px; letter-spacing: -.015em; margin: 10px 0 0; }
+  .sub { font-size: 14px; color: var(--muted-foreground); margin: 8px 0 0; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--nx-lift-0); }
+  .m { padding: 20px; }
+  .mv { font-family: var(--nx-font-condensed); font-weight: 700; font-size: 28px; line-height: 1; margin-top: 12px; }
+  .mm { font-size: 12px; color: var(--muted-foreground); margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 36px; padding: 0 16px; text-align: left; background: var(--secondary); border-bottom: 1px solid var(--border);
+       font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+  td { height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .mono { font-family: var(--nx-font-mono); font-variant-numeric: tabular-nums; }
+  .r { text-align: right; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px; border-radius: 999px;
+          border: 1px solid currentColor; font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+  .dot { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+  .ch { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .ct { font-family: var(--nx-font-display); font-weight: 600; font-size: 16px; margin: 0; }
+  .fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 24px; padding: 24px; }
+  label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+          color: var(--muted-foreground); margin-bottom: 6px; }
+  .val { height: 34px; display: flex; align-items: center; border-bottom: 1px solid var(--input); font-size: 13px; font-weight: 500; }
+  .prose { font-size: 14px; line-height: 1.6; color: var(--nx-fg-2); max-width: 62ch; margin: 24px 0 0; }
+</style>
+</head>
+<body>
+  <div class="hd">
+    <div class="eb">Client management</div>
+    <h1>Invoices</h1>
+    <p class="sub">Issued invoices, their receipts, and anything past its payment terms.</p>
+  </div>
+
+  <div class="metrics">
+    <div class="card m"><div class="eb">Outstanding</div><div class="mv">NAD 2.94m</div><div class="mm">17 invoices · 6 overdue</div></div>
+    <div class="card m"><div class="eb">Collected, February</div><div class="mv">NAD 4.18m</div><div class="mm">+12.4% MoM</div></div>
+    <div class="card m"><div class="eb">Average days to payment</div><div class="mv">34</div><div class="mm">Terms are 30 days</div></div>
+  </div>
+
+  <div class="card" style="overflow:hidden; margin-bottom:24px">
+    <div class="ch"><h2 class="ct">All invoices</h2><span class="mono" style="font-size:12px;color:var(--muted-foreground)">184 records</span></div>
+    <table>
+      <thead><tr><th>Reference</th><th>Client</th><th class="r">Amount (NAD)</th><th>Status</th><th class="r">Issued</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono">INV-2026-0117</td>
+          <td>Roads Authority</td>
+          <td class="r mono">486,200.00</td>
+          <td><span class="pill" style="color:#28a745"><span class="dot"></span>PAID</span></td>
+          <td class="r mono" style="color:var(--muted-foreground)">14 Feb 2026</td>
+        </tr><tr>
+          <td class="mono">INV-2026-0118</td>
+          <td>NamWater</td>
+          <td class="r mono">112,940.00</td>
+          <td><span class="pill" style="color:#b45309"><span class="dot"></span>PENDING</span></td>
+          <td class="r mono" style="color:var(--muted-foreground)">11 Feb 2026</td>
+        </tr><tr>
+          <td class="mono">INV-2026-0119</td>
+          <td>City of Windhoek</td>
+          <td class="r mono">78,500.00</td>
+          <td><span class="pill" style="color:#dc3545"><span class="dot"></span>OVERDUE</span></td>
+          <td class="r mono" style="color:var(--muted-foreground)">09 Feb 2026</td>
+        </tr><tr>
+          <td class="mono">INV-2026-0121</td>
+          <td>Ohangwena Regional Council</td>
+          <td class="r mono">214,800.00</td>
+          <td><span class="pill" style="color:#b45309"><span class="dot"></span>PENDING</span></td>
+          <td class="r mono" style="color:var(--muted-foreground)">06 Feb 2026</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="ch"><h2 class="ct">Invoice detail</h2></div>
+    <div class="fields">
+      <div><label>Reference</label><div class="val mono">INV-2026-0117</div></div>
+      <div><label>Client</label><div class="val">Roads Authority</div></div>
+      <div><label>Project</label><div class="val">NX-0198 · MR44 rehabilitation</div></div>
+      <div><label>Net</label><div class="val mono">NAD 422,782.61</div></div>
+      <div><label>VAT (15%)</label><div class="val mono">NAD 63,417.39</div></div>
+      <div><label>Total</label><div class="val mono" style="font-weight:600">NAD 486,200.00</div></div>
+    </div>
+  </div>
+
+  <p class="prose">Payment is due 30 days from the invoice date. Amounts unpaid after that date
+  attract interest at the prevailing prime rate plus two per cent, calculated daily. Queries must
+  be raised in writing within seven days of receipt.</p>
+</body>
+</html>

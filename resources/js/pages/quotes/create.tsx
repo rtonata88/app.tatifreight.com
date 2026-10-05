@@ -17,15 +17,15 @@ type Props = {
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Quotations', href: index() },
-    { title: 'New Quote', href: create() },
+    { title: 'New quote', href: create() },
 ];
 
 export default function QuotesCreate({ clients, vehicles, bankAccounts, defaults, taxRate }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create New Quote" />
+            <Head title="Create new quote" />
             <PageContainer>
-                <PageHeader title="Create New Quote" />
+                <PageHeader title="Create new quote" />
                 <QuoteForm
                     clients={clients}
                     vehicles={vehicles}

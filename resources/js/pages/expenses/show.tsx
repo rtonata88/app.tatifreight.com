@@ -60,21 +60,21 @@ export default function ExpensesShow({ expense, can }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Expense Details" />
+            <Head title="Expense details" />
             <PageContainer>
                 <PageHeader
-                    title="Expense Details"
+                    title="Expense details"
                     actions={
                         <>
                             <Button asChild variant="ghost">
                                 <Link href={index()}>
-                                    <ArrowLeft /> Back to Expenses
+                                    <ArrowLeft /> Back to expenses
                                 </Link>
                             </Button>
                             {can.edit && (
                                 <Button asChild>
                                     <Link href={edit(expense.id)}>
-                                        <Pencil /> Edit Expense
+                                        <Pencil /> Edit expense
                                     </Link>
                                 </Button>
                             )}
@@ -87,18 +87,28 @@ export default function ExpensesShow({ expense, can }: Props) {
                     <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                             <div className="flex items-center gap-4">
-                                <h2 className="text-3xl font-bold">{money(expense.amount)}</h2>
-                                <StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'} className="px-3 py-1 text-sm">
-                                    {ucfirst(expense.status)}
-                                </StatusBadge>
+                                <h2 className="font-condensed text-3xl font-bold tabular-nums">{money(expense.amount)}</h2>
+                                {statusBadge}
                             </div>
                             <p className="mt-2 text-lg text-muted-foreground">{expense.description}</p>
                             <p className="mt-1">{categoryBadge}</p>
                         </div>
+                        {/* Phones: approval sits here, not ~900px down in Quick actions. */}
+                        {can.edit && expense.status === 'pending' && (
+                            <div className="grid grid-cols-2 gap-2 md:hidden">
+                                <Button onClick={approveExpense}>
+                                    <CheckCircle2 /> Approve
+                                </Button>
+                                <Button variant="destructive" onClick={rejectExpense}>
+                                    <XCircle /> Reject
+                                </Button>
+                            </div>
+                        )}
+                        {/* Phones get the receipt card's download button further down. */}
                         {expense.has_receipt && (
-                            <Button asChild variant="ghost" size="sm">
+                            <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
                                 <a href={download(expense.id).url}>
-                                    <Download /> Download Receipt
+                                    <Download /> Download receipt
                                 </a>
                             </Button>
                         )}
@@ -110,12 +120,12 @@ export default function ExpensesShow({ expense, can }: Props) {
                     <div className="space-y-6 lg:col-span-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Expense Information</CardTitle>
+                                <CardTitle>Expense information</CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-2 gap-4">
-                                <Detail label="Expense Date">{formatDate(expense.expense_date)}</Detail>
+                                <Detail label="Expense date">{formatDate(expense.expense_date)}</Detail>
                                 <Detail label="Category">{categoryBadge}</Detail>
-                                <Detail label="Amount" valueClassName="text-lg">
+                                <Detail label="Amount" valueClassName="font-mono text-lg tabular-nums">
                                     {money(expense.amount)}
                                 </Detail>
                                 <Detail label="Status">{statusBadge}</Detail>
@@ -127,14 +137,14 @@ export default function ExpensesShow({ expense, can }: Props) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Related Information</CardTitle>
+                                <CardTitle>Related information</CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-2 gap-4">
                                 {expense.vehicle && (
                                     <div>
                                         <span className="text-sm text-muted-foreground">Vehicle</span>
                                         <p className="font-medium">
-                                            <Link href={vehicleShow(expense.vehicle.id)} className="text-blue-600 hover:underline dark:text-blue-400">
+                                            <Link href={vehicleShow(expense.vehicle.id)} className="font-mono text-primary hover:underline">
                                                 {expense.vehicle.reg_number}
                                             </Link>
                                         </p>
@@ -147,7 +157,7 @@ export default function ExpensesShow({ expense, can }: Props) {
                                         <span className="text-sm text-muted-foreground">Booking</span>
                                         <p className="font-medium">
                                             {/* bookings.index belongs to another module; literal URL avoids depending on its generated routes. */}
-                                            <Link href={bookingsIndex()} className="text-blue-600 hover:underline dark:text-blue-400">
+                                            <Link href={bookingsIndex()} className="font-mono text-primary hover:underline">
                                                 {expense.booking.booking_number}
                                             </Link>
                                         </p>
@@ -156,14 +166,14 @@ export default function ExpensesShow({ expense, can }: Props) {
                                 )}
 
                                 <div>
-                                    <span className="text-sm text-muted-foreground">Submitted By</span>
+                                    <span className="text-sm text-muted-foreground">Submitted by</span>
                                     <p className="font-medium">{expense.submitted_by}</p>
                                     <p className="text-xs text-muted-foreground">{dateTimeComma(expense.created_at)}</p>
                                 </div>
 
                                 {expense.approved_by && (
                                     <div>
-                                        <span className="text-sm text-muted-foreground">Approved By</span>
+                                        <span className="text-sm text-muted-foreground">Approved by</span>
                                         <p className="font-medium">{expense.approved_by}</p>
                                         {expense.approved_at && <p className="text-xs text-muted-foreground">{dateTimeComma(expense.approved_at)}</p>}
                                     </div>
@@ -198,13 +208,13 @@ export default function ExpensesShow({ expense, can }: Props) {
                                     ) : (
                                         <div className="rounded-lg bg-muted p-8 text-center">
                                             <FileText className="mx-auto mb-4 size-16 text-muted-foreground" />
-                                            <p className="text-sm text-muted-foreground">PDF Receipt</p>
-                                            <p className="mt-1 text-xs text-muted-foreground">{expense.receipt_extension?.toUpperCase()} File</p>
+                                            <p className="text-sm text-muted-foreground">PDF receipt</p>
+                                            <p className="mt-1 text-xs text-muted-foreground">{expense.receipt_extension?.toUpperCase()} file</p>
                                         </div>
                                     )}
                                     <Button asChild className="w-full">
                                         <a href={download(expense.id).url}>
-                                            <Download /> Download Receipt
+                                            <Download /> Download receipt
                                         </a>
                                     </Button>
                                 </CardContent>
@@ -214,29 +224,29 @@ export default function ExpensesShow({ expense, can }: Props) {
                         {can.edit && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Quick Actions</CardTitle>
+                                    <CardTitle>Quick actions</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-2">
                                     {expense.status === 'pending' && (
-                                        <>
+                                        <div className="hidden space-y-2 md:block">
                                             <Button className="w-full" onClick={approveExpense}>
-                                                <CheckCircle2 /> Approve Expense
+                                                <CheckCircle2 /> Approve expense
                                             </Button>
                                             <Button variant="destructive" className="w-full" onClick={rejectExpense}>
-                                                <XCircle /> Reject Expense
+                                                <XCircle /> Reject expense
                                             </Button>
-                                        </>
+                                        </div>
                                     )}
                                     <Button asChild variant="ghost" className="w-full">
                                         <Link href={edit(expense.id)}>
-                                            <Pencil /> Edit Expense
+                                            <Pencil /> Edit expense
                                         </Link>
                                     </Button>
                                     {can.delete && (
                                         <ConfirmDialog
                                             trigger={
                                                 <Button variant="destructive" className="w-full">
-                                                    <Trash2 /> Delete Expense
+                                                    <Trash2 /> Delete expense
                                                 </Button>
                                             }
                                             description="Are you sure you want to delete this expense?"
@@ -249,13 +259,13 @@ export default function ExpensesShow({ expense, can }: Props) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Status History</CardTitle>
+                                <CardTitle>Status history</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                <HistoryItem dotClassName="bg-blue-500" title="Created" by={expense.submitted_by} at={dateTimeComma(expense.created_at)} />
+                                <HistoryItem dotClassName="bg-info" title="Created" by={expense.submitted_by} at={dateTimeComma(expense.created_at)} />
                                 {expense.approved_by && (
                                     <HistoryItem
-                                        dotClassName={expense.status === 'approved' ? 'bg-green-500' : 'bg-red-500'}
+                                        dotClassName={expense.status === 'approved' ? 'bg-success' : 'bg-destructive'}
                                         title={ucfirst(expense.status)}
                                         by={expense.approved_by}
                                         at={expense.approved_at ? dateTimeComma(expense.approved_at) : null}

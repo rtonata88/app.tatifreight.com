@@ -17,10 +17,10 @@ export type BankAccount = {
 /** Read-only summary of an account, used on the company settings page. */
 export function BankAccountDetails({ account, compact = false }: { account: BankAccount; compact?: boolean }) {
     const rows: [string, string | null][] = [
-        ['Account Name', account.account_name],
-        ['Account No', account.account_number],
+        ['Account name', account.account_name],
+        ['Account no.', account.account_number],
         ['Branch', account.branch_name],
-        ['Branch Code', account.branch_code],
+        ['Branch code', account.branch_code],
         ['SWIFT', account.swift_code],
         ['Currency', account.currency],
     ];
@@ -29,7 +29,7 @@ export function BankAccountDetails({ account, compact = false }: { account: Bank
         <div
             className={cn(
                 'rounded-lg border p-4',
-                account.is_primary && 'border-blue-300 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10',
+                account.is_primary && 'border-primary bg-(--nx-brass-wash-2)',
                 compact && 'text-sm',
             )}
         >
@@ -37,12 +37,12 @@ export function BankAccountDetails({ account, compact = false }: { account: Bank
                 <h4 className="font-semibold">{account.bank_name}</h4>
                 {account.is_primary && <PrimaryBadge />}
             </div>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-muted-foreground sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {rows
                     .filter(([, value]) => value)
                     .map(([label, value]) => (
                         <div key={label}>
-                            <strong className="text-foreground">{label}:</strong> {value}
+                            <strong className="text-foreground">{label}:</strong> <span className="font-mono">{value}</span>
                         </div>
                     ))}
             </div>
@@ -51,12 +51,12 @@ export function BankAccountDetails({ account, compact = false }: { account: Bank
 }
 
 export function PrimaryBadge() {
-    return <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">Primary</span>;
+    return <StatusBadge tone="indigo">Primary</StatusBadge>;
 }
 
 export function InactiveBadge() {
     return (
-        <StatusBadge tone="gray" className="font-semibold">
+        <StatusBadge tone="gray">
             Inactive
         </StatusBadge>
     );

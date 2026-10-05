@@ -1,14 +1,15 @@
 import { Head, Link, router } from "@inertiajs/react";
 import {
+    ArrowRight,
     BookOpen,
-    ClipboardList,
-    MapPin,
+    ChevronDown,
+    ListFilter,
     Pencil,
     Plus,
     Search,
     Trash2,
-    TrendingUp,
 } from "lucide-react";
+import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DataPagination } from "@/components/data-pagination";
 import { EmptyState } from "@/components/empty-state";
@@ -85,6 +86,14 @@ export default function LogbookIndex({
         filtered: "1",
     });
 
+    // Phones: vehicle and dates fold away behind a "Filters" toggle; search stays visible.
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const activeFilters = [
+        filters.vehicle,
+        filters.dateFrom,
+        filters.dateTo,
+    ].filter(Boolean).length;
+
     const deleteLogbook = (logbook: LogbookRow, done: () => void) =>
         router.delete(destroy(logbook.id).url, {
             preserveScroll: true,
@@ -93,33 +102,29 @@ export default function LogbookIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Vehicle Logbook" />
+            <Head title="Vehicle logbook" />
             <PageContainer>
                 <PageHeader
-                    title="Vehicle Logbook"
+                    title="Vehicle logbook"
                     actions={
                         can.create && (
                             <Button asChild>
                                 <Link href={create()}>
-                                    <Plus /> New Entry
+                                    <Plus /> New entry
                                 </Link>
                             </Button>
                         )
                     }
                 />
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-2">
                     <StatCard
-                        label="Total Distance"
+                        label="Total distance"
                         value={`${formatNumber(totalDistance)} km`}
-                        icon={TrendingUp}
-                        valueClassName="text-3xl text-blue-700 dark:text-blue-300"
                     />
                     <StatCard
-                        label="Total Trips"
+                        label="Total trips"
                         value={formatNumber(totalTrips)}
-                        icon={ClipboardList}
-                        valueClassName="text-3xl text-green-700 dark:text-green-300"
                     />
                 </div>
 
@@ -140,45 +145,84 @@ export default function LogbookIndex({
                                     />
                                 </div>
                             </FormField>
-                            <FormField label="Vehicle" htmlFor="vehicle">
-                                <NativeSelect
-                                    id="vehicle"
-                                    value={filters.vehicle}
-                                    onChange={(e) =>
-                                        setFilter("vehicle", e.target.value)
-                                    }
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="justify-between md:hidden"
+                                aria-expanded={filtersOpen}
+                                aria-controls="logbook-filters"
+                                onClick={() => setFiltersOpen((open) => !open)}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <ListFilter /> Filters
+                                    {activeFilters > 0 && (
+                                        <span className="rounded-full bg-muted px-2 text-xs font-medium tabular-nums">
+                                            {activeFilters}
+                                        </span>
+                                    )}
+                                </span>
+                                <ChevronDown
+                                    className={cn(
+                                        "transition-transform",
+                                        filtersOpen && "rotate-180",
+                                    )}
+                                />
+                            </Button>
+                            {/* From md up this wrapper disappears (display: contents) and the fields join the 4-column grid. */}
+                            <div
+                                id="logbook-filters"
+                                className={cn(
+                                    "grid grid-cols-2 gap-3 md:contents",
+                                    !filtersOpen && "max-md:hidden",
+                                )}
+                            >
+                                <FormField
+                                    label="Vehicle"
+                                    htmlFor="vehicle"
+                                    className="col-span-2"
                                 >
-                                    <option value="">All Vehicles</option>
-                                    {vehicles.map((vehicle) => (
-                                        <option
-                                            key={vehicle.value}
-                                            value={vehicle.value}
-                                        >
-                                            {vehicle.label}
-                                        </option>
-                                    ))}
-                                </NativeSelect>
-                            </FormField>
-                            <FormField label="Date From" htmlFor="dateFrom">
-                                <Input
-                                    id="dateFrom"
-                                    type="date"
-                                    value={filters.dateFrom}
-                                    onChange={(e) =>
-                                        setFilter("dateFrom", e.target.value)
-                                    }
-                                />
-                            </FormField>
-                            <FormField label="Date To" htmlFor="dateTo">
-                                <Input
-                                    id="dateTo"
-                                    type="date"
-                                    value={filters.dateTo}
-                                    onChange={(e) =>
-                                        setFilter("dateTo", e.target.value)
-                                    }
-                                />
-                            </FormField>
+                                    <NativeSelect
+                                        id="vehicle"
+                                        value={filters.vehicle}
+                                        onChange={(e) =>
+                                            setFilter("vehicle", e.target.value)
+                                        }
+                                    >
+                                        <option value="">All vehicles</option>
+                                        {vehicles.map((vehicle) => (
+                                            <option
+                                                key={vehicle.value}
+                                                value={vehicle.value}
+                                            >
+                                                {vehicle.label}
+                                            </option>
+                                        ))}
+                                    </NativeSelect>
+                                </FormField>
+                                <FormField label="Date from" htmlFor="dateFrom">
+                                    <Input
+                                        id="dateFrom"
+                                        type="date"
+                                        value={filters.dateFrom}
+                                        onChange={(e) =>
+                                            setFilter(
+                                                "dateFrom",
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </FormField>
+                                <FormField label="Date to" htmlFor="dateTo">
+                                    <Input
+                                        id="dateTo"
+                                        type="date"
+                                        value={filters.dateTo}
+                                        onChange={(e) =>
+                                            setFilter("dateTo", e.target.value)
+                                        }
+                                    />
+                                </FormField>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -204,8 +248,12 @@ export default function LogbookIndex({
                                                         )}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
-                                                        {logbook.vehicle_reg} -{" "}
-                                                        {logbook.vehicle_type}
+                                                        <span className="font-mono font-medium text-foreground">
+                                                            {
+                                                                logbook.vehicle_reg
+                                                            }
+                                                        </span>{" "}
+                                                        - {logbook.vehicle_type}
                                                     </div>
                                                 </div>
                                                 {logbook.distance > 0 && (
@@ -213,7 +261,7 @@ export default function LogbookIndex({
                                                         <div className="text-sm text-muted-foreground">
                                                             Distance
                                                         </div>
-                                                        <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                                                        <div className="font-condensed text-lg font-bold tabular-nums">
                                                             {formatNumber(
                                                                 logbook.distance,
                                                             )}{" "}
@@ -223,23 +271,19 @@ export default function LogbookIndex({
                                                 )}
                                             </div>
 
-                                            <div className="space-y-1 border-t pt-3 text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="size-4 text-muted-foreground" />
-                                                    <span className="font-medium">
-                                                        {logbook.origin_from}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="ml-1 size-4 text-muted-foreground" />
-                                                    <span className="font-medium">
-                                                        {logbook.origin_to}
-                                                    </span>
-                                                </div>
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t pt-3 text-sm font-medium">
+                                                <span>
+                                                    {logbook.origin_from}
+                                                </span>
+                                                <ArrowRight
+                                                    className="size-4 shrink-0 text-muted-foreground"
+                                                    aria-label="to"
+                                                />
+                                                <span>{logbook.origin_to}</span>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-3 border-t pt-3">
-                                                <div>
+                                                <div className="col-span-2">
                                                     <div className="text-xs text-muted-foreground">
                                                         Driver
                                                     </div>
@@ -249,18 +293,7 @@ export default function LogbookIndex({
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        Vehicle
-                                                    </div>
-                                                    <div className="text-sm font-medium">
-                                                        {logbook.vehicle_reg}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {logbook.vehicle_type}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        Start Odometer
+                                                        Start odometer
                                                     </div>
                                                     <div className="text-sm font-medium">
                                                         {formatNumber(
@@ -271,7 +304,7 @@ export default function LogbookIndex({
                                                 </div>
                                                 <div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        End Odometer
+                                                        End odometer
                                                     </div>
                                                     <div className="text-sm font-medium">
                                                         {logbook.end_odometer
@@ -305,10 +338,10 @@ export default function LogbookIndex({
                                                 <TableHead>Driver</TableHead>
                                                 <TableHead>Route</TableHead>
                                                 <TableHead className="text-right">
-                                                    Start Odometer
+                                                    Start odometer
                                                 </TableHead>
                                                 <TableHead className="text-right">
-                                                    End Odometer
+                                                    End odometer
                                                 </TableHead>
                                                 <TableHead className="text-right">
                                                     Distance
@@ -325,7 +358,7 @@ export default function LogbookIndex({
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="font-medium">
+                                                        <div className="font-mono font-medium">
                                                             {
                                                                 logbook.vehicle_reg
                                                             }
@@ -359,18 +392,18 @@ export default function LogbookIndex({
                                                             </div>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-right">
+                                                    <TableCell className="text-right tabular-nums">
                                                         {formatNumber(
                                                             logbook.start_odometer,
                                                         )}{" "}
                                                         km
                                                     </TableCell>
-                                                    <TableCell className="text-right">
+                                                    <TableCell className="text-right tabular-nums">
                                                         {logbook.end_odometer
                                                             ? `${formatNumber(logbook.end_odometer)} km`
                                                             : "-"}
                                                     </TableCell>
-                                                    <TableCell className="text-right font-semibold">
+                                                    <TableCell className="text-right font-semibold tabular-nums">
                                                         {logbook.distance > 0
                                                             ? `${formatNumber(logbook.distance)} km`
                                                             : "-"}
@@ -421,9 +454,17 @@ function RowActions({
     return (
         <>
             {can.edit && (
-                <Button asChild variant="ghost" {...rowActionProps(compact, "Edit", className)}>
+                <Button
+                    asChild
+                    variant="ghost"
+                    {...rowActionProps(compact, "Edit", className)}
+                >
                     <Link href={edit(logbook.id)}>
-                        <RowActionContent icon={Pencil} label="Edit" compact={compact} />
+                        <RowActionContent
+                            icon={Pencil}
+                            label="Edit"
+                            compact={compact}
+                        />
                     </Link>
                 </Button>
             )}
@@ -432,9 +473,21 @@ function RowActions({
                     trigger={
                         <Button
                             variant={compact ? "ghost" : "destructive"}
-                            {...rowActionProps(compact, "Delete", cn(className, compact && "text-destructive hover:text-destructive"))}
+                            {...rowActionProps(
+                                compact,
+                                "Delete",
+                                cn(
+                                    className,
+                                    compact &&
+                                        "text-destructive hover:text-destructive",
+                                ),
+                            )}
                         >
-                            <RowActionContent icon={Trash2} label="Delete" compact={compact} />
+                            <RowActionContent
+                                icon={Trash2}
+                                label="Delete"
+                                compact={compact}
+                            />
                         </Button>
                     }
                     description="Are you sure you want to delete this logbook entry?"

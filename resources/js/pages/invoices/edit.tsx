@@ -59,7 +59,7 @@ export default function InvoicesEdit({ invoice, payments, clients, vehicles, ban
         { title: invoice.invoice_number, href: edit(invoice.id) },
     ];
 
-    const title = `Edit Invoice: ${invoice.invoice_number}`;
+    const title = `Edit invoice: ${invoice.invoice_number}`;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -72,7 +72,7 @@ export default function InvoicesEdit({ invoice, payments, clients, vehicles, ban
                             <StatusBadge tone={invoiceStatusTone[invoice.status] ?? 'gray'}>{statusLabel(invoice.status)}</StatusBadge>
                             {invoice.amount_due > 0 && (
                                 <Button onClick={() => setPaymentOpen(true)}>
-                                    <CircleDollarSign /> Record Payment
+                                    <CircleDollarSign /> Record payment
                                 </Button>
                             )}
                         </>
@@ -82,23 +82,23 @@ export default function InvoicesEdit({ invoice, payments, clients, vehicles, ban
                 {/* Payment summary */}
                 <Card>
                     <CardContent>
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
                             <div>
-                                <p className="text-sm text-muted-foreground">Total Amount</p>
-                                <p className="text-xl font-bold">{formatMoney(invoice.total, 'N$')}</p>
+                                <p className="text-sm text-muted-foreground">Total amount</p>
+                                <p className="font-condensed text-xl font-bold tabular-nums">{formatMoney(invoice.total, 'N$')}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Amount Paid</p>
-                                <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatMoney(invoice.amount_paid, 'N$')}</p>
+                                <p className="text-sm text-muted-foreground">Amount paid</p>
+                                <p className="font-condensed text-xl font-bold tabular-nums text-success">{formatMoney(invoice.amount_paid, 'N$')}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Amount Due</p>
-                                <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatMoney(invoice.amount_due, 'N$')}</p>
+                                <p className="text-sm text-muted-foreground">Amount due</p>
+                                <p className="font-condensed text-xl font-bold tabular-nums text-destructive">{formatMoney(invoice.amount_due, 'N$')}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Due Date</p>
-                                <p className={cn('text-lg font-medium', invoice.is_overdue && 'text-red-600 dark:text-red-400')}>
-                                    {formatDate(invoice.due_date, '')}
+                                <p className="text-sm text-muted-foreground">Due date</p>
+                                <p className={cn('text-lg font-medium', invoice.is_overdue && 'text-destructive')}>
+                                    <span className="font-mono">{formatDate(invoice.due_date, '')}</span>
                                     {invoice.is_overdue && <span className="text-xs"> (Overdue)</span>}
                                 </p>
                             </div>
@@ -138,7 +138,7 @@ function PaymentHistory({ payments }: { payments: PaymentRow[] }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Payment History</CardTitle>
+                <CardTitle>Payment history</CardTitle>
             </CardHeader>
             <CardContent>
                 {/* Phones: cards */}
@@ -146,8 +146,8 @@ function PaymentHistory({ payments }: { payments: PaymentRow[] }) {
                     {payments.map((payment) => (
                         <div key={payment.id} className="space-y-2 rounded-lg border p-4 text-sm">
                             <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold">{payment.payment_reference}</span>
-                                <span className="font-medium text-green-600 dark:text-green-400">{formatMoney(payment.amount, 'N$')}</span>
+                                <span className="font-mono font-semibold">{payment.payment_reference}</span>
+                                <span className="font-mono font-medium tabular-nums text-success">{formatMoney(payment.amount, 'N$')}</span>
                             </div>
                             <div className="text-muted-foreground">
                                 {formatDate(payment.payment_date)} · {humanize(payment.payment_method)}
@@ -161,21 +161,21 @@ function PaymentHistory({ payments }: { payments: PaymentRow[] }) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Payment Ref</TableHead>
+                                <TableHead>Payment ref</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead>Amount</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
                                 <TableHead>Method</TableHead>
-                                <TableHead>Transaction Ref</TableHead>
+                                <TableHead>Transaction ref</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {payments.map((payment) => (
                                 <TableRow key={payment.id}>
-                                    <TableCell>{payment.payment_reference}</TableCell>
-                                    <TableCell>{formatDate(payment.payment_date)}</TableCell>
-                                    <TableCell className="font-medium text-green-600 dark:text-green-400">{formatMoney(payment.amount, 'N$')}</TableCell>
+                                    <TableCell className="font-mono">{payment.payment_reference}</TableCell>
+                                    <TableCell className="font-mono">{formatDate(payment.payment_date)}</TableCell>
+                                    <TableCell className="text-right font-mono font-medium tabular-nums text-success">{formatMoney(payment.amount, 'N$')}</TableCell>
                                     <TableCell>{humanize(payment.payment_method)}</TableCell>
-                                    <TableCell>{payment.transaction_reference || '-'}</TableCell>
+                                    <TableCell className="font-mono">{payment.transaction_reference || '-'}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
