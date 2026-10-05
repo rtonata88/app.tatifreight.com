@@ -73,6 +73,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'delete-expenses',
             'approve-expenses',
 
+            // Document permissions
+            'view-documents',
+            'create-documents',
+            'edit-documents',
+            'delete-documents',
+
             // Rate card permissions
             'view-rate-cards',
             'create-rate-cards',
@@ -111,6 +117,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view-invoices', 'create-invoices', 'edit-invoices', 'delete-invoices', 'send-invoices', 'record-payments',
             'view-expenses', 'create-expenses', 'edit-expenses', 'delete-expenses', 'approve-expenses',
             'view-rate-cards', 'create-rate-cards', 'edit-rate-cards', 'delete-rate-cards',
+            'view-documents', 'create-documents', 'edit-documents', 'delete-documents',
             'view-reports', 'export-reports',
         ]);
 
@@ -123,6 +130,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view-bookings', 'create-bookings', 'edit-bookings', 'assign-drivers', 'confirm-bookings',
             'view-quotes', 'create-quotes', 'edit-quotes', 'send-quotes',
             'view-invoices',
+            'view-documents', 'create-documents', 'edit-documents',
         ]);
 
         // Driver - View assigned jobs, submit expenses, manage logbook
@@ -143,6 +151,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view-expenses', 'approve-expenses',
             'view-rate-cards', 'create-rate-cards', 'edit-rate-cards',
             'view-mdc', 'manage-mdc', 'manage-mdc-rates',
+            'view-documents',
             'view-reports', 'export-reports',
         ]);
 

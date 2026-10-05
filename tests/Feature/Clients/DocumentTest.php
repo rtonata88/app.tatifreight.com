@@ -272,3 +272,15 @@ test('client document download 404s when the file is missing', function () {
         ->get(route('documents.download', $document))
         ->assertNotFound();
 });
+
+test('seeded roles can reach documents according to their role', function () {
+    $this->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
+
+    $userWithRole = fn (string $role) => tap(App\Models\User::factory()->create())->assignRole($role);
+
+    $this->actingAs($userWithRole('admin'))->get(route('documents.index'))->assertOk();
+    $this->actingAs($userWithRole('manager'))->get(route('documents.upload'))->assertOk();
+    $this->actingAs($userWithRole('accountant'))->get(route('documents.index'))->assertOk();
+    $this->actingAs($userWithRole('accountant'))->get(route('documents.upload'))->assertForbidden();
+    $this->actingAs($userWithRole('driver'))->get(route('documents.index'))->assertForbidden();
+});
