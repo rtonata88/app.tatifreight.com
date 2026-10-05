@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { formatNumber } from '@/lib/format';
 import { index, store, update } from '@/routes/bookings';
 import type { Option } from '@/types';
+import { ClientSelect } from '@/components/clients/client-select';
 
 export type VehicleOption = Option & {
     tare_weight: number | null;
@@ -115,19 +116,7 @@ export function BookingForm({ clients, vehicles, drivers, booking, children }: P
         <form onSubmit={submit} className="space-y-6">
             <FormSection title="Client & vehicle selection">
                 <FormField label="Client" required htmlFor="client_id" error={errors.client_id}>
-                    <NativeSelect
-                        id="client_id"
-                        value={data.client_id}
-                        onChange={(e) => setData('client_id', e.target.value)}
-                        aria-invalid={!!errors.client_id}
-                    >
-                        <option value="">Select a client</option>
-                        {clients.map((client) => (
-                            <option key={client.value} value={client.value}>
-                                {client.label}
-                            </option>
-                        ))}
-                    </NativeSelect>
+                    <ClientSelect clients={clients} value={data.client_id} onChange={(value) => setData('client_id', value)} invalid={!!errors.client_id} />
                 </FormField>
 
                 <FormField

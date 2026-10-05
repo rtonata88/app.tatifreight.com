@@ -209,3 +209,41 @@ test('the statement pdf route is registered with the date query params', functio
         ->get(route('clients.statement.pdf', $client))
         ->assertForbidden();
 });
+
+test('a client can be created on the fly from another form', function () {
+    $user = userWithPermissions(['create-clients']);
+
+    $this->actingAs($user)
+        ->postJson(route('clients.quick-store'), [
+            'name' => 'Ndapewa Shikongo',
+            'company_name' => 'Namib Mills',
+            'email' => 'ndapewa@namibmills.com.na',
+            'phone' => '+264 81 123 4567',
+            'classification' => 'contract',
+            'payment_terms_days' => 45,
+        ])
+        ->assertCreated()
+        ->assertJsonPath('client.label', 'Ndapewa Shikongo (Namib Mills)')
+        ->assertJsonPath('client.payment_terms_days', 45);
+
+    $client = App\Models\Client::where('email', 'ndapewa@namibmills.com.na')->firstOrFail();
+    expect($client)
+        ->is_active->toBeTrue()
+        ->classification->toBe('contract')
+        ->and((float) $client->credit_limit)->toBe(0.0);
+    $this->actingAs($user)->postJson(route('clients.quick-store'), ['name' => 'x', 'email' => 'y@z.na'])->assertCreated()
+        ->assertJsonPath('client.payment_terms_days', 30);
+});
+
+test('creating a client on the fly validates and needs permission', function () {
+    App\Models\Client::factory()->create(['email' => 'taken@example.com']);
+
+    $this->actingAs(userWithPermissions(['create-clients']))
+        ->postJson(route('clients.quick-store'), ['email' => 'taken@example.com', 'classification' => 'weekly'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['name', 'email', 'classification']);
+
+    $this->actingAs(userWithPermissions(['create-invoices']))
+        ->postJson(route('clients.quick-store'), ['name' => 'x', 'email' => 'new@example.com'])
+        ->assertForbidden();
+});

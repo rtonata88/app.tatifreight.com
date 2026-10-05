@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Payment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -76,6 +77,38 @@ class ClientController extends Controller
         Client::create($this->attributes($validated));
 
         return redirect()->route('clients.index')->with('success', 'Client created successfully!');
+    }
+
+    /**
+     * Create a client from inside another form (quote, invoice, booking). Only the essentials are
+     * asked for; the rest take the same defaults as the full form. Answers with the new client as
+     * a select option, so the caller can add it to its list and select it.
+     */
+    public function quickStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'company_name' => 'nullable|string|max:255',
+            'email' => 'required|email|unique:clients,email',
+            'phone' => 'nullable|string|max:20',
+            'classification' => 'nullable|in:adhoc,contract',
+            'payment_terms_days' => 'nullable|integer|min:0',
+        ]);
+
+        $client = Client::create($this->attributes([
+            ...$validated,
+            'classification' => $validated['classification'] ?? 'adhoc',
+            'payment_terms_days' => $validated['payment_terms_days'] ?? 30,
+            'is_active' => true,
+        ]));
+
+        return response()->json([
+            'client' => [
+                'value' => $client->id,
+                'label' => $client->name.($client->company_name ? ' ('.$client->company_name.')' : ''),
+                'payment_terms_days' => $client->payment_terms_days,
+            ],
+        ], 201);
     }
 
     public function edit(Client $client): Response

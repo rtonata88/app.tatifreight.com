@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { index, store, update } from '@/routes/quotes';
 import type { Option } from '@/types';
+import { ClientSelect } from '@/components/clients/client-select';
 
 export type BankAccountOption = {
     id: number;
@@ -82,14 +83,7 @@ export function QuoteForm({ clients, vehicles, taxRate, bankAccounts = [], initi
         <form onSubmit={submit} className="space-y-6">
             <FormSection title="Quote details" columns={editing ? 3 : 2}>
                 <FormField label="Client" required htmlFor="client_id" error={errors.client_id} description={editing ? undefined : 'Select the client for this quote'}>
-                    <NativeSelect id="client_id" value={data.client_id} onChange={(e) => setData('client_id', e.target.value)} aria-invalid={!!errors.client_id}>
-                        <option value="">Select a client</option>
-                        {clients.map((client) => (
-                            <option key={client.value} value={client.value}>
-                                {client.label}
-                            </option>
-                        ))}
-                    </NativeSelect>
+                    <ClientSelect clients={clients} value={data.client_id} onChange={(value) => setData('client_id', value)} invalid={!!errors.client_id} />
                 </FormField>
 
                 <FormField label="Valid until" required htmlFor="valid_until" error={errors.valid_until} description={editing ? undefined : 'Quote expiry date'}>

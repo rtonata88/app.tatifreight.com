@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { index, store, update } from '@/routes/invoices';
 import type { Option } from '@/types';
+import { ClientSelect } from '@/components/clients/client-select';
 
 export type ClientOption = Option & { payment_terms_days: number | null };
 
@@ -83,12 +84,11 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
     const errors = form.errors as Record<string, string | undefined>;
 
     /** updatedClientId(): due date = today + client's payment terms (create screen only). */
-    const onClientChange = (value: string) => {
+    const onClientChange = (value: string, client: ClientOption | undefined) => {
         if (editing) {
             setData('client_id', value);
             return;
         }
-        const client = clients.find((c) => String(c.value) === value);
         setData((current) => ({
             ...current,
             client_id: value,
@@ -161,14 +161,7 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
                 )}
 
                 <FormField label="Client" required htmlFor="client_id" error={errors.client_id} description={editing ? undefined : 'Select the client for this invoice'}>
-                    <NativeSelect id="client_id" value={data.client_id} onChange={(e) => onClientChange(e.target.value)} aria-invalid={!!errors.client_id}>
-                        <option value="">Select a client</option>
-                        {clients.map((client) => (
-                            <option key={client.value} value={client.value}>
-                                {client.label}
-                            </option>
-                        ))}
-                    </NativeSelect>
+                    <ClientSelect clients={clients} value={data.client_id} onChange={onClientChange} invalid={!!errors.client_id} />
                 </FormField>
 
                 <FormField label="Invoice date" required htmlFor="invoice_date" error={errors.invoice_date}>

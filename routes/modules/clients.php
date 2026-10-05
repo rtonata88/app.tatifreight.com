@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('clients', [ClientController::class, 'index'])->name('clients.index')->middleware('can:view-clients');
 Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create')->middleware('can:create-clients');
 Route::post('clients', [ClientController::class, 'store'])->name('clients.store')->middleware('can:create-clients');
+// Create a client without leaving a quote, invoice or booking form; answers with JSON.
+Route::post('clients/quick', [ClientController::class, 'quickStore'])->name('clients.quick-store')->middleware('can:create-clients');
 Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit')->middleware('can:edit-clients');
 Route::put('clients/{client}', [ClientController::class, 'update'])->name('clients.update')->middleware('can:edit-clients');
 Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy')->middleware('can:delete-clients');
