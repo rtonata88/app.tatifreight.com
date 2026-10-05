@@ -15,6 +15,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DataPagination } from "@/components/data-pagination";
 import { EmptyState } from "@/components/empty-state";
 import { PageContainer } from "@/components/page-container";
+import { RowActionContent, rowActionProps } from "@/components/row-action";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -275,7 +276,7 @@ export default function DocumentsIndex({
                                         <TableBody>
                                             {documents.data.map((document) => (
                                                 <TableRow key={document.id}>
-                                                    <TableCell className="max-w-xs">
+                                                    <TableCell className="max-w-56 whitespace-normal">
                                                         <DocumentCell
                                                             document={document}
                                                         />
@@ -485,18 +486,19 @@ function RowActions({
     stretch?: boolean;
 }) {
     const className = stretch ? "flex-1" : undefined;
+    const compact = !stretch;
 
     return (
         <>
-            <Button asChild size="sm" variant="ghost" className={className}>
+            <Button asChild variant="ghost" {...rowActionProps(compact, "Download", className)}>
                 <a href={file(document.id).url}>
-                    <Download /> Download
+                    <RowActionContent icon={Download} label="Download" compact={compact} />
                 </a>
             </Button>
             {can.edit && (
-                <Button asChild size="sm" variant="ghost" className={className}>
+                <Button asChild variant="ghost" {...rowActionProps(compact, "Edit", className)}>
                     <Link href={edit(document.id)}>
-                        <Pencil /> Edit
+                        <RowActionContent icon={Pencil} label="Edit" compact={compact} />
                     </Link>
                 </Button>
             )}
@@ -504,11 +506,10 @@ function RowActions({
                 <ConfirmDialog
                     trigger={
                         <Button
-                            size="sm"
-                            variant="destructive"
-                            className={className}
+                            variant={compact ? "ghost" : "destructive"}
+                            {...rowActionProps(compact, "Delete", cn(className, compact && "text-destructive hover:text-destructive"))}
                         >
-                            <Trash2 /> Delete
+                            <RowActionContent icon={Trash2} label="Delete" compact={compact} />
                         </Button>
                     }
                     description="Are you sure you want to delete this document?"

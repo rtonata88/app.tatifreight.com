@@ -23,13 +23,7 @@ class BookingFactory extends Factory
         return [
             'booking_number' => 'BKG-'.fake()->unique()->numerify('######'),
             // ClientFactory belongs to another module, so build the client directly.
-            'client_id' => fn () => Client::create([
-                'name' => fake()->name(),
-                'company_name' => fake()->company(),
-                'email' => fake()->unique()->safeEmail(),
-                'phone' => fake()->phoneNumber(),
-                'is_active' => true,
-            ])->id,
+            'client_id' => Client::factory(),
             'vehicle_id' => Vehicle::factory(),
             'status' => 'pending',
             'start_date' => $start,

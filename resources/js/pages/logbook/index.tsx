@@ -14,6 +14,8 @@ import { DataPagination } from "@/components/data-pagination";
 import { EmptyState } from "@/components/empty-state";
 import { FormField } from "@/components/form-field";
 import { PageContainer } from "@/components/page-container";
+import { RowActionContent, rowActionProps } from "@/components/row-action";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
@@ -414,13 +416,14 @@ function RowActions({
     stretch?: boolean;
 }) {
     const className = stretch ? "flex-1" : undefined;
+    const compact = !stretch;
 
     return (
         <>
             {can.edit && (
-                <Button asChild size="sm" variant="ghost" className={className}>
+                <Button asChild variant="ghost" {...rowActionProps(compact, "Edit", className)}>
                     <Link href={edit(logbook.id)}>
-                        <Pencil /> Edit
+                        <RowActionContent icon={Pencil} label="Edit" compact={compact} />
                     </Link>
                 </Button>
             )}
@@ -428,11 +431,10 @@ function RowActions({
                 <ConfirmDialog
                     trigger={
                         <Button
-                            size="sm"
-                            variant="destructive"
-                            className={className}
+                            variant={compact ? "ghost" : "destructive"}
+                            {...rowActionProps(compact, "Delete", cn(className, compact && "text-destructive hover:text-destructive"))}
                         >
-                            <Trash2 /> Delete
+                            <RowActionContent icon={Trash2} label="Delete" compact={compact} />
                         </Button>
                     }
                     description="Are you sure you want to delete this logbook entry?"

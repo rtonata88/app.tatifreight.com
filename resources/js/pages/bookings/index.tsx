@@ -349,8 +349,9 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                         <TableHead>Client</TableHead>
                                         <TableHead>Vehicle</TableHead>
                                         <TableHead>Route</TableHead>
-                                        <TableHead>Distance</TableHead>
-                                        <TableHead>Load Details</TableHead>
+                                        {/* Shown on very wide screens only, so status and actions stay in view at laptop widths. */}
+                                        <TableHead className="hidden 2xl:table-cell">Distance</TableHead>
+                                        <TableHead className="hidden 2xl:table-cell">Load Details</TableHead>
                                         <TableHead>Dates</TableHead>
                                         <TableHead>Driver</TableHead>
                                         <TableHead>Status</TableHead>
@@ -394,14 +395,14 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                                         )}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="hidden 2xl:table-cell">
                                                     {booking.distance_km ? (
                                                         <div className="text-sm font-medium">{formatNumber(booking.distance_km, 2)} km</div>
                                                     ) : (
                                                         <span className="text-sm text-muted-foreground">N/A</span>
                                                     )}
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="hidden 2xl:table-cell">
                                                     {booking.load_weight || booking.cargo_description ? (
                                                         <div className="text-sm">
                                                             {!!booking.load_weight && (

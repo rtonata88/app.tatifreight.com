@@ -23,11 +23,7 @@ class QuoteFactory extends Factory
 
         return [
             'quote_number' => 'QT-'.fake()->unique()->numerify('######'),
-            'client_id' => fn () => Client::create([
-                'name' => fake()->name(),
-                'email' => fake()->unique()->safeEmail(),
-                'is_active' => true,
-            ])->id,
+            'client_id' => Client::factory(),
             'created_by' => User::factory(),
             'version' => 1,
             'status' => 'draft',

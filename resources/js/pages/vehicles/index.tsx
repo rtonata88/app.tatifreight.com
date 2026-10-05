@@ -4,6 +4,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataPagination } from '@/components/data-pagination';
 import { EmptyState } from '@/components/empty-state';
 import { PageContainer } from '@/components/page-container';
+import { RowActionContent, rowActionProps } from '@/components/row-action';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge, type BadgeTone } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useFilters } from '@/hooks/use-filters';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatNumber, humanize } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { create, destroy, edit, index, show } from '@/routes/vehicles';
 import type { BreadcrumbItem, Paginated } from '@/types';
 
@@ -201,26 +203,27 @@ function RowActions({
     stretch?: boolean;
 }) {
     const className = stretch ? 'flex-1' : undefined;
+    const compact = !stretch;
 
     return (
         <>
-            <Button asChild size="sm" variant="ghost" className={className}>
+            <Button asChild variant="ghost" {...rowActionProps(compact, 'View', className)}>
                 <Link href={show(vehicle.id)}>
-                    <Eye /> View
+                    <RowActionContent icon={Eye} label="View" compact={compact} />
                 </Link>
             </Button>
             {can.edit && (
-                <Button asChild size="sm" variant="ghost" className={className}>
+                <Button asChild variant="ghost" {...rowActionProps(compact, 'Edit', className)}>
                     <Link href={edit(vehicle.id)}>
-                        <Pencil /> Edit
+                        <RowActionContent icon={Pencil} label="Edit" compact={compact} />
                     </Link>
                 </Button>
             )}
             {can.delete && (
                 <ConfirmDialog
                     trigger={
-                        <Button size="sm" variant="destructive" className={className}>
-                            <Trash2 /> Delete
+                        <Button variant={compact ? 'ghost' : 'destructive'} {...rowActionProps(compact, 'Delete', cn(className, compact && 'text-destructive hover:text-destructive'))}>
+                            <RowActionContent icon={Trash2} label="Delete" compact={compact} />
                         </Button>
                     }
                     description="Are you sure you want to delete this vehicle?"

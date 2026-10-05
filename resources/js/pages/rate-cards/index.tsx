@@ -5,6 +5,7 @@ import { DataPagination } from '@/components/data-pagination';
 import { EmptyState } from '@/components/empty-state';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
+import { RowActionContent, rowActionProps } from '@/components/row-action';
 import { StatCard } from '@/components/stat-card';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
@@ -148,7 +149,7 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                         <TableBody>
                                             {rateCards.data.map((card) => (
                                                 <TableRow key={card.id}>
-                                                    <TableCell>
+                                                    <TableCell className="max-w-56 whitespace-normal">
                                                         <Name card={card} />
                                                     </TableCell>
                                                     <TableCell>{card.vehicle_type}</TableCell>
@@ -167,7 +168,7 @@ export default function RateCardsIndex({ rateCards, stats, vehicleTypes, filters
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex gap-2">
-                                                            <RowActions card={card} can={can} onToggle={toggle} onDelete={remove} />
+                                                            <RowActions card={card} can={can} onToggle={toggle} onDelete={remove} compact />
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -230,22 +231,27 @@ function RowActions({
     can,
     onToggle,
     onDelete,
+    compact = false,
 }: {
     card: RateCardRow;
     can: Props['can'];
     onToggle: (card: RateCardRow) => void;
     onDelete: (card: RateCardRow, done: () => void) => void;
+    /** Icon-only buttons for the desktop table. */
+    compact?: boolean;
 }) {
+    const toggleLabel = card.is_active ? 'Deactivate' : 'Activate';
+
     return (
         <>
             {can.edit && (
                 <>
-                    <Button size="sm" variant="ghost" onClick={() => onToggle(card)}>
-                        {card.is_active ? 'Deactivate' : 'Activate'}
+                    <Button variant="ghost" onClick={() => onToggle(card)} {...rowActionProps(compact, toggleLabel)}>
+                        <RowActionContent icon={card.is_active ? Ban : CheckCircle2} label={toggleLabel} compact={compact} />
                     </Button>
-                    <Button asChild size="sm" variant="ghost">
+                    <Button asChild variant="ghost" {...rowActionProps(compact, 'Edit')}>
                         <Link href={edit(card.id)}>
-                            <Pencil /> Edit
+                            <RowActionContent icon={Pencil} label="Edit" compact={compact} />
                         </Link>
                     </Button>
                 </>
@@ -253,8 +259,11 @@ function RowActions({
             {can.delete && (
                 <ConfirmDialog
                     trigger={
-                        <Button size="sm" variant="destructive">
-                            <Trash2 /> Delete
+                        <Button
+                            variant={compact ? 'ghost' : 'destructive'}
+                            {...rowActionProps(compact, 'Delete', compact ? 'text-destructive hover:text-destructive' : undefined)}
+                        >
+                            <RowActionContent icon={Trash2} label="Delete" compact={compact} />
                         </Button>
                     }
                     description="Are you sure you want to delete this rate card?"

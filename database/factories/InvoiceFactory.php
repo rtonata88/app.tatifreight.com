@@ -25,11 +25,7 @@ class InvoiceFactory extends Factory
         return [
             'invoice_number' => 'INV-'.fake()->unique()->numerify('######'),
             // Client's factory belongs to another module; create the row directly.
-            'client_id' => fn () => Client::create([
-                'name' => fake()->name(),
-                'email' => fake()->unique()->safeEmail(),
-                'is_active' => true,
-            ])->id,
+            'client_id' => Client::factory(),
             'created_by' => User::factory(),
             'status' => 'draft',
             'invoice_date' => now()->toDateString(),
