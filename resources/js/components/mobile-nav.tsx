@@ -13,7 +13,7 @@ const CANDIDATES: (NavItem & { permission: string })[] = [
     { title: 'Logbook', href: '/logbook', icon: BookOpen, permission: 'view-logbook', activePrefixes: ['/logbook'] },
     { title: 'Expenses', href: '/expenses', icon: ReceiptText, permission: 'view-expenses', activePrefixes: ['/expenses'] },
     { title: 'Invoices', href: '/invoices', icon: Receipt, permission: 'view-invoices', activePrefixes: ['/invoices'] },
-    { title: 'Vehicles', href: '/vehicles', icon: Truck, permission: 'view-vehicles', activePrefixes: ['/vehicles'] },
+    { title: 'Fleet', href: '/vehicles', icon: Truck, permission: 'view-vehicles', activePrefixes: ['/vehicles'] },
     { title: 'Quotes', href: '/quotes', icon: FileText, permission: 'view-quotes', activePrefixes: ['/quotes'] },
     { title: 'Clients', href: '/clients', icon: Users, permission: 'view-clients', activePrefixes: ['/clients'] },
 ];

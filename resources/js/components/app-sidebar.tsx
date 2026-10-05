@@ -42,7 +42,7 @@ export function AppSidebar() {
         {
             title: 'Fleet management',
             items: [
-                ...only(can('view-vehicles'), { title: 'Vehicles', href: '/vehicles', icon: Truck, activePrefixes: ['/vehicles'] }),
+                ...only(can('view-vehicles'), { title: 'Fleet', href: '/vehicles', icon: Truck, activePrefixes: ['/vehicles'] }),
                 ...only(can('view-logbook'), { title: 'Logbook', href: '/logbook', icon: BookOpen, activePrefixes: ['/logbook'] }),
                 ...only(can('view-mdc'), { title: 'MDC charges', href: '/mdc', icon: Wallet }),
                 ...only(can('manage-mdc-rates'), { title: 'MDC rates', href: '/mdc-rates', icon: Calculator, activePrefixes: ['/mdc-rates'] }),

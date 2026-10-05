@@ -11,6 +11,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Document extends Model
 {
+    /**
+     * Upload rule shared by every document form: only office documents, PDFs and photos.
+     * Anything executable or renderable as a page (PHP, HTML, SVG) is refused.
+     */
+    public const UPLOAD_RULE = 'file|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx|max:10240';
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [

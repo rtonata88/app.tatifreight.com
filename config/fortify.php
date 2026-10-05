@@ -144,7 +144,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // No self sign-up: staff accounts are created by an administrator under Users.
         Features::resetPasswords(),
         Features::emailVerification(),
         // Features::updateProfileInformation(),

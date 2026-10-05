@@ -57,7 +57,7 @@ class ClientDocumentController extends Controller
     public function store(Request $request, Client $client): RedirectResponse
     {
         $request->validate([
-            'uploadFile' => 'required|file|max:10240', // 10MB max
+            'uploadFile' => 'required|'.Document::UPLOAD_RULE,
             'uploadTitle' => 'required|string|max:255',
             'uploadCategory' => 'required|string',
             'uploadDescription' => 'nullable|string',

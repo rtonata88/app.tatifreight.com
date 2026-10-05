@@ -3,16 +3,16 @@ import { Wordmark } from '@/components/wordmark';
 import type { AuthLayoutProps } from '@/types';
 
 /*
- * Nexus auth frame (shared with Tweya): a two-panel split. Left, a warm, low-saturation
- * photograph on ink carrying the wordmark, one line of positioning and an accent rule. Right,
+ * Nexus auth frame (shared with Tweya): a two-panel split. Left, a low-saturation photograph
+ * of a truck on the road, carrying the wordmark, one line of positioning and an accent rule. Right,
  * the form in a 380px column. Ink literals are used on the left because the Slate theme
  * re-points the ink tokens to light surfaces.
  */
 const PHOTO = {
-    src: '/images/auth/login.jpg',
-    alt: 'A tar road crossing a dry Namibian plain towards distant mountains',
-    credit: 'Mareike Kramper',
-    href: 'https://unsplash.com/photos/tKUujgcer44',
+    src: '/images/auth/truck.jpg',
+    alt: 'A blue semi-truck hauling a trailer along a desert highway',
+    credit: 'Tom Jackson',
+    href: 'https://unsplash.com/photos/a-semi-truck-driving-down-the-road-in-the-desert-Rhwj3CPwc6o',
 };
 
 export default function AuthSplitLayout({ children, title, description }: AuthLayoutProps) {
@@ -21,13 +21,14 @@ export default function AuthSplitLayout({ children, title, description }: AuthLa
     return (
         <div className="grid min-h-svh bg-background lg:grid-cols-2">
             <aside className="relative hidden overflow-hidden bg-[#1A1813] lg:block">
-                <img src={PHOTO.src} alt={PHOTO.alt} className="absolute inset-0 size-full object-cover object-[50%_65%] saturate-[.7]" />
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(26,24,19,0.94)_0%,rgba(26,24,19,0.62)_45%,rgba(26,24,19,0.28)_100%)]" />
-                <div className="relative flex h-full flex-col justify-between p-14">
+                <img src={PHOTO.src} alt={PHOTO.alt} className="absolute inset-0 size-full object-cover object-[22%_50%] saturate-[.7]" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(26,24,19,0.95)_0%,rgba(26,24,19,0.78)_24%,rgba(26,24,19,0.12)_55%,rgba(26,24,19,0.2)_100%)]" />
+                <div className="relative flex h-full flex-col p-14">
                     <div className="flex">
                         <Wordmark size="panel" light />
                     </div>
-                    <div>
+                    {/* Positioning sits low, on the road surface, so the truck stays clear. */}
+                    <div className="mt-auto mb-10">
                         <p className="max-w-[440px] text-[26px] leading-[1.35] font-medium tracking-[-0.015em] text-pretty text-[#F2EDE3]">
                             Vehicles, bookings and billing for a transport business, in one ledger.
                         </p>

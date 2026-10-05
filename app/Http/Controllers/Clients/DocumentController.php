@@ -104,7 +104,7 @@ class DocumentController extends Controller
     {
         $validated = $request->validate([
             ...$this->rules(),
-            'file_upload' => 'required|file|max:10240',
+            'file_upload' => 'required|'.Document::UPLOAD_RULE,
         ]);
 
         $file = $request->file('file_upload');
@@ -112,7 +112,7 @@ class DocumentController extends Controller
         Document::create([
             'title' => $validated['title'],
             'category' => $validated['category'],
-            'file_path' => $file->store('documents', 'public'),
+            'file_path' => $file->store('documents', 'local'),
             'file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
@@ -146,7 +146,7 @@ class DocumentController extends Controller
                 'file_name' => $document->file_name,
                 'file_type' => $document->file_type,
                 'file_size_formatted' => $document->file_size_formatted,
-                'file_url' => Storage::disk('public')->url($document->file_path),
+                'file_url' => route('documents.file', $document),
                 'uploaded_by' => $document->uploadedBy?->name,
                 'created_at' => $document->created_at?->format('Y-m-d\TH:i:s'),
             ],
@@ -160,7 +160,7 @@ class DocumentController extends Controller
                     'created_at' => $version->created_at?->format('Y-m-d\TH:i:s'),
                     'uploaded_by' => $version->uploadedBy?->name,
                     'file_size_formatted' => $version->file_size_formatted,
-                    'file_url' => Storage::disk('public')->url($version->file_path),
+                    'file_url' => route('documents.file', $version),
                 ]),
         ]);
     }
@@ -169,7 +169,7 @@ class DocumentController extends Controller
     {
         $validated = $request->validate([
             ...$this->rules(),
-            'file_upload' => 'nullable|file|max:10240',
+            'file_upload' => 'nullable|'.Document::UPLOAD_RULE,
         ]);
 
         $data = [
@@ -184,7 +184,7 @@ class DocumentController extends Controller
             if ($request->boolean('createNewVersion')) {
                 Document::create([
                     ...$data,
-                    'file_path' => $file->store('documents', 'public'),
+                    'file_path' => $file->store('documents', 'local'),
                     'file_name' => $file->getClientOriginalName(),
                     'file_type' => $file->getMimeType(),
                     'file_size' => $file->getSize(),
@@ -196,11 +196,9 @@ class DocumentController extends Controller
                 return redirect()->route('documents.index')->with('success', 'New document version created successfully!');
             }
 
-            if (Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
-            }
+            Storage::disk($this->diskFor($document))->delete($document->file_path);
 
-            $data['file_path'] = $file->store('documents', 'public');
+            $data['file_path'] = $file->store('documents', 'local');
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_type'] = $file->getMimeType();
             $data['file_size'] = $file->getSize();
@@ -214,9 +212,7 @@ class DocumentController extends Controller
     public function destroy(Request $request, Document $document): RedirectResponse
     {
         if ($request->user()->can('delete-documents')) {
-            if (Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
-            }
+            Storage::disk($this->diskFor($document))->delete($document->file_path);
 
             $document->delete();
 
@@ -227,16 +223,27 @@ class DocumentController extends Controller
     }
 
     /**
-     * Download a library document from the public disk (the old index's
-     * downloadDocument action). Client documents use documents.download.
+     * Download a library document. Files are private, so this permission-checked route is the
+     * only way to reach them. Client documents use documents.download.
      */
     public function file(Document $document): BinaryFileResponse|RedirectResponse
     {
-        if (Storage::disk('public')->exists($document->file_path)) {
-            return response()->download(Storage::disk('public')->path($document->file_path), $document->file_name);
+        $disk = Storage::disk($this->diskFor($document));
+
+        if ($disk->exists($document->file_path)) {
+            return response()->download($disk->path($document->file_path), $document->file_name);
         }
 
         return back()->with('error', 'File not found');
+    }
+
+    /**
+     * New uploads go to the private "local" disk; files uploaded before that change still sit
+     * on the "public" disk and are read from there.
+     */
+    private function diskFor(Document $document): string
+    {
+        return Storage::disk('local')->exists($document->file_path) ? 'local' : 'public';
     }
 
     /**

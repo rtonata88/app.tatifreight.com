@@ -24,8 +24,8 @@ export const DOCUMENT_CATEGORIES: Option[] = [
     { value: "other", label: "Other" },
 ];
 
-/** The formats the description promises; the server caps size at 10MB. */
-const DOCUMENT_ACCEPT = "image/*,application/pdf,.doc,.docx,.xls,.xlsx";
+/** The formats Document::UPLOAD_RULE accepts on the server, which also caps size at 10MB. */
+export const DOCUMENT_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf,.doc,.docx,.xls,.xlsx";
 
 type Values = {
     title: string;

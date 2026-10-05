@@ -15,6 +15,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { store } from "@/routes/clients/documents";
+import { DOCUMENT_ACCEPT } from "@/components/documents/document-form";
 
 type Values = {
     uploadTitle: string;
@@ -140,6 +141,7 @@ export function UploadDocumentDialog({
                             {/* Server accepts any file type up to 10MB. */}
                             <FileInput
                                 id="uploadFile"
+                                accept={DOCUMENT_ACCEPT}
                                 file={data.uploadFile}
                                 onChange={(file) => setData("uploadFile", file)}
                                 aria-invalid={!!errors.uploadFile}

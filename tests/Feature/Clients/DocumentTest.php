@@ -67,7 +67,8 @@ test('documents index shows stats and filters by category and expiry', function 
         );
 });
 
-test('a document can be uploaded', function () {
+test('a document can be uploaded to the private disk', function () {
+    Storage::fake('local');
     Storage::fake('public');
     $user = userWithPermissions(['view-documents', 'create-documents']);
     $client = Client::factory()->create();
@@ -99,7 +100,8 @@ test('a document can be uploaded', function () {
         ->booking_id->toBeNull()
         ->version->toBe(1)
         ->and($document->expiry_date->format('Y-m-d'))->toBe('2027-01-31');
-    Storage::disk('public')->assertExists($document->file_path);
+    Storage::disk('local')->assertExists($document->file_path);
+    Storage::disk('public')->assertMissing($document->file_path);
 });
 
 test('uploading validates required fields and category', function () {
@@ -111,6 +113,7 @@ test('uploading validates required fields and category', function () {
 });
 
 test('a document can be edited and its file replaced', function () {
+    Storage::fake('local');
     Storage::fake('public');
     $user = userWithPermissions(['view-documents', 'edit-documents']);
     Storage::disk('public')->put('documents/old.pdf', 'old');
@@ -139,11 +142,12 @@ test('a document can be edited and its file replaced', function () {
     $document->refresh();
     expect($document)->title->toBe('Renamed')->category->toBe('quote')->file_name->toBe('new.pdf');
     Storage::disk('public')->assertMissing('documents/old.pdf');
-    Storage::disk('public')->assertExists($document->file_path);
+    Storage::disk('local')->assertExists($document->file_path);
     expect(Document::count())->toBe(1);
 });
 
 test('editing with create new version keeps the old file', function () {
+    Storage::fake('local');
     Storage::fake('public');
     $user = userWithPermissions(['view-documents', 'edit-documents']);
     Storage::disk('public')->put('documents/v1.pdf', 'v1');
@@ -162,6 +166,7 @@ test('editing with create new version keeps the old file', function () {
     $version = Document::where('parent_document_id', $document->id)->firstOrFail();
     expect($version)->version->toBe(2)->file_name->toBe('v2.pdf')->uploaded_by->toBe($user->id);
     Storage::disk('public')->assertExists('documents/v1.pdf');
+    Storage::disk('local')->assertExists($version->file_path);
     expect($document->fresh()->file_path)->toBe('documents/v1.pdf');
 
     $this->actingAs($user)
@@ -169,7 +174,8 @@ test('editing with create new version keeps the old file', function () {
         ->assertInertia(fn (Assert $page) => $page->has('versions', 1)->where('versions.0.version', 2));
 });
 
-test('a document can be deleted with its file', function () {
+test('a legacy public document can be deleted with its file', function () {
+    Storage::fake('local');
     Storage::fake('public');
     $user = userWithPermissions(['view-documents', 'delete-documents']);
     Storage::disk('public')->put('documents/gone.pdf', 'x');
@@ -183,7 +189,54 @@ test('a document can be deleted with its file', function () {
     Storage::disk('public')->assertMissing('documents/gone.pdf');
 });
 
-test('library documents download from the public disk', function () {
+test('a private document can be deleted with its file', function () {
+    Storage::fake('local');
+    $user = userWithPermissions(['view-documents', 'delete-documents']);
+    Storage::disk('local')->put('documents/private.pdf', 'x');
+    $document = Document::factory()->create(['file_path' => 'documents/private.pdf']);
+
+    $this->actingAs($user)->delete(route('documents.destroy', $document))->assertSessionHas('success');
+
+    Storage::disk('local')->assertMissing('documents/private.pdf');
+});
+
+test('private library documents download only through the permission-checked route', function () {
+    Storage::fake('local');
+    Storage::fake('public');
+    Storage::disk('local')->put('documents/secret.pdf', 'content');
+    $document = Document::factory()->create(['file_path' => 'documents/secret.pdf', 'file_name' => 'Secret.pdf', 'category' => 'contract']);
+
+    $this->get(route('documents.file', $document))->assertRedirect(route('login'));
+    $this->actingAs(userWithPermissions([]))->get(route('documents.file', $document))->assertForbidden();
+    $this->actingAs(userWithPermissions(['view-documents']))->get(route('documents.file', $document))->assertDownload('Secret.pdf');
+
+    $this->actingAs(userWithPermissions(['view-documents', 'edit-documents']))
+        ->get(route('documents.edit', $document))
+        ->assertInertia(fn (Assert $page) => $page->where('document.file_url', route('documents.file', $document)));
+});
+
+test('uploads that could run as code or a page are refused', function (string $name, string $mime) {
+    Storage::fake('local');
+    $user = userWithPermissions(['view-documents', 'create-documents']);
+    $client = Client::factory()->create();
+
+    $this->actingAs($user)
+        ->post(route('documents.store'), ['title' => 'x', 'category' => 'other', 'file_upload' => UploadedFile::fake()->create($name, 1, $mime)])
+        ->assertSessionHasErrors('file_upload');
+
+    $this->actingAs($user)
+        ->post(route('clients.documents.store', $client), ['uploadTitle' => 'x', 'uploadCategory' => 'other', 'uploadFile' => UploadedFile::fake()->create($name, 1, $mime)])
+        ->assertSessionHasErrors('uploadFile');
+
+    expect(Document::count())->toBe(0);
+})->with([
+    'php' => ['shell.php', 'application/x-php'],
+    'html' => ['page.html', 'text/html'],
+    'svg' => ['image.svg', 'image/svg+xml'],
+]);
+
+test('legacy library documents still download from the public disk', function () {
+    Storage::fake('local');
     Storage::fake('public');
     $user = userWithPermissions(['view-documents']);
     Storage::disk('public')->put('documents/here.pdf', 'content');
