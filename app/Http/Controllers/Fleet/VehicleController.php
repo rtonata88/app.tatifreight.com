@@ -8,6 +8,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -77,10 +78,90 @@ class VehicleController extends Controller
         return redirect()->route('vehicles.index')->with('success', 'Vehicle created successfully!');
     }
 
-    public function show(Vehicle $vehicle): Response
+    public function show(Request $request, Vehicle $vehicle): Response
     {
-        // TODO(module: vehicles show) — port livewire/vehicles/show.blade.php
-        abort(501);
+        $vehicle->load(['vehicleType', 'mdcRateCard']);
+
+        $bookings = $vehicle->bookings()->with('client')->orderBy('start_date', 'desc')->limit(10)->get();
+        $mdcCalculations = $vehicle->mdcCalculations()->orderBy('calculation_date', 'desc')->limit(10)->get();
+        $inspections = $vehicle->inspections()->with('inspector')->orderBy('inspection_date', 'desc')->limit(5)->get();
+        $logbooks = $vehicle->logbooks()->with('driver')->orderBy('date', 'desc')->limit(10)->get();
+
+        $totalMdcCharges = (float) $vehicle->mdcCalculations()->sum('mdc_amount');
+        $totalMdcPaid = (float) $vehicle->mdcCalculations()->sum('amount_paid');
+
+        // Linked rate card, otherwise the one suggested for the vehicle's GVM.
+        $rateCard = $vehicle->mdcRateCard ?? $vehicle->getEffectiveMdcRateCard();
+
+        return Inertia::render('vehicles/show', [
+            'vehicle' => [
+                'id' => $vehicle->id,
+                'reg_number' => $vehicle->reg_number,
+                'status' => $vehicle->status,
+                'make' => $vehicle->make,
+                'model' => $vehicle->model,
+                'year' => $vehicle->year,
+                'type' => $vehicle->vehicleType?->name,
+                'vin' => $vehicle->vin,
+                'current_mileage' => (float) $vehicle->current_mileage,
+                'gps_device_id' => $vehicle->gps_device_id,
+                'gvm_tonnes' => $vehicle->gvm_tonnes !== null ? (float) $vehicle->gvm_tonnes : null,
+                'load_capacity' => $vehicle->load_capacity !== null ? (float) $vehicle->load_capacity : null,
+                'tare_weight' => $vehicle->tare_weight !== null ? (float) $vehicle->tare_weight : null,
+                'mdc_rate_card' => $rateCard ? [
+                    'category_name' => $rateCard->category_name,
+                    'rate_per_100km' => (float) $rateCard->rate_per_100km,
+                    'suggested' => ! $vehicle->mdcRateCard,
+                ] : null,
+                'insurance_expiry' => $this->expiry($vehicle->insurance_expiry),
+                'disc_expiry' => $this->expiry($vehicle->disc_expiry),
+                'roadworthy_expiry' => $this->expiry($vehicle->roadworthy_expiry),
+                'next_service_date' => $this->expiry($vehicle->next_service_date),
+                'next_service_mileage' => $vehicle->next_service_mileage ? (float) $vehicle->next_service_mileage : null,
+                'notes' => $vehicle->notes,
+                'photo_url' => ! empty($vehicle->photos) ? Storage::url($vehicle->photos[0]) : null,
+            ],
+            'bookings' => $bookings->map(fn ($booking) => [
+                'id' => $booking->id,
+                'booking_number' => $booking->booking_number,
+                'client' => $booking->client ? ($booking->client->company_name ?: $booking->client->name) : null,
+                'start_date' => $booking->start_date?->format('Y-m-d'),
+                'status' => $booking->status,
+            ]),
+            'logbooks' => $logbooks->map(fn ($logbook) => [
+                'id' => $logbook->id,
+                'origin_from' => $logbook->origin_from,
+                'origin_to' => $logbook->origin_to,
+                'driver' => $logbook->driver?->name,
+                'date' => $logbook->date?->format('Y-m-d'),
+                'distance' => (float) $logbook->distance_travelled,
+            ]),
+            'mdcCalculations' => $mdcCalculations->map(fn ($mdc) => [
+                'id' => $mdc->id,
+                'mdc_amount' => (float) $mdc->mdc_amount,
+                'distance_km' => (float) $mdc->distance_km,
+                'calculation_date' => $mdc->calculation_date?->format('Y-m-d'),
+                'payment_status' => $mdc->payment_status,
+            ]),
+            'inspections' => $inspections->map(fn ($inspection) => [
+                'id' => $inspection->id,
+                'inspection_type' => $inspection->inspection_type,
+                'inspector' => $inspection->inspector?->name,
+                'inspection_date' => $inspection->inspection_date?->format('Y-m-d'),
+                'passed' => (bool) $inspection->passed,
+            ]),
+            'stats' => [
+                'total_bookings' => $vehicle->bookings()->count(),
+                'total_mdc_charges' => $totalMdcCharges,
+                'total_mdc_paid' => $totalMdcPaid,
+                'total_mdc_outstanding' => $totalMdcCharges - $totalMdcPaid,
+                'total_expenses' => (float) $vehicle->expenses()->where('status', 'approved')->sum('amount'),
+                'total_distance' => (float) $vehicle->logbooks()->sum(DB::raw('end_odometer - start_odometer')),
+            ],
+            'can' => [
+                'edit' => $request->user()->can('edit-vehicles'),
+            ],
+        ]);
     }
 
     public function edit(Vehicle $vehicle): Response
@@ -130,6 +211,24 @@ class VehicleController extends Controller
         $vehicle->delete();
 
         return back()->with('success', 'Vehicle deleted successfully');
+    }
+
+    /**
+     * A compliance date plus whether it has passed or falls within the next 30 days.
+     *
+     * @return array{date: string, past: bool, soon: bool}|null
+     */
+    private function expiry(?\Carbon\CarbonInterface $date): ?array
+    {
+        if (! $date) {
+            return null;
+        }
+
+        return [
+            'date' => $date->format('Y-m-d'),
+            'past' => $date->isPast(),
+            'soon' => ! $date->isPast() && $date->isBefore(now()->addDays(30)),
+        ];
     }
 
     /**

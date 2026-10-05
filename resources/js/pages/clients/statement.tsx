@@ -1,0 +1,373 @@
+import { Head, Link } from "@inertiajs/react";
+import { ArrowLeft, Download } from "lucide-react";
+import { FormField } from "@/components/form-field";
+import { PageContainer } from "@/components/page-container";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
+import { StatusBadge } from "@/components/status-badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableFooter,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { useFilters } from "@/hooks/use-filters";
+import AppLayout from "@/layouts/app-layout";
+import { formatDate, formatMoney } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { index, statement } from "@/routes/clients";
+import { pdf } from "@/routes/clients/statement";
+import type { BreadcrumbItem } from "@/types";
+
+type StatementClient = {
+    id: number;
+    name: string;
+    company_name: string | null;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    postal_code: string | null;
+    country: string | null;
+    classification: string;
+    credit_limit: number;
+    is_active: boolean;
+};
+
+type Transaction = {
+    date: string | null;
+    type: "invoice" | "payment";
+    reference: string;
+    description: string;
+    debit: number;
+    credit: number;
+    balance: number;
+};
+
+type Props = {
+    client: StatementClient;
+    filters: { dateFrom: string; dateTo: string };
+    transactions: Transaction[];
+    totalInvoiced: number;
+    totalPaid: number;
+    totalOutstanding: number;
+};
+
+const money = (value: number) => formatMoney(value, "N$");
+const ucfirst = (value: string) =>
+    value.charAt(0).toUpperCase() + value.slice(1);
+
+export default function ClientStatement({
+    client,
+    filters: initialFilters,
+    transactions,
+    totalInvoiced,
+    totalPaid,
+    totalOutstanding,
+}: Props) {
+    const { filters, setFilter } = useFilters(
+        statement(client.id).url,
+        initialFilters,
+        { debounce: 0 },
+    );
+    const displayName = client.company_name || client.name;
+    const outstanding = totalOutstanding > 0;
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: "Clients", href: index() },
+        { title: "Customer Statement", href: statement(client.id) },
+    ];
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={`Customer Statement - ${displayName}`} />
+            <PageContainer>
+                <PageHeader
+                    title="Customer Statement"
+                    description={displayName}
+                    actions={
+                        <>
+                            <Button asChild variant="ghost">
+                                <Link href={index()}>
+                                    <ArrowLeft /> Back to Clients
+                                </Link>
+                            </Button>
+                            {/* Plain link: the PDF controller reads dateFrom / dateTo from the query string. */}
+                            <Button asChild>
+                                <a
+                                    href={
+                                        pdf(client.id, {
+                                            query: {
+                                                dateFrom: filters.dateFrom,
+                                                dateTo: filters.dateTo,
+                                            },
+                                        }).url
+                                    }
+                                >
+                                    <Download /> Export to PDF
+                                </a>
+                            </Button>
+                        </>
+                    }
+                />
+
+                <Card>
+                    <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div>
+                            <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                                Client Information
+                            </h3>
+                            <div className="space-y-1 text-sm">
+                                {client.company_name && (
+                                    <div>
+                                        <strong>Company:</strong>{" "}
+                                        {client.company_name}
+                                    </div>
+                                )}
+                                <div>
+                                    <strong>Contact:</strong> {client.name}
+                                </div>
+                                {client.email && (
+                                    <div className="break-all">
+                                        <strong>Email:</strong> {client.email}
+                                    </div>
+                                )}
+                                {client.phone && (
+                                    <div>
+                                        <strong>Phone:</strong> {client.phone}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                                Address
+                            </h3>
+                            <div className="space-y-1 text-sm">
+                                {client.address && (
+                                    <div className="whitespace-pre-line">
+                                        {client.address}
+                                    </div>
+                                )}
+                                {(client.city || client.postal_code) && (
+                                    <div>
+                                        {client.city}
+                                        {client.postal_code &&
+                                            `, ${client.postal_code}`}
+                                    </div>
+                                )}
+                                {client.country && <div>{client.country}</div>}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
+                                Account Details
+                            </h3>
+                            <div className="space-y-1 text-sm">
+                                <div>
+                                    <strong>Type:</strong>{" "}
+                                    {ucfirst(client.classification)}
+                                </div>
+                                <div>
+                                    <strong>Credit Limit:</strong>{" "}
+                                    {money(client.credit_limit)}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <strong>Status:</strong>
+                                    <StatusBadge
+                                        tone={
+                                            client.is_active ? "green" : "red"
+                                        }
+                                    >
+                                        {client.is_active
+                                            ? "Active"
+                                            : "Inactive"}
+                                    </StatusBadge>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="flex flex-wrap items-end gap-4">
+                        <FormField label="Date From" htmlFor="dateFrom">
+                            <Input
+                                id="dateFrom"
+                                type="date"
+                                value={filters.dateFrom}
+                                onChange={(e) =>
+                                    setFilter("dateFrom", e.target.value)
+                                }
+                            />
+                        </FormField>
+                        <FormField label="Date To" htmlFor="dateTo">
+                            <Input
+                                id="dateTo"
+                                type="date"
+                                value={filters.dateTo}
+                                onChange={(e) =>
+                                    setFilter("dateTo", e.target.value)
+                                }
+                            />
+                        </FormField>
+                    </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <StatCard
+                        label="Total Invoiced"
+                        value={money(totalInvoiced)}
+                        className="bg-blue-50 dark:bg-blue-500/10"
+                        valueClassName="text-3xl font-bold text-blue-700 dark:text-blue-300"
+                    />
+                    <StatCard
+                        label="Total Paid"
+                        value={money(totalPaid)}
+                        className="bg-green-50 dark:bg-green-500/10"
+                        valueClassName="text-3xl font-bold text-green-700 dark:text-green-300"
+                    />
+                    <StatCard
+                        label="Outstanding Balance"
+                        value={money(totalOutstanding)}
+                        className={
+                            outstanding
+                                ? "bg-red-50 dark:bg-red-500/10"
+                                : "bg-muted"
+                        }
+                        valueClassName={cn(
+                            "text-3xl font-bold",
+                            outstanding
+                                ? "text-red-700 dark:text-red-300"
+                                : "text-foreground",
+                        )}
+                    />
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Transaction History</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {transactions.length === 0 ? (
+                            <div className="py-8 text-center text-muted-foreground">
+                                No transactions found for the selected period.
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="uppercase">
+                                            Date
+                                        </TableHead>
+                                        <TableHead className="uppercase">
+                                            Reference
+                                        </TableHead>
+                                        <TableHead className="uppercase">
+                                            Description
+                                        </TableHead>
+                                        <TableHead className="text-right uppercase">
+                                            Debit
+                                        </TableHead>
+                                        <TableHead className="text-right uppercase">
+                                            Credit
+                                        </TableHead>
+                                        <TableHead className="text-right uppercase">
+                                            Balance
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {transactions.map((transaction, i) => (
+                                        <TableRow
+                                            key={`${transaction.type}-${transaction.reference}-${i}`}
+                                            className={cn(
+                                                transaction.type ===
+                                                    "payment" &&
+                                                    "bg-green-50 dark:bg-green-500/10",
+                                            )}
+                                        >
+                                            <TableCell className="whitespace-nowrap">
+                                                {formatDate(transaction.date)}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {transaction.reference}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {transaction.description}
+                                            </TableCell>
+                                            <TableCell
+                                                className={cn(
+                                                    "text-right",
+                                                    transaction.debit > 0
+                                                        ? "font-semibold text-red-600 dark:text-red-400"
+                                                        : "text-muted-foreground",
+                                                )}
+                                            >
+                                                {transaction.debit > 0
+                                                    ? money(transaction.debit)
+                                                    : "-"}
+                                            </TableCell>
+                                            <TableCell
+                                                className={cn(
+                                                    "text-right",
+                                                    transaction.credit > 0
+                                                        ? "font-semibold text-green-600 dark:text-green-400"
+                                                        : "text-muted-foreground",
+                                                )}
+                                            >
+                                                {transaction.credit > 0
+                                                    ? money(transaction.credit)
+                                                    : "-"}
+                                            </TableCell>
+                                            <TableCell
+                                                className={cn(
+                                                    "text-right font-bold",
+                                                    transaction.balance > 0 &&
+                                                        "text-red-700 dark:text-red-300",
+                                                )}
+                                            >
+                                                {money(transaction.balance)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                                <TableFooter>
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={3}
+                                            className="font-bold"
+                                        >
+                                            TOTAL
+                                        </TableCell>
+                                        <TableCell className="text-right font-bold text-red-600 dark:text-red-400">
+                                            {money(totalInvoiced)}
+                                        </TableCell>
+                                        <TableCell className="text-right font-bold text-green-600 dark:text-green-400">
+                                            {money(totalPaid)}
+                                        </TableCell>
+                                        <TableCell
+                                            className={cn(
+                                                "text-right font-bold",
+                                                outstanding &&
+                                                    "text-red-700 dark:text-red-300",
+                                            )}
+                                        >
+                                            {money(totalOutstanding)}
+                                        </TableCell>
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
+            </PageContainer>
+        </AppLayout>
+    );
+}

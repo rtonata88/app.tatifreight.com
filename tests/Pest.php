@@ -47,7 +47,7 @@ expect()->extend('toBeOne', function () {
  */
 function userWithRole(string $role): App\Models\User
 {
-    (new Database\Seeders\RolesAndPermissionsSeeder)->run();
+    test()->seed(Database\Seeders\RolesAndPermissionsSeeder::class);
 
     $user = App\Models\User::factory()->create();
     $user->assignRole($role);
