@@ -90,17 +90,17 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create roles and assign permissions
 
         // Admin - Full access
-        $admin = Role::create(['name' => 'admin']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->givePermissionTo(Permission::all());
 
         // Manager - All except system settings
-        $manager = Role::create(['name' => 'manager']);
+        $manager = Role::firstOrCreate(['name' => 'manager']);
         $manager->givePermissionTo([
             'view-vehicles', 'create-vehicles', 'edit-vehicles', 'delete-vehicles', 'manage-vehicle-inspections',
             'view-logbook', 'create-logbook', 'edit-logbook', 'delete-logbook',
@@ -115,7 +115,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Dispatcher - Bookings, Quotes, Clients
-        $dispatcher = Role::create(['name' => 'dispatcher']);
+        $dispatcher = Role::firstOrCreate(['name' => 'dispatcher']);
         $dispatcher->givePermissionTo([
             'view-vehicles',
             'view-logbook',
@@ -126,7 +126,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Driver - View assigned jobs, submit expenses, manage logbook
-        $driver = Role::create(['name' => 'driver']);
+        $driver = Role::firstOrCreate(['name' => 'driver']);
         $driver->givePermissionTo([
             'view-bookings',
             'view-expenses', 'create-expenses',
@@ -134,7 +134,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Accountant - Financials + Reports
-        $accountant = Role::create(['name' => 'accountant']);
+        $accountant = Role::firstOrCreate(['name' => 'accountant']);
         $accountant->givePermissionTo([
             'view-clients',
             'view-bookings',

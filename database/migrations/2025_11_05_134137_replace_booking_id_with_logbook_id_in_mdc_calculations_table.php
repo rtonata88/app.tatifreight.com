@@ -3,40 +3,49 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Whether the column has a foreign key. Uses the schema builder so it
+     * works on MySQL and SQLite (the test suite) alike.
+     */
+    private function hasForeignKey(string $table, string $column): bool
+    {
+        foreach (Schema::getForeignKeys($table) as $foreignKey) {
+            if (in_array($column, $foreignKey['columns'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table('mdc_calculations', function (Blueprint $table) {
+        $hasBookingId = Schema::hasColumn('mdc_calculations', 'booking_id');
+        $bookingHasForeign = $hasBookingId && $this->hasForeignKey('mdc_calculations', 'booking_id');
+        $hasLogbookId = Schema::hasColumn('mdc_calculations', 'logbook_id');
+        $logbookHasForeign = $hasLogbookId && $this->hasForeignKey('mdc_calculations', 'logbook_id');
+
+        Schema::table('mdc_calculations', function (Blueprint $table) use ($hasBookingId, $bookingHasForeign, $hasLogbookId, $logbookHasForeign) {
             // Check if booking_id exists and drop it
-            if (Schema::hasColumn('mdc_calculations', 'booking_id')) {
-                if (DB::table('information_schema.KEY_COLUMN_USAGE')
-                    ->where('TABLE_NAME', 'mdc_calculations')
-                    ->where('COLUMN_NAME', 'booking_id')
-                    ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-                    ->exists()) {
+            if ($hasBookingId) {
+                if ($bookingHasForeign) {
                     $table->dropForeign(['booking_id']);
                 }
                 $table->dropColumn('booking_id');
             }
-            
+
             // Add logbook_id column if it doesn't exist
-            if (!Schema::hasColumn('mdc_calculations', 'logbook_id')) {
+            if (! $hasLogbookId) {
                 $table->foreignId('logbook_id')->after('id')->constrained()->onDelete('cascade');
-            } else {
+            } elseif (! $logbookHasForeign) {
                 // Column exists but may need foreign key
-                if (!DB::table('information_schema.KEY_COLUMN_USAGE')
-                    ->where('TABLE_NAME', 'mdc_calculations')
-                    ->where('COLUMN_NAME', 'logbook_id')
-                    ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-                    ->exists()) {
-                    $table->foreign('logbook_id')->references('id')->on('logbooks')->onDelete('cascade');
-                }
+                $table->foreign('logbook_id')->references('id')->on('logbooks')->onDelete('cascade');
             }
         });
     }
@@ -46,21 +55,21 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mdc_calculations', function (Blueprint $table) {
+        $hasLogbookId = Schema::hasColumn('mdc_calculations', 'logbook_id');
+        $logbookHasForeign = $hasLogbookId && $this->hasForeignKey('mdc_calculations', 'logbook_id');
+        $hasBookingId = Schema::hasColumn('mdc_calculations', 'booking_id');
+
+        Schema::table('mdc_calculations', function (Blueprint $table) use ($hasLogbookId, $logbookHasForeign, $hasBookingId) {
             // Drop the foreign key constraint and column for logbook_id if they exist
-            if (Schema::hasColumn('mdc_calculations', 'logbook_id')) {
-                if (DB::table('information_schema.KEY_COLUMN_USAGE')
-                    ->where('TABLE_NAME', 'mdc_calculations')
-                    ->where('COLUMN_NAME', 'logbook_id')
-                    ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-                    ->exists()) {
+            if ($hasLogbookId) {
+                if ($logbookHasForeign) {
                     $table->dropForeign(['logbook_id']);
                 }
                 $table->dropColumn('logbook_id');
             }
-            
+
             // Restore booking_id column with foreign key constraint if it doesn't exist
-            if (!Schema::hasColumn('mdc_calculations', 'booking_id')) {
+            if (! $hasBookingId) {
                 $table->foreignId('booking_id')->after('id')->constrained()->onDelete('cascade');
             }
         });

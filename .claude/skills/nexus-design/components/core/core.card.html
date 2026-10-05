@@ -1,0 +1,61 @@
+<!-- @dsCard group="Components" viewport="700x200" name="Core · Buttons" subtitle="Primary, ghost, text, danger — plus icon buttons" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; }
+  body { padding: 22px 24px; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .row:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script>window.__nxBase = "../../";</script>
+<script src="../../ds-shim.js"></script>
+<script type="text/babel">
+const NS = window.__nxNS();
+const { Button, IconButton } = NS;
+const Glyph = ({ n, size = 14 }) => {
+  const node = (window.lucide && (window.lucide.icons ? window.lucide.icons[n] : window.lucide[n])) || null;
+  const kids = node && node[0] === 'svg' ? node[2] : node;
+  if (!kids) return <span style={{ display: 'inline-block', width: size, height: size }} />;
+  return React.createElement('svg', {
+    width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+    strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true',
+    style: { display: 'block' },
+  }, kids.map((c, i) => React.createElement(c[0], Object.assign({ key: i }, c[1]))));
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <>
+    <div className="row">
+      <Button variant="primary" icon={<Glyph n="Plus" />}>New quotation</Button>
+      <Button>Export</Button>
+      <Button variant="text" iconAfter={<Glyph n="ArrowRight" />}>View all</Button>
+      <Button variant="danger">Void invoice</Button>
+      <Button variant="primary" disabled>Disabled</Button>
+    </div>
+    <div className="row">
+      <Button size="sm">Small</Button>
+      <Button size="md">Medium</Button>
+      <Button size="lg" variant="primary">Large</Button>
+    </div>
+    <div className="row">
+      <IconButton label="View"><Glyph n="Eye" /></IconButton>
+      <IconButton label="Add" tone="brass"><Glyph n="Plus" /></IconButton>
+      <IconButton label="Approve" tone="positive"><Glyph n="Check" /></IconButton>
+      <IconButton label="Delete" tone="negative"><Glyph n="Trash2" /></IconButton>
+      <span className="nx-meta">Row actions · 28px</span>
+    </div>
+  </>
+);
+</script>
+</body>
+</html>

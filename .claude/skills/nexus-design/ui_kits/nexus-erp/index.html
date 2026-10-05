@@ -1,0 +1,136 @@
+<!-- @dsCard group="Nexus ERP" viewport="1440x820" subtitle="Click-through recreation: dashboard, index, dossier, form, payslip" name="Nexus ERP" -->
+<!-- @startingPoint section="Nexus ERP" subtitle="Full app shell with rail, topbar and five screens" viewport="1440x900" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<title>Nexus ERP — UI kit</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body, #root { margin: 0; height: 100%; }
+  body { overflow: hidden; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb { background: var(--nx-rule-strong); border-radius: 999px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script>
+  window.__nxBase = "../../";
+  window.__nxScreens = [
+    "ui_kits/nexus-erp/Shell.jsx",
+    "ui_kits/nexus-erp/DashboardScreen.jsx",
+    "ui_kits/nexus-erp/QuotationsScreen.jsx",
+    "ui_kits/nexus-erp/EmployeeScreen.jsx",
+    "ui_kits/nexus-erp/ExpenseFormScreen.jsx",
+    "ui_kits/nexus-erp/PayslipScreen.jsx",
+    "ui_kits/nexus-erp/SettingsScreen.jsx"
+  ];
+</script>
+<script src="../../ds-shim.js"></script>
+
+<script type="text/babel">
+const NX = window.__nxNS();
+const KIT = window.NexusKit || {};
+const { Shell, DashboardScreen, QuotationsScreen, EmployeeScreen, ExpenseFormScreen, PayslipScreen, SettingsScreen } = KIT;
+const { Modal, Button, FormField, Select, Toast, StatusPill } = NX;
+
+const CRUMBS = {
+  dashboard: ['Dashboard', 'Analytics'],
+  quotations: ['Client management', 'Quotations'],
+  employee: ['People management', 'Employees', 'TWY-0142'],
+  expenses: ['Finance', 'Expense tracking', 'New'],
+  payslip: ['Payroll', 'Payslips', 'TWY-0142 · Feb 2026'],
+  settings: ['Settings', 'Practice settings'],
+};
+
+function App() {
+  const [screen, setScreen] = React.useState('dashboard');
+  const [statusRow, setStatusRow] = React.useState(null);
+  const [status, setStatus] = React.useState('pending');
+  const [toast, setToast] = React.useState(null);
+
+  const go = function (key) {
+    const known = ['dashboard', 'quotations', 'employee', 'expenses', 'payslip', 'settings'];
+    const map = { invoices: 'quotations', 'clients-dir': 'quotations', payments: 'quotations',
+                  people: 'employee', 'leave-requests': 'employee', 'leave': 'employee',
+                  'payroll-runs': 'payslip', 'payroll': 'payslip',
+                  banking: 'expenses', budgets: 'expenses', finance: 'expenses',
+                  'finance-dash': 'dashboard', 'projects-dash': 'dashboard',
+                  users: 'settings', roles: 'settings' };
+    const next = known.indexOf(key) >= 0 ? key : (map[key] || screen);
+    setScreen(next);
+    document.querySelector('main') && document.querySelector('main').scrollTo(0, 0);
+  };
+
+  const fire = function (msg, tone) {
+    setToast({ msg: msg, tone: tone || 'success' });
+    window.setTimeout(function () { setToast(null); }, 4200);
+  };
+
+  const body = screen === 'dashboard' ? <DashboardScreen onNavigate={go} />
+    : screen === 'quotations' ? <QuotationsScreen onNavigate={go} onStatusChange={function (r) { setStatusRow(r); setStatus(r.status); }} />
+    : screen === 'employee' ? <EmployeeScreen onNavigate={go} />
+    : screen === 'expenses' ? <ExpenseFormScreen onNavigate={go} onSubmit={function () { fire('Expense EXP-2026-0442 submitted for approval.'); go('dashboard'); }} />
+    : screen === 'settings' ? <SettingsScreen onNavigate={go} />
+    : <PayslipScreen onNavigate={go} />;
+
+  return (
+    <Shell screen={screen} onNavigate={go} breadcrumb={CRUMBS[screen]}
+      overlay={
+        <>
+          {statusRow ? (
+            <Modal
+              open title="Update quotation status"
+              subtitle={statusRow.ref + ' · ' + statusRow.client}
+              onClose={function () { setStatusRow(null); }}
+              footer={
+                <>
+                  <Button onClick={function () { setStatusRow(null); }}>Cancel</Button>
+                  <Button variant="primary" onClick={function () {
+                    fire(statusRow.ref + ' set to ' + status + '.');
+                    setStatusRow(null);
+                  }}>Update status</Button>
+                </>
+              }
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--nx-s-5)' }}>
+                <FormField label="Status" hint="Approving a quotation creates its project automatically.">
+                  <Select value={status} onChange={function (e) { setStatus(e.target.value); }}
+                    options={[
+                      { value: 'draft', label: 'Draft' },
+                      { value: 'pending', label: 'Pending' },
+                      { value: 'approved', label: 'Approved' },
+                      { value: 'declined', label: 'Declined' },
+                    ]} />
+                </FormField>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className="nx-meta">Current</span>
+                  <StatusPill status={statusRow.status} />
+                </div>
+              </div>
+            </Modal>
+          ) : null}
+          {toast ? (
+            <div style={{ position: 'absolute', right: 20, bottom: 20, zIndex: 70 }}>
+              <Toast tone={toast.tone} onDismiss={function () { setToast(null); }}>{toast.msg}</Toast>
+            </div>
+          ) : null}
+        </>
+      }
+    >
+      {body}
+    </Shell>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

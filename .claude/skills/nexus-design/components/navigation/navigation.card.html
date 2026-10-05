@@ -1,0 +1,71 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Navigation" subtitle="Module rail, breadcrumb, page header, in-record tabs" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { display: flex; height: 300px; overflow: hidden; }
+  #rail { height: 100%; }
+  #main { flex: 1; min-width: 0; padding: 20px 24px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root" style="display:flex; width:100%; height:100%"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script>window.__nxBase = "../../";</script>
+<script src="../../ds-shim.js"></script>
+<script type="text/babel">
+const NS = window.__nxNS();
+const { Sidebar, PageHeader, Tabs, Breadcrumb, SectionHeader, Button, Badge } = NS;
+const Glyph = ({ n, size = 16 }) => {
+  const node = (window.lucide && (window.lucide.icons ? window.lucide.icons[n] : window.lucide[n])) || null;
+  const kids = node && node[0] === 'svg' ? node[2] : node;
+  if (!kids) return <span style={{ display: 'inline-block', width: size, height: size }} />;
+  return React.createElement('svg', {
+    width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+    strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true',
+    style: { display: 'block' },
+  }, kids.map((c, i) => React.createElement(c[0], Object.assign({ key: i }, c[1]))));
+};
+
+function Demo() {
+  const [key, setKey] = React.useState('quotations');
+  const [tab, setTab] = React.useState('contacts');
+  return (
+    <>
+      <Sidebar brand="Nexus" activeKey={key} onNavigate={setKey} style={{ height: '100%' }}
+        sections={[
+          { title: 'General', items: [
+            { key: 'analytics', label: 'Dashboard', icon: <Glyph n="LayoutGrid" /> },
+            { key: 'leave', label: 'Leave applications', icon: <Glyph n="CalendarDays" />, badge: 4 },
+          ]},
+          { title: 'Operations', items: [
+            { key: 'clients', label: 'Client management', icon: <Glyph n="Users" />,
+              children: [{ key: 'clients-dir', label: 'Clients' }, { key: 'quotations', label: 'Quotations' }, { key: 'invoices', label: 'Invoices' }] },
+            { key: 'payroll', label: 'Payroll', icon: <Glyph n="Calculator" /> },
+          ]},
+        ]} />
+      <div id="main">
+        <Breadcrumb items={['Client management', 'Quotations']} />
+        <PageHeader eyebrow="Client management" title="Quotations"
+          subtitle="Create and track client quotations through to project handover."
+          actions={<Button variant="primary">New quotation</Button>}
+          style={{ marginBottom: 20 }} />
+        <Tabs activeKey={tab} onChange={setTab} tabs={[
+          { key: 'contacts', label: 'Contacts', count: 4 },
+          { key: 'notes', label: 'Notes', count: 12 },
+          { key: 'attachments', label: 'Attachments', count: 3 },
+        ]} />
+      </div>
+    </>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Feedback" subtitle="Inline alerts, toast, activity timeline, modal" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; }
+  body { padding: 20px 24px; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script>window.__nxBase = "../../";</script>
+<script src="../../ds-shim.js"></script>
+<script type="text/babel">
+const NS = window.__nxNS();
+const { Alert, Toast, ActivityList, Button } = NS;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <div className="split">
+    <div className="stack">
+      <Alert tone="warning" title="Payroll period is closed"
+        action={<Button variant="text">Reopen</Button>}>
+        February 2026 was closed on 26 Feb. Adjustments will post to March.
+      </Alert>
+      <Alert tone="error" title="3 fields need attention">
+        Cost centre, VAT number and supporting document are required before submitting.
+      </Alert>
+      <Toast>Quotation QT-2026-0184 approved. Project NX-0231 created.</Toast>
+      <Toast tone="error" onDismiss={() => {}}>Bank statement import failed at row 42.</Toast>
+    </div>
+    <ActivityList items={[
+      { title: 'Invoice INV-2026-0117 issued', description: 'Roads Authority · NAD 486,200.00', time: '14 Feb 09:12', tone: 'positive' },
+      { title: 'Quotation QT-2026-0184 approved', description: 'By S. Kaunatjike', time: '13 Feb 16:40', tone: 'brass' },
+      { title: 'Leave application declined', description: 'T. Shipanga · 3 days annual', time: '12 Feb 11:04', tone: 'negative' },
+      { title: 'Trip request submitted', description: 'Walvis Bay · 2 nights', time: '11 Feb 08:22', tone: 'warning' },
+    ]} />
+  </div>
+);
+</script>
+</body>
+</html>

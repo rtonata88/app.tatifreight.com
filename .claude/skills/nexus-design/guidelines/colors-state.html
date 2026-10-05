@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x130" subtitle="The app's own success / warning / danger / info" name="State colours" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0}
+  body{padding:18px 22px;font-family:var(--nx-font-body)}
+  .grid{display:grid;gap:10px}
+  .sw{border-radius:var(--nx-r-3);border:1px solid var(--border);padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-end;min-height:64px}
+  .n{font-family:var(--nx-font-mono);font-size:10px;letter-spacing:0;line-height:1.5}
+  .l{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;line-height:1.6}
+  .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="grid" style="grid-template-columns:repeat(4,1fr)">
+<div class="sw" style="background:#28a745"><div class="l" style="color:#ffffff">Success</div><div class="n" style="color:#ffffff;opacity:.8">#28a745</div></div>
+<div class="sw" style="background:#b45309"><div class="l" style="color:#ffffff">Warning</div><div class="n" style="color:#ffffff;opacity:.8">#b45309</div></div>
+<div class="sw" style="background:#dc3545"><div class="l" style="color:#ffffff">Danger</div><div class="n" style="color:#ffffff;opacity:.8">#dc3545</div></div>
+<div class="sw" style="background:#17a2b8"><div class="l" style="color:#ffffff">Info</div><div class="n" style="color:#ffffff;opacity:.8">#17a2b8</div></div>
+</div>
+<div class="n" style="color:var(--muted-foreground);margin-top:10px">active · approved · paid&nbsp;&nbsp;/&nbsp;&nbsp;pending · draft · submitted&nbsp;&nbsp;/&nbsp;&nbsp;declined · overdue&nbsp;&nbsp;/&nbsp;&nbsp;completed</div>
+</body>
+</html>

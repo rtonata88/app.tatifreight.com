@@ -1,0 +1,10 @@
+/* Nexus Design System — global entry point.
+   Consumers link this one file. Imports only. */
+@import url('./tokens/fonts.css');
+@import url('./tokens/colors.css');
+@import url('./tokens/typography.css');
+@import url('./tokens/spacing.css');
+@import url('./tokens/elevation.css');
+@import url('./tokens/shadcn.css');
+@import url('./tokens/theme-light.css');
+@import url('./tokens/primitives.css');

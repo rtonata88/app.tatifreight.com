@@ -1,0 +1,499 @@
+import { Head, Link, router } from "@inertiajs/react";
+import {
+    ArrowRight,
+    BookOpen,
+    ChevronDown,
+    ListFilter,
+    Pencil,
+    Plus,
+    Search,
+    Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { DataPagination } from "@/components/data-pagination";
+import { EmptyState } from "@/components/empty-state";
+import { FormField } from "@/components/form-field";
+import { PageContainer } from "@/components/page-container";
+import { RowActionContent, rowActionProps } from "@/components/row-action";
+import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { useFilters } from "@/hooks/use-filters";
+import AppLayout from "@/layouts/app-layout";
+import { formatDate, formatNumber } from "@/lib/format";
+import { create, destroy, edit, index } from "@/routes/logbook";
+import type { BreadcrumbItem, Option, Paginated } from "@/types";
+
+type LogbookRow = {
+    id: number;
+    date: string | null;
+    vehicle_reg: string | null;
+    vehicle_type: string | null;
+    driver: string | null;
+    origin_from: string;
+    origin_to: string;
+    start_odometer: number;
+    end_odometer: number | null;
+    distance: number;
+};
+
+type Filters = {
+    search: string;
+    vehicle: string;
+    dateFrom: string;
+    dateTo: string;
+};
+
+type Props = {
+    logbooks: Paginated<LogbookRow>;
+    vehicles: Option[];
+    totalDistance: number;
+    totalTrips: number;
+    filters: Filters;
+    can: { create: boolean; edit: boolean; delete: boolean };
+};
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: "Logbook", href: index() }];
+
+const EMPTY_MESSAGE =
+    "No logbook entries found. Add your first entry to get started.";
+
+export default function LogbookIndex({
+    logbooks,
+    vehicles,
+    totalDistance,
+    totalTrips,
+    filters: initialFilters,
+    can,
+}: Props) {
+    // `filtered` marks that the user has touched the filters, so a cleared date stays cleared
+    // instead of falling back to the current month (the old screen's starting range).
+    const { filters, setFilter } = useFilters(index().url, {
+        ...initialFilters,
+        filtered: "1",
+    });
+
+    // Phones: vehicle and dates fold away behind a "Filters" toggle; search stays visible.
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const activeFilters = [
+        filters.vehicle,
+        filters.dateFrom,
+        filters.dateTo,
+    ].filter(Boolean).length;
+
+    const deleteLogbook = (logbook: LogbookRow, done: () => void) =>
+        router.delete(destroy(logbook.id).url, {
+            preserveScroll: true,
+            onFinish: done,
+        });
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Vehicle logbook" />
+            <PageContainer>
+                <PageHeader
+                    title="Vehicle logbook"
+                    actions={
+                        can.create && (
+                            <Button asChild>
+                                <Link href={create()}>
+                                    <Plus /> New entry
+                                </Link>
+                            </Button>
+                        )
+                    }
+                />
+
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-2">
+                    <StatCard
+                        label="Total distance"
+                        value={`${formatNumber(totalDistance)} km`}
+                    />
+                    <StatCard
+                        label="Total trips"
+                        value={formatNumber(totalTrips)}
+                    />
+                </div>
+
+                <Card>
+                    <CardContent>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                            <FormField label="Search" htmlFor="search">
+                                <div className="relative">
+                                    <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        id="search"
+                                        className="pl-9"
+                                        value={filters.search}
+                                        onChange={(e) =>
+                                            setFilter("search", e.target.value)
+                                        }
+                                        placeholder="Search vehicle, driver, location..."
+                                    />
+                                </div>
+                            </FormField>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="justify-between md:hidden"
+                                aria-expanded={filtersOpen}
+                                aria-controls="logbook-filters"
+                                onClick={() => setFiltersOpen((open) => !open)}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <ListFilter /> Filters
+                                    {activeFilters > 0 && (
+                                        <span className="rounded-full bg-muted px-2 text-xs font-medium tabular-nums">
+                                            {activeFilters}
+                                        </span>
+                                    )}
+                                </span>
+                                <ChevronDown
+                                    className={cn(
+                                        "transition-transform",
+                                        filtersOpen && "rotate-180",
+                                    )}
+                                />
+                            </Button>
+                            {/* From md up this wrapper disappears (display: contents) and the fields join the 4-column grid. */}
+                            <div
+                                id="logbook-filters"
+                                className={cn(
+                                    "grid grid-cols-2 gap-3 md:contents",
+                                    !filtersOpen && "max-md:hidden",
+                                )}
+                            >
+                                <FormField
+                                    label="Vehicle"
+                                    htmlFor="vehicle"
+                                    className="col-span-2"
+                                >
+                                    <NativeSelect
+                                        id="vehicle"
+                                        value={filters.vehicle}
+                                        onChange={(e) =>
+                                            setFilter("vehicle", e.target.value)
+                                        }
+                                    >
+                                        <option value="">All vehicles</option>
+                                        {vehicles.map((vehicle) => (
+                                            <option
+                                                key={vehicle.value}
+                                                value={vehicle.value}
+                                            >
+                                                {vehicle.label}
+                                            </option>
+                                        ))}
+                                    </NativeSelect>
+                                </FormField>
+                                <FormField label="Date from" htmlFor="dateFrom">
+                                    <Input
+                                        id="dateFrom"
+                                        type="date"
+                                        value={filters.dateFrom}
+                                        onChange={(e) =>
+                                            setFilter(
+                                                "dateFrom",
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </FormField>
+                                <FormField label="Date to" htmlFor="dateTo">
+                                    <Input
+                                        id="dateTo"
+                                        type="date"
+                                        value={filters.dateTo}
+                                        onChange={(e) =>
+                                            setFilter("dateTo", e.target.value)
+                                        }
+                                    />
+                                </FormField>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="space-y-4">
+                        {logbooks.data.length === 0 ? (
+                            <EmptyState icon={BookOpen} title={EMPTY_MESSAGE} />
+                        ) : (
+                            <>
+                                {/* Phones: cards */}
+                                <div className="space-y-3 md:hidden">
+                                    {logbooks.data.map((logbook) => (
+                                        <div
+                                            key={logbook.id}
+                                            className="space-y-3 rounded-lg border p-4"
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <div className="text-lg font-bold">
+                                                        {formatDate(
+                                                            logbook.date,
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        <span className="font-mono font-medium text-foreground">
+                                                            {
+                                                                logbook.vehicle_reg
+                                                            }
+                                                        </span>{" "}
+                                                        - {logbook.vehicle_type}
+                                                    </div>
+                                                </div>
+                                                {logbook.distance > 0 && (
+                                                    <div className="text-right">
+                                                        <div className="text-sm text-muted-foreground">
+                                                            Distance
+                                                        </div>
+                                                        <div className="font-condensed text-lg font-bold tabular-nums">
+                                                            {formatNumber(
+                                                                logbook.distance,
+                                                            )}{" "}
+                                                            km
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t pt-3 text-sm font-medium">
+                                                <span>
+                                                    {logbook.origin_from}
+                                                </span>
+                                                <ArrowRight
+                                                    className="size-4 shrink-0 text-muted-foreground"
+                                                    aria-label="to"
+                                                />
+                                                <span>{logbook.origin_to}</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-3 border-t pt-3">
+                                                <div className="col-span-2">
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Driver
+                                                    </div>
+                                                    <div className="text-sm font-medium">
+                                                        {logbook.driver}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Start odometer
+                                                    </div>
+                                                    <div className="text-sm font-medium">
+                                                        {formatNumber(
+                                                            logbook.start_odometer,
+                                                        )}{" "}
+                                                        km
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        End odometer
+                                                    </div>
+                                                    <div className="text-sm font-medium">
+                                                        {logbook.end_odometer
+                                                            ? `${formatNumber(logbook.end_odometer)} km`
+                                                            : "-"}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {(can.edit || can.delete) && (
+                                                <div className="flex flex-wrap gap-2 border-t pt-3">
+                                                    <RowActions
+                                                        logbook={logbook}
+                                                        can={can}
+                                                        onDelete={deleteLogbook}
+                                                        stretch
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Tablets and up: table */}
+                                <div className="hidden md:block">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Vehicle</TableHead>
+                                                <TableHead>Driver</TableHead>
+                                                <TableHead>Route</TableHead>
+                                                <TableHead className="text-right">
+                                                    Start odometer
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    End odometer
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Distance
+                                                </TableHead>
+                                                <TableHead>Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {logbooks.data.map((logbook) => (
+                                                <TableRow key={logbook.id}>
+                                                    <TableCell className="font-medium">
+                                                        {formatDate(
+                                                            logbook.date,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="font-mono font-medium">
+                                                            {
+                                                                logbook.vehicle_reg
+                                                            }
+                                                        </div>
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {
+                                                                logbook.vehicle_type
+                                                            }
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {logbook.driver}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="text-sm">
+                                                            <div>
+                                                                <strong>
+                                                                    From:
+                                                                </strong>{" "}
+                                                                {
+                                                                    logbook.origin_from
+                                                                }
+                                                            </div>
+                                                            <div>
+                                                                <strong>
+                                                                    To:
+                                                                </strong>{" "}
+                                                                {
+                                                                    logbook.origin_to
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right tabular-nums">
+                                                        {formatNumber(
+                                                            logbook.start_odometer,
+                                                        )}{" "}
+                                                        km
+                                                    </TableCell>
+                                                    <TableCell className="text-right tabular-nums">
+                                                        {logbook.end_odometer
+                                                            ? `${formatNumber(logbook.end_odometer)} km`
+                                                            : "-"}
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-semibold tabular-nums">
+                                                        {logbook.distance > 0
+                                                            ? `${formatNumber(logbook.distance)} km`
+                                                            : "-"}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <RowActions
+                                                                logbook={
+                                                                    logbook
+                                                                }
+                                                                can={can}
+                                                                onDelete={
+                                                                    deleteLogbook
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </>
+                        )}
+
+                        <DataPagination paginator={logbooks} />
+                    </CardContent>
+                </Card>
+            </PageContainer>
+        </AppLayout>
+    );
+}
+
+function RowActions({
+    logbook,
+    can,
+    onDelete,
+    stretch = false,
+}: {
+    logbook: LogbookRow;
+    can: Props["can"];
+    onDelete: (logbook: LogbookRow, done: () => void) => void;
+    stretch?: boolean;
+}) {
+    const className = stretch ? "flex-1" : undefined;
+    const compact = !stretch;
+
+    return (
+        <>
+            {can.edit && (
+                <Button
+                    asChild
+                    variant="ghost"
+                    {...rowActionProps(compact, "Edit", className)}
+                >
+                    <Link href={edit(logbook.id)}>
+                        <RowActionContent
+                            icon={Pencil}
+                            label="Edit"
+                            compact={compact}
+                        />
+                    </Link>
+                </Button>
+            )}
+            {can.delete && (
+                <ConfirmDialog
+                    trigger={
+                        <Button
+                            variant={compact ? "ghost" : "destructive"}
+                            {...rowActionProps(
+                                compact,
+                                "Delete",
+                                cn(
+                                    className,
+                                    compact &&
+                                        "text-destructive hover:text-destructive",
+                                ),
+                            )}
+                        >
+                            <RowActionContent
+                                icon={Trash2}
+                                label="Delete"
+                                compact={compact}
+                            />
+                        </Button>
+                    }
+                    description="Are you sure you want to delete this logbook entry?"
+                    onConfirm={(done) => onDelete(logbook, done)}
+                />
+            )}
+        </>
+    );
+}

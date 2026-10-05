@@ -1,0 +1,56 @@
+<!-- @dsCard group="Auth" viewport="1280x720" subtitle="Sign in, password reset, access request" name="Auth" -->
+<!-- @startingPoint section="Auth" subtitle="Split ink sign-in with editorial left panel" viewport="1280x800" -->
+<!DOCTYPE html>
+<html lang="en" class="nx-light">
+<head>
+<meta charset="utf-8">
+<title>Nexus auth — UI kit</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body, #root { margin: 0; height: 100%; }
+  a { color: var(--nx-brass); text-decoration: none; }
+  a:hover { color: var(--nx-brass-hi); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script>
+  window.__nxBase = "../../";
+  window.__nxScreens = ["ui_kits/auth/AuthScreens.jsx"];
+</script>
+<script src="../../ds-shim.js"></script>
+
+<script type="text/babel">
+const KIT = window.NexusKit || {};
+const NX = window.__nxNS();
+const { LoginScreen, ForgotScreen, RegisterScreen } = KIT;
+const { Toast } = NX;
+
+function App() {
+  const [screen, setScreen] = React.useState('login');
+  const [toast, setToast] = React.useState(false);
+  return (
+    <div style={{ height: '100%', position: 'relative' }}>
+      {screen === 'login' ? <LoginScreen onNavigate={setScreen} onSubmit={function () {
+        setToast(true);
+        window.setTimeout(function () { setToast(false); }, 4000);
+      }} />
+        : screen === 'forgot' ? <ForgotScreen onNavigate={setScreen} />
+        : <RegisterScreen onNavigate={setScreen} />}
+      {toast ? (
+        <div style={{ position: 'fixed', right: 20, bottom: 20 }}>
+          <Toast onDismiss={function () { setToast(false); }}>Signed in. Opening the analytics dashboard.</Toast>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

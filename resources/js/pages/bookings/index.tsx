@@ -1,0 +1,506 @@
+import { Head, Link, router } from '@inertiajs/react';
+import { CalendarDays, Check, ChevronDown, CircleCheck, Ellipsis, MapPin, Pencil, Play, Plus, Search, Trash2, X, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { bookingStatusTone } from '@/components/bookings/booking-status';
+import { DataPagination } from '@/components/data-pagination';
+import { PageContainer } from '@/components/page-container';
+import { PageHeader } from '@/components/page-header';
+import { StatCard } from '@/components/stat-card';
+import { StatusBadge } from '@/components/status-badge';
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { NativeSelect } from '@/components/ui/native-select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
+import AppLayout from '@/layouts/app-layout';
+import { formatDate, formatNumber, humanize } from '@/lib/format';
+import { calendar, create, destroy, edit, index, status as statusRoute } from '@/routes/bookings';
+import type { BreadcrumbItem, Paginated } from '@/types';
+
+type BookingRow = {
+    id: number;
+    booking_number: string;
+    status: string;
+    client: {
+        name: string | null;
+        phone: string | null;
+        company_name: string | null;
+    };
+    vehicle: { reg_number: string | null; type: string | null };
+    driver: string | null;
+    pickup_location: string | null;
+    delivery_location: string | null;
+    distance_km: number | null;
+    load_weight: number | null;
+    cargo_description: string | null;
+    cargo_excerpt: string | null;
+    start_date: string | null;
+    end_date: string | null;
+};
+
+type Props = {
+    bookings: Paginated<BookingRow>;
+    stats: {
+        pending: number;
+        confirmed: number;
+        in_progress: number;
+        completed: number;
+    };
+    filters: { search: string; status: string; date: string; vehicle: string };
+    /** Registration of the vehicle in ?vehicle=, when the list is narrowed to one vehicle. */
+    filteredVehicle: string | null;
+    can: { create: boolean; edit: boolean; delete: boolean };
+};
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Bookings', href: index() }];
+
+const EMPTY_MESSAGE = 'No bookings found. Create your first booking to get started.';
+const DELETE_MESSAGE = 'Are you sure you want to delete this booking?';
+
+export default function BookingsIndex({ bookings, stats, filters: initialFilters, filteredVehicle, can }: Props) {
+    const { filters, setFilter } = useFilters(index().url, initialFilters);
+    const [pendingDelete, setPendingDelete] = useState<BookingRow | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    const updateStatus = (booking: BookingRow, status: string) => router.patch(statusRoute(booking.id).url, { status }, { preserveScroll: true });
+
+    const deleteBooking = (booking: BookingRow, done: () => void) =>
+        router.delete(destroy(booking.id).url, {
+            preserveScroll: true,
+            onFinish: done,
+        });
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Booking management" />
+            <PageContainer>
+                <PageHeader
+                    title="Booking management"
+                    actions={
+                        <>
+                            <Button asChild variant="ghost" className="hidden md:inline-flex">
+                                <Link href={calendar()}>
+                                    <CalendarDays /> Calendar view
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="icon" className="md:hidden" aria-label="Calendar view">
+                                <Link href={calendar()}>
+                                    <CalendarDays />
+                                </Link>
+                            </Button>
+                            {can.create && (
+                                <Button asChild>
+                                    <Link href={create()}>
+                                        <Plus /> New booking
+                                    </Link>
+                                </Button>
+                            )}
+                        </>
+                    }
+                />
+
+                <div className="grid grid-cols-2 gap-3 md:gap-4 max-md:[&>*:last-child:nth-child(odd)]:col-span-2 md:grid-cols-4">
+                    <StatCard label="Pending" value={stats.pending} tone="warning" />
+                    <StatCard label="Confirmed" value={stats.confirmed} tone="info" />
+                    <StatCard label="In progress" value={stats.in_progress} />
+                    <StatCard label="Completed" value={stats.completed} tone="positive" />
+                </div>
+
+                <Card>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div className="relative">
+                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    className="pl-9"
+                                    value={filters.search}
+                                    onChange={(e) => setFilter('search', e.target.value)}
+                                    placeholder="Search bookings, clients, vehicles..."
+                                />
+                            </div>
+                            <NativeSelect value={filters.status} onChange={(e) => setFilter('status', e.target.value)} aria-label="Filter by status">
+                                <option value="">All statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="in_progress">In progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </NativeSelect>
+                            <NativeSelect value={filters.date} onChange={(e) => setFilter('date', e.target.value)} aria-label="Filter by date">
+                                <option value="">All dates</option>
+                                <option value="today">Today</option>
+                                <option value="upcoming">Upcoming</option>
+                                <option value="past">Past</option>
+                            </NativeSelect>
+                        </div>
+
+                        {filters.vehicle && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                Showing bookings for <span className="font-medium text-foreground">{filteredVehicle ?? 'one vehicle'}</span>
+                                <Button variant="ghost" size="sm" onClick={() => setFilter('vehicle', '')}>
+                                    <X /> Clear
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Phones: cards */}
+                        <div className="space-y-4 md:hidden">
+                            {bookings.data.length === 0 ? (
+                                <div className="py-8 text-center text-muted-foreground">{EMPTY_MESSAGE}</div>
+                            ) : (
+                                bookings.data.map((booking) => (
+                                    <div key={booking.id} className="space-y-3 rounded-lg border bg-card p-4">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div>
+                                                <div className="font-mono text-lg font-bold">{booking.booking_number}</div>
+                                                <div className="text-sm text-muted-foreground">{booking.client.name}</div>
+                                                {booking.client.phone && (
+                                                    <div className="text-xs text-muted-foreground">
+                                                        <a href={`tel:${booking.client.phone}`} className="hover:text-primary">
+                                                            {booking.client.phone}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                                {booking.client.company_name && (
+                                                    <div className="text-xs text-muted-foreground">{booking.client.company_name}</div>
+                                                )}
+                                            </div>
+                                            <StatusBadge tone={bookingStatusTone[booking.status] ?? 'gray'}>{humanize(booking.status)}</StatusBadge>
+                                        </div>
+
+                                        <div className="text-sm">
+                                            <span className="text-xs text-muted-foreground">Dates </span>
+                                            {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
+                                        </div>
+
+                                        {(booking.pickup_location || booking.delivery_location) && (
+                                            <div className="grid grid-cols-1 gap-2 border-t pt-3">
+                                                {booking.pickup_location && (
+                                                    <div className="flex items-start gap-2">
+                                                        <MapPin className="mt-0.5 size-5 shrink-0 text-success" />
+                                                        <div>
+                                                            <div className="text-xs text-muted-foreground">Pickup</div>
+                                                            <div className="text-sm font-medium">{booking.pickup_location}</div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {booking.delivery_location && (
+                                                    <div className="flex items-start gap-2">
+                                                        <MapPin className="mt-0.5 size-5 shrink-0 text-destructive" />
+                                                        <div>
+                                                            <div className="text-xs text-muted-foreground">Delivery</div>
+                                                            <div className="text-sm font-medium">{booking.delivery_location}</div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-3 border-t pt-3">
+                                            <div>
+                                                <div className="text-xs text-muted-foreground">Vehicle</div>
+                                                <div className="font-mono text-sm font-medium">{booking.vehicle.reg_number}</div>
+                                                <div className="text-xs text-muted-foreground">{booking.vehicle.type}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-muted-foreground">Driver</div>
+                                                {booking.driver ? (
+                                                    <div className="text-sm font-medium">{booking.driver}</div>
+                                                ) : (
+                                                    <div className="text-sm text-muted-foreground">Not assigned</div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {(!!booking.distance_km || !!booking.load_weight || booking.cargo_description) && (
+                                            <Collapsible className="border-t pt-3">
+                                                <CollapsibleTrigger className="group flex min-h-10 w-full items-center justify-between text-sm font-medium text-muted-foreground">
+                                                    Details
+                                                    <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
+                                                </CollapsibleTrigger>
+                                                <CollapsibleContent className="space-y-3 pt-3">
+                                                    {(!!booking.distance_km || !!booking.load_weight) && (
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            {!!booking.distance_km && (
+                                                                <div>
+                                                                    <div className="text-xs text-muted-foreground">Distance</div>
+                                                                    <div className="text-sm font-medium">
+                                                                        {formatNumber(booking.distance_km, 2)} km
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {!!booking.load_weight && (
+                                                                <div>
+                                                                    <div className="text-xs text-muted-foreground">Load weight</div>
+                                                                    <div className="text-sm font-medium">
+                                                                        {formatNumber(booking.load_weight, 2)} tons
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {booking.cargo_description && (
+                                                        <div>
+                                                            <div className="text-xs text-muted-foreground">Cargo</div>
+                                                            <div className="text-sm">{booking.cargo_description}</div>
+                                                        </div>
+                                                    )}
+                                                </CollapsibleContent>
+                                            </Collapsible>
+                                        )}
+
+                                        {(can.edit || can.delete) && (
+                                            <div className="flex gap-2 border-t pt-3">
+                                                {can.edit && (
+                                                    <>
+                                                        {booking.status === 'pending' && (
+                                                            <Button size="sm" className="flex-1" onClick={() => updateStatus(booking, 'confirmed')}>
+                                                                Confirm
+                                                            </Button>
+                                                        )}
+                                                        {booking.status === 'confirmed' && (
+                                                            <Button size="sm" className="flex-1" onClick={() => updateStatus(booking, 'in_progress')}>
+                                                                Start
+                                                            </Button>
+                                                        )}
+                                                        {booking.status === 'in_progress' && (
+                                                            <Button size="sm" className="flex-1" onClick={() => updateStatus(booking, 'completed')}>
+                                                                Complete
+                                                            </Button>
+                                                        )}
+                                                        <Button asChild size="sm" variant="outline" className="flex-1">
+                                                            <Link href={edit(booking.id)}>
+                                                                <Pencil /> Edit
+                                                            </Link>
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                {((can.edit && ['pending', 'confirmed'].includes(booking.status)) || can.delete) && (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                className="shrink-0"
+                                                                aria-label="More booking actions"
+                                                            >
+                                                                <Ellipsis />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="min-w-40">
+                                                            {can.edit && ['pending', 'confirmed'].includes(booking.status) && (
+                                                                <DropdownMenuItem onSelect={() => updateStatus(booking, 'cancelled')}>
+                                                                    <XCircle /> Cancel booking
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can.edit && ['pending', 'confirmed'].includes(booking.status) && can.delete && (
+                                                                <DropdownMenuSeparator />
+                                                            )}
+                                                            {can.delete && (
+                                                                <DropdownMenuItem variant="destructive" onSelect={() => setPendingDelete(booking)}>
+                                                                    <Trash2 /> Delete
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Tablets and up: table */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Booking #</TableHead>
+                                        <TableHead>Client</TableHead>
+                                        <TableHead>Vehicle</TableHead>
+                                        <TableHead>Route</TableHead>
+                                        {/* Shown on very wide screens only, so status and actions stay in view at laptop widths. */}
+                                        <TableHead className="hidden 2xl:table-cell">Distance</TableHead>
+                                        <TableHead className="hidden 2xl:table-cell">Load details</TableHead>
+                                        <TableHead>Dates</TableHead>
+                                        <TableHead>Driver</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {bookings.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={10} className="py-8 text-center text-muted-foreground">
+                                                {EMPTY_MESSAGE}
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        bookings.data.map((booking) => (
+                                            <TableRow key={booking.id}>
+                                                <TableCell className="font-mono font-bold">{booking.booking_number}</TableCell>
+                                                <TableCell>
+                                                    <div className="font-medium">{booking.client.name}</div>
+                                                    {booking.client.phone && (
+                                                        <div className="text-xs text-muted-foreground">{booking.client.phone}</div>
+                                                    )}
+                                                    {booking.client.company_name && (
+                                                        <div className="text-sm text-muted-foreground">{booking.client.company_name}</div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="font-mono font-medium">{booking.vehicle.reg_number}</div>
+                                                    <div className="text-sm text-muted-foreground">{booking.vehicle.type}</div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm whitespace-normal">
+                                                        {booking.pickup_location && (
+                                                            <div className="font-medium">From: {booking.pickup_location}</div>
+                                                        )}
+                                                        {booking.delivery_location && (
+                                                            <div className="text-muted-foreground">To: {booking.delivery_location}</div>
+                                                        )}
+                                                        {!booking.pickup_location && !booking.delivery_location && (
+                                                            <span className="text-muted-foreground">Not specified</span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="hidden 2xl:table-cell">
+                                                    {booking.distance_km ? (
+                                                        <div className="text-sm font-medium">{formatNumber(booking.distance_km, 2)} km</div>
+                                                    ) : (
+                                                        <span className="text-sm text-muted-foreground">N/A</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="hidden 2xl:table-cell">
+                                                    {booking.load_weight || booking.cargo_description ? (
+                                                        <div className="text-sm">
+                                                            {!!booking.load_weight && (
+                                                                <div className="font-medium">{formatNumber(booking.load_weight, 2)} tons</div>
+                                                            )}
+                                                            {booking.cargo_excerpt && (
+                                                                <div className="text-muted-foreground">{booking.cargo_excerpt}</div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm text-muted-foreground">N/A</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm">
+                                                        <div>{formatDate(booking.start_date)}</div>
+                                                        <div className="text-muted-foreground">to {formatDate(booking.end_date)}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {booking.driver ? (
+                                                        <div className="text-sm">{booking.driver}</div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground">Not assigned</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <StatusBadge tone={bookingStatusTone[booking.status] ?? 'gray'}>
+                                                        {humanize(booking.status)}
+                                                    </StatusBadge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button size="icon" variant="ghost" className="size-8" aria-label="Booking actions">
+                                                                <Ellipsis />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="start" className="min-w-32">
+                                                            {can.edit && (
+                                                                <>
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={edit(booking.id)}>
+                                                                            <Pencil /> Edit
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                    {booking.status === 'pending' && (
+                                                                        <DropdownMenuItem onSelect={() => updateStatus(booking, 'confirmed')}>
+                                                                            <CircleCheck /> Confirm booking
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    {booking.status === 'confirmed' && (
+                                                                        <DropdownMenuItem onSelect={() => updateStatus(booking, 'in_progress')}>
+                                                                            <Play /> Start trip
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    {booking.status === 'in_progress' && (
+                                                                        <DropdownMenuItem onSelect={() => updateStatus(booking, 'completed')}>
+                                                                            <Check /> Complete trip
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    {['pending', 'confirmed'].includes(booking.status) && (
+                                                                        <DropdownMenuItem onSelect={() => updateStatus(booking, 'cancelled')}>
+                                                                            <XCircle /> Cancel booking
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    <DropdownMenuSeparator />
+                                                                </>
+                                                            )}
+                                                            {can.delete && (
+                                                                <DropdownMenuItem variant="destructive" onSelect={() => setPendingDelete(booking)}>
+                                                                    <Trash2 /> Delete
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        <DataPagination paginator={bookings} />
+                    </CardContent>
+                </Card>
+            </PageContainer>
+
+            {/* Delete confirmation for the row/card dropdowns (the menu closes before the dialog opens). */}
+            <AlertDialog open={pendingDelete !== null} onOpenChange={(open) => !open && !deleting && setPendingDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>{DELETE_MESSAGE}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                        <Button
+                            variant="destructive"
+                            disabled={deleting}
+                            onClick={() => {
+                                if (!pendingDelete) return;
+                                setDeleting(true);
+                                deleteBooking(pendingDelete, () => {
+                                    setDeleting(false);
+                                    setPendingDelete(null);
+                                });
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </AppLayout>
+    );
+}

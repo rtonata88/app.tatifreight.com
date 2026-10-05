@@ -1,0 +1,28 @@
+/* ==========================================================================
+   Nexus Design System — radii, hairline lift, motion
+   There are no drop shadows outside of overlays. Hairlines do the work.
+   ========================================================================== */
+
+:root {
+    --nx-r-0: 0;
+    --nx-r-1: 2px;
+    --nx-r-2: 4px;
+    --nx-r-3: 6px;      /* controls */
+    --nx-r-4: 8px;      /* cards, inputs */
+    --nx-r-5: 12px;     /* dialogs */
+    --nx-r-pill: 9999px;
+
+    --nx-lift-0: 0 0 0 1px var(--nx-rule);
+    --nx-lift-1: 0 0 0 1px var(--nx-rule-strong);
+    --nx-lift-brass: 0 0 0 1px var(--nx-rule-brass), 0 24px 60px -24px rgba(182, 138, 62, 0.35);
+    --nx-lift-overlay: 0 0 0 1px var(--nx-rule-strong), 0 40px 100px -20px rgba(0, 0, 0, 0.7);
+    --nx-lift-popover: 0 0 0 1px var(--nx-rule-strong), 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+
+    --nx-ease:     cubic-bezier(0.32, 0.72, 0.24, 1);
+    --nx-dur-fast: 140ms;
+    --nx-dur:      220ms;
+    --nx-dur-slow: 420ms;
+
+    /* Focus — brass hairline, never a glow halo */
+    --nx-focus-ring: 0 0 0 1px var(--nx-brass);
+}
