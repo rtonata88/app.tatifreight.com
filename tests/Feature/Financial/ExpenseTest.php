@@ -289,3 +289,15 @@ test('an expense can be deleted', function () {
     expect(Expense::count())->toBe(0);
     expect(Expense::withTrashed()->count())->toBe(2);
 });
+
+test('drivers cannot open another user\'s expense or receipt', function () {
+    \Spatie\Permission\Models\Role::findOrCreate('driver', 'web');
+    $driver = userWithPermissions(['view-expenses']);
+    $driver->assignRole('driver');
+    $other = App\Models\Expense::factory()->create();
+    $own = App\Models\Expense::factory()->create(['user_id' => $driver->id]);
+
+    $this->actingAs($driver)->get(route('expenses.show', $other))->assertForbidden();
+    $this->actingAs($driver)->get(route('expenses.receipt.download', $other))->assertForbidden();
+    $this->actingAs($driver)->get(route('expenses.show', $own))->assertOk();
+});

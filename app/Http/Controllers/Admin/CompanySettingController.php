@@ -30,8 +30,8 @@ class CompanySettingController extends Controller
         return Inertia::render('settings/company', [
             'settings' => [
                 ...collect(self::FIELDS)->mapWithKeys(fn ($field) => [$field => $settings->{$field}])->all(),
-                'logo_url' => $settings->logo_path ? Storage::url($settings->logo_path) : null,
-                'signature_url' => $settings->signature_path ? Storage::url($settings->signature_path) : null,
+                'logo_url' => $settings->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
+                'signature_url' => $settings->signature_path ? Storage::disk('public')->url($settings->signature_path) : null,
             ],
             'bankAccounts' => CompanyBankAccount::active()->map(fn (CompanyBankAccount $account) => [
                 'id' => $account->id,

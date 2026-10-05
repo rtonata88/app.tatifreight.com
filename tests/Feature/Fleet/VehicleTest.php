@@ -88,3 +88,18 @@ test('a vehicle can be updated and deleted', function () {
     $this->actingAs($user)->delete(route('vehicles.destroy', $vehicle))->assertSessionHas('success');
     expect(Vehicle::find($vehicle->id))->toBeNull();
 });
+
+test('updating a vehicle to another vehicle\'s registration is a validation error', function () {
+    $user = userWithPermissions(['edit-vehicles']);
+    [$a, $b] = Vehicle::factory()->count(2)->create();
+
+    $this->actingAs($user)
+        ->put(route('vehicles.update', $a), [
+            'vehicle_type_id' => $a->vehicle_type_id,
+            'reg_number' => $b->reg_number,
+            'make' => 'Volvo',
+            'model' => 'FH',
+            'status' => 'available',
+        ])
+        ->assertSessionHasErrors('reg_number');
+});

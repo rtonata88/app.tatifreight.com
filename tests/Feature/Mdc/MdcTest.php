@@ -182,3 +182,16 @@ test('downloading a missing receipt is a 404', function () {
         ->get(route('mdc.payment.receipt', $payment))
         ->assertNotFound();
 });
+
+test('mdc index only offers record payment and the report to users who can use them', function () {
+    $viewer = userWithPermissions(['view-mdc']);
+    $manager = userWithPermissions(['view-mdc', 'manage-mdc', 'view-reports']);
+
+    $this->actingAs($viewer)->get(route('mdc.index'))
+        ->assertInertia(fn (Inertia\Testing\AssertableInertia $page) => $page
+            ->where('can.recordPayment', false)->where('can.viewReport', false));
+
+    $this->actingAs($manager)->get(route('mdc.index'))
+        ->assertInertia(fn (Inertia\Testing\AssertableInertia $page) => $page
+            ->where('can.recordPayment', true)->where('can.viewReport', true));
+});

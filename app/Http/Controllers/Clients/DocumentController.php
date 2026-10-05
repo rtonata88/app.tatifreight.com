@@ -146,7 +146,7 @@ class DocumentController extends Controller
                 'file_name' => $document->file_name,
                 'file_type' => $document->file_type,
                 'file_size_formatted' => $document->file_size_formatted,
-                'file_url' => Storage::url($document->file_path),
+                'file_url' => Storage::disk('public')->url($document->file_path),
                 'uploaded_by' => $document->uploadedBy?->name,
                 'created_at' => $document->created_at?->format('Y-m-d\TH:i:s'),
             ],
@@ -160,7 +160,7 @@ class DocumentController extends Controller
                     'created_at' => $version->created_at?->format('Y-m-d\TH:i:s'),
                     'uploaded_by' => $version->uploadedBy?->name,
                     'file_size_formatted' => $version->file_size_formatted,
-                    'file_url' => Storage::url($version->file_path),
+                    'file_url' => Storage::disk('public')->url($version->file_path),
                 ]),
         ]);
     }

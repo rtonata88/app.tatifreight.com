@@ -61,6 +61,11 @@ class MdcController extends Controller
         return Inertia::render('mdc/index', [
             'mdcCalculations' => $query->paginate(15)->withQueryString()->through(fn (MdcCalculation $mdc) => self::row($mdc)),
             'vehicles' => Vehicle::orderBy('reg_number')->get()->map(fn (Vehicle $v) => ['value' => $v->id, 'label' => $v->reg_number]),
+            // Hide links the user would only get a 403 from.
+            'can' => [
+                'recordPayment' => $request->user()->can('manage-mdc'),
+                'viewReport' => $request->user()->can('view-reports'),
+            ],
             'filters' => [
                 'search' => $search,
                 'date_from' => $dateFrom,

@@ -3,7 +3,10 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/app.css';
+import { Toaster } from '@/components/ui/sonner';
 import { initializeTheme } from '@/hooks/use-appearance';
+import { registerFlashToasts } from '@/hooks/use-flash-toast';
+import type { Flash } from '@/types';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -20,8 +23,12 @@ createInertiaApp({
         root.render(
             <StrictMode>
                 <App {...props} />
+                {/* One toaster for the whole app, so toasts survive page changes. */}
+                <Toaster position="top-right" />
             </StrictMode>,
         );
+
+        registerFlashToasts(props.initialPage.props.flash as Flash | undefined);
     },
     progress: {
         color: '#4B5563',

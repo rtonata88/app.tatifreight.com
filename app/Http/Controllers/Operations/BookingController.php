@@ -33,6 +33,8 @@ class BookingController extends Controller
         $search = (string) $request->query('search', '');
         $status = (string) $request->query('status', '');
         $date = (string) $request->query('date', '');
+        // Set by the "View all" link on a vehicle's page.
+        $vehicleId = (string) $request->query('vehicle', '');
 
         $bookings = Booking::with(['client', 'vehicle.vehicleType', 'driver'])
             // Drivers only see bookings assigned to them
@@ -49,6 +51,7 @@ class BookingController extends Controller
                 });
             })
             ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($vehicleId, fn ($q) => $q->where('vehicle_id', $vehicleId))
             ->when($date, function ($q) use ($date) {
                 match ($date) {
                     'today' => $q->whereDate('start_date', today()),
@@ -97,7 +100,8 @@ class BookingController extends Controller
                 'in_progress' => (clone $statsQuery)->where('status', 'in_progress')->count(),
                 'completed' => (clone $statsQuery)->where('status', 'completed')->count(),
             ],
-            'filters' => ['search' => $search, 'status' => $status, 'date' => $date],
+            'filters' => ['search' => $search, 'status' => $status, 'date' => $date, 'vehicle' => $vehicleId],
+            'filteredVehicle' => $vehicleId ? Vehicle::find($vehicleId)?->reg_number : null,
             'can' => [
                 'create' => $user->can('create-bookings'),
                 'edit' => $user->can('edit-bookings'),
@@ -124,7 +128,7 @@ class BookingController extends Controller
         }
 
         // Generate booking number
-        $lastBooking = Booking::latest('id')->first();
+        $lastBooking = Booking::withTrashed()->latest('id')->first(); // include deleted bookings: numbers are unique
         $nextNumber = $lastBooking ? (int) substr($lastBooking->booking_number, 4) + 1 : 1;
         $bookingNumber = 'BKG-'.str_pad((string) $nextNumber, 6, '0', STR_PAD_LEFT);
 

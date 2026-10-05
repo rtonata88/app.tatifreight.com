@@ -390,3 +390,30 @@ test('a failed MDC calculation does not block booking creation', function () {
 
     expect(Booking::count())->toBe(1);
 });
+
+test('a deleted latest booking does not cause a duplicate booking number', function () {
+    $user = userWithPermissions(['view-bookings', 'create-bookings']);
+    $client = bookingClient();
+    $vehicle = Vehicle::factory()->create();
+    Booking::factory()->create(['booking_number' => 'BKG-000007'])->delete();
+
+    $this->actingAs($user)
+        ->post(route('bookings.store'), bookingPayload($client, $vehicle))
+        ->assertRedirect(route('bookings.index'));
+
+    expect(Booking::where('booking_number', 'BKG-000008')->exists())->toBeTrue();
+});
+
+test('index can be narrowed to one vehicle', function () {
+    $user = userWithPermissions(['view-bookings']);
+    $vehicle = Vehicle::factory()->create(['reg_number' => 'N 4242 W']);
+    Booking::factory()->create(['vehicle_id' => $vehicle->id]);
+    Booking::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('bookings.index', ['vehicle' => $vehicle->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('bookings.data', 1)
+            ->where('filters.vehicle', (string) $vehicle->id)
+            ->where('filteredVehicle', 'N 4242 W'));
+});

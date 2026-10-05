@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -119,7 +120,7 @@ class VehicleController extends Controller
                 'next_service_date' => $this->expiry($vehicle->next_service_date),
                 'next_service_mileage' => $vehicle->next_service_mileage ? (float) $vehicle->next_service_mileage : null,
                 'notes' => $vehicle->notes,
-                'photo_url' => ! empty($vehicle->photos) ? Storage::url($vehicle->photos[0]) : null,
+                'photo_url' => ! empty($vehicle->photos) ? Storage::disk('public')->url($vehicle->photos[0]) : null,
             ],
             'bookings' => $bookings->map(fn ($booking) => [
                 'id' => $booking->id,
@@ -189,16 +190,21 @@ class VehicleController extends Controller
                 'next_service_date' => $vehicle->next_service_date?->format('Y-m-d'),
                 'next_service_mileage' => $vehicle->next_service_mileage,
                 'notes' => $vehicle->notes,
-                'license_disc_url' => $vehicle->license_disc_path ? Storage::url($vehicle->license_disc_path) : null,
-                'insurance_url' => $vehicle->insurance_path ? Storage::url($vehicle->insurance_path) : null,
+                'license_disc_url' => $vehicle->license_disc_path ? Storage::disk('public')->url($vehicle->license_disc_path) : null,
+                'insurance_url' => $vehicle->insurance_path ? Storage::disk('public')->url($vehicle->insurance_path) : null,
             ],
         ]);
     }
 
     public function update(Request $request, Vehicle $vehicle): RedirectResponse
     {
-        // Same rules the old edit screen used (no unique check on reg number / VIN).
-        $validated = $request->validate($this->rules());
+        // Same rules as before, plus uniqueness (ignoring this vehicle) so a clash shows a
+        // validation message instead of a database error.
+        $validated = $request->validate([
+            ...$this->rules(),
+            'reg_number' => ['required', Rule::unique('vehicles', 'reg_number')->ignore($vehicle)],
+            'vin' => ['nullable', Rule::unique('vehicles', 'vin')->ignore($vehicle)],
+        ]);
 
         $vehicle->update($this->attributes($validated));
         $this->storeUploads($request, $vehicle);

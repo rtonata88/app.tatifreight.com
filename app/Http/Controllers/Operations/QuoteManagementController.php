@@ -340,7 +340,7 @@ class QuoteManagementController extends Controller
             return back()->with('error', 'Quote must have at least one line item with a vehicle to convert to booking');
         }
 
-        $lastBooking = Booking::latest('id')->first();
+        $lastBooking = Booking::withTrashed()->latest('id')->first(); // include deleted bookings: numbers are unique
         $nextNumber = $lastBooking ? (int) substr($lastBooking->booking_number, 4) + 1 : 1;
         $bookingNumber = 'BKG-'.str_pad((string) $nextNumber, 6, '0', STR_PAD_LEFT);
 
@@ -426,7 +426,7 @@ class QuoteManagementController extends Controller
     /** QT-000001, QT-000002 … based on the latest quote, as before. */
     private function nextQuoteNumber(): string
     {
-        $lastQuote = Quote::latest('id')->first();
+        $lastQuote = Quote::withTrashed()->latest('id')->first(); // include deleted quotes: numbers are unique
         $nextNumber = $lastQuote ? (int) substr($lastQuote->quote_number, 3) + 1 : 1;
 
         return 'QT-'.str_pad((string) $nextNumber, 6, '0', STR_PAD_LEFT);

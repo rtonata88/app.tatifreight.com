@@ -1,20 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    CalendarDays,
-    Check,
-    CheckCircle2,
-    CircleCheck,
-    Clock,
-    Ellipsis,
-    MapPin,
-    Pencil,
-    Play,
-    Plus,
-    Search,
-    Trash2,
-    XCircle,
-    Zap,
-} from 'lucide-react';
+import { CalendarDays, Check, CheckCircle2, CircleCheck, Clock, Ellipsis, MapPin, Pencil, Play, Plus, Search, Trash2, X, XCircle, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { bookingStatusTone } from '@/components/bookings/booking-status';
 import { ConfirmDialog } from '@/components/confirm-dialog';
@@ -73,7 +58,9 @@ type Props = {
         in_progress: number;
         completed: number;
     };
-    filters: { search: string; status: string; date: string };
+    filters: { search: string; status: string; date: string; vehicle: string };
+    /** Registration of the vehicle in ?vehicle=, when the list is narrowed to one vehicle. */
+    filteredVehicle: string | null;
     can: { create: boolean; edit: boolean; delete: boolean };
 };
 
@@ -82,7 +69,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Bookings', href: index() }];
 const EMPTY_MESSAGE = 'No bookings found. Create your first booking to get started.';
 const DELETE_MESSAGE = 'Are you sure you want to delete this booking?';
 
-export default function BookingsIndex({ bookings, stats, filters: initialFilters, can }: Props) {
+export default function BookingsIndex({ bookings, stats, filters: initialFilters, filteredVehicle, can }: Props) {
     const { filters, setFilter } = useFilters(index().url, initialFilters);
     const [pendingDelete, setPendingDelete] = useState<BookingRow | null>(null);
     const [deleting, setDeleting] = useState(false);
@@ -202,6 +189,15 @@ export default function BookingsIndex({ bookings, stats, filters: initialFilters
                                 <option value="past">Past</option>
                             </NativeSelect>
                         </div>
+
+                        {filters.vehicle && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                Showing bookings for <span className="font-medium text-foreground">{filteredVehicle ?? 'one vehicle'}</span>
+                                <Button variant="ghost" size="sm" onClick={() => setFilter('vehicle', '')}>
+                                    <X /> Clear
+                                </Button>
+                            </div>
+                        )}
 
                         {/* Phones: cards */}
                         <div className="space-y-4 md:hidden">

@@ -23,6 +23,7 @@ import type { BreadcrumbItem, Option, Paginated } from '@/types';
 type Props = {
     mdcCalculations: Paginated<MdcRow>;
     vehicles: Option[];
+    can: { recordPayment: boolean; viewReport: boolean };
     filters: { search: string; date_from: string; date_to: string; vehicle: string; range: string };
     stats: {
         total_accumulated: number;
@@ -40,7 +41,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'MDC Charges', href: index() }];
 
 const emptyMessage = 'No MDC calculations found for the selected period.';
 
-export default function MdcIndex({ mdcCalculations, vehicles, filters: initialFilters, stats }: Props) {
+export default function MdcIndex({ mdcCalculations, vehicles, can, filters: initialFilters, stats }: Props) {
     const { filters, setFilter, setFilters } = useFilters(index().url, initialFilters);
     // range=custom tells the server the dates were chosen by the user, so clearing one
     // removes the date filter instead of falling back to the current month (as Livewire did).
@@ -63,21 +64,25 @@ export default function MdcIndex({ mdcCalculations, vehicles, filters: initialFi
                     actions={
                         <>
                             <div className="hidden gap-2 md:flex">
-                                <Button asChild>
-                                    <Link href={recordPayment()}>
-                                        <Banknote /> Record Payment
-                                    </Link>
-                                </Button>
+                                {can.recordPayment && (
+                                    <Button asChild>
+                                        <Link href={recordPayment()}>
+                                            <Banknote /> Record Payment
+                                        </Link>
+                                    </Button>
+                                )}
                                 <Button asChild variant="ghost">
                                     <Link href={payments()}>
                                         <FileText /> Payment History
                                     </Link>
                                 </Button>
-                                <Button asChild variant="ghost">
-                                    <Link href={mdcReport()}>
-                                        <BarChart3 /> View Report
-                                    </Link>
-                                </Button>
+                                {can.viewReport && (
+                                    <Button asChild variant="ghost">
+                                        <Link href={mdcReport()}>
+                                            <BarChart3 /> View Report
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                             <div className="md:hidden">
                                 <DropdownMenu>
@@ -87,21 +92,25 @@ export default function MdcIndex({ mdcCalculations, vehicles, filters: initialFi
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="min-w-40">
-                                        <DropdownMenuItem asChild>
-                                            <Link href={recordPayment()}>
-                                                <Banknote /> Record Payment
-                                            </Link>
-                                        </DropdownMenuItem>
+                                        {can.recordPayment && (
+                                            <DropdownMenuItem asChild>
+                                                <Link href={recordPayment()}>
+                                                    <Banknote /> Record Payment
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        )}
                                         <DropdownMenuItem asChild>
                                             <Link href={payments()}>
                                                 <FileText /> Payment History
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href={mdcReport()}>
-                                                <BarChart3 /> View Report
-                                            </Link>
-                                        </DropdownMenuItem>
+                                        {can.viewReport && (
+                                            <DropdownMenuItem asChild>
+                                                <Link href={mdcReport()}>
+                                                    <BarChart3 /> View Report
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

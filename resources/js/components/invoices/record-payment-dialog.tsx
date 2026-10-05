@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { FormField } from '@/components/form-field';
@@ -45,14 +46,19 @@ export function RecordPaymentDialog({ invoiceId, amountDue, today, open, onOpenC
     });
     const { data, setData, errors, processing } = form;
 
-    /** closePaymentModal() resets the fields; openPaymentModal() defaults the amount to the balance. */
-    const changeOpen = (next: boolean) => {
-        if (next) {
+    /**
+     * openPaymentModal(): every time the dialog opens, start from a clean form
+     * with the amount defaulted to the current balance (also after a payment).
+     */
+    useEffect(() => {
+        if (open) {
             form.clearErrors();
             form.setData({ paymentAmount: amountDue, paymentDate: today, paymentMethod: 'bank_transfer', transactionReference: '', paymentNotes: '' });
         }
-        onOpenChange(next);
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, amountDue, today]);
+
+    const changeOpen = (next: boolean) => onOpenChange(next);
 
     const submit = (event: FormEvent) => {
         event.preventDefault();

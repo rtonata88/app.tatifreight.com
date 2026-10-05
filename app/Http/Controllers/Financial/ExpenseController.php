@@ -117,6 +117,7 @@ class ExpenseController extends Controller
 
     public function show(Request $request, Expense $expense): Response
     {
+        $this->ensureDriverOwns($request, $expense);
         $expense->load(['vehicle.vehicleType', 'booking.client', 'user', 'approvedBy']);
         $user = $request->user();
 
@@ -254,8 +255,10 @@ class ExpenseController extends Controller
         return back()->with('success', 'Expense rejected');
     }
 
-    public function downloadReceipt(Expense $expense): BinaryFileResponse|RedirectResponse
+    public function downloadReceipt(Request $request, Expense $expense): BinaryFileResponse|RedirectResponse
     {
+        $this->ensureDriverOwns($request, $expense);
+
         if (! $this->receiptExists($expense)) {
             return back()->with('error', 'Receipt file not found');
         }
@@ -341,5 +344,16 @@ class ExpenseController extends Controller
                         .($withBookingDate && $booking->start_date ? ' ('.$booking->start_date->format('d M Y').')' : ''),
                 ]),
         ];
+    }
+
+    /**
+     * Drivers only see their own expenses in the list; stop them opening other
+     * people's expenses or receipts by changing the URL.
+     */
+    private function ensureDriverOwns(Request $request, Expense $expense): void
+    {
+        $user = $request->user();
+
+        abort_if($user->hasRole('driver') && $expense->user_id !== $user->id, 403);
     }
 }
