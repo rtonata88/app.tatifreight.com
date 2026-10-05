@@ -32,14 +32,14 @@ return new class extends Migration
         }
 
         // Update Driver role - remove vehicle permissions, add logbook permissions
-        $driver = Role::findByName('driver');
+        $driver = Role::where('name', 'driver')->first();
         if ($driver) {
             $driver->revokePermissionTo(['view-vehicles', 'create-vehicles', 'edit-vehicles']);
             $driver->givePermissionTo(['view-logbook', 'create-logbook', 'edit-logbook']);
         }
 
         // Update Manager role - add new permissions
-        $manager = Role::findByName('manager');
+        $manager = Role::where('name', 'manager')->first();
         if ($manager) {
             $manager->givePermissionTo([
                 'view-logbook', 'create-logbook', 'edit-logbook', 'delete-logbook',
@@ -48,19 +48,19 @@ return new class extends Migration
         }
 
         // Update Admin role - give all permissions
-        $admin = Role::findByName('admin');
+        $admin = Role::where('name', 'admin')->first();
         if ($admin) {
             $admin->givePermissionTo(Permission::all());
         }
 
         // Update Dispatcher role - add logbook view permission
-        $dispatcher = Role::findByName('dispatcher');
+        $dispatcher = Role::where('name', 'dispatcher')->first();
         if ($dispatcher) {
             $dispatcher->givePermissionTo('view-logbook');
         }
 
         // Update Accountant role - add MDC permissions
-        $accountant = Role::findByName('accountant');
+        $accountant = Role::where('name', 'accountant')->first();
         if ($accountant) {
             $accountant->givePermissionTo(['view-mdc', 'manage-mdc', 'manage-mdc-rates']);
         }
@@ -78,7 +78,7 @@ return new class extends Migration
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Restore Driver role permissions
-        $driver = Role::findByName('driver');
+        $driver = Role::where('name', 'driver')->first();
         if ($driver) {
             $driver->revokePermissionTo(['view-logbook', 'create-logbook', 'edit-logbook']);
             $driver->givePermissionTo(['view-vehicles', 'create-vehicles', 'edit-vehicles']);
