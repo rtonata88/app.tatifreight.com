@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { formatDate, formatDateTime, formatMoney } from '@/lib/format';
 import { approve, destroy, edit, index, reject, show } from '@/routes/expenses';
 import { download } from '@/routes/expenses/receipt';
+import { index as bookingsIndex } from '@/routes/bookings';
 import { show as vehicleShow } from '@/routes/vehicles';
 import type { BreadcrumbItem } from '@/types';
 
@@ -146,7 +147,7 @@ export default function ExpensesShow({ expense, can }: Props) {
                                         <span className="text-sm text-muted-foreground">Booking</span>
                                         <p className="font-medium">
                                             {/* bookings.index belongs to another module; literal URL avoids depending on its generated routes. */}
-                                            <Link href="/bookings" className="text-blue-600 hover:underline dark:text-blue-400">
+                                            <Link href={bookingsIndex()} className="text-blue-600 hover:underline dark:text-blue-400">
                                                 {expense.booking.booking_number}
                                             </Link>
                                         </p>

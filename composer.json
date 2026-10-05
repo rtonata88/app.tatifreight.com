@@ -16,8 +16,6 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.12",
-        "livewire/flux": "^2.1.1",
-        "livewire/volt": "^1.7.0",
         "spatie/laravel-permission": "^6.22"
     },
     "require-dev": {
@@ -93,16 +91,5 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true,
-    "repositories": {
-        "wayfinder": {
-            "type": "vcs",
-            "url": "https://github.com/laravel/wayfinder"
-        },
-        "packagist": false,
-        "inertia": {
-            "type": "vcs",
-            "url": "https://github.com/inertiajs/inertia-laravel"
-        }
-    }
+    "prefer-stable": true
 }

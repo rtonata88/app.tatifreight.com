@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "types:check": "tsc --noEmit"
     },
     "dependencies": {
         "@headlessui/react": "^2.2.10",

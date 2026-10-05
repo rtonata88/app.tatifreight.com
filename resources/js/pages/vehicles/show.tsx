@@ -17,7 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VehicleRecentList } from "@/components/vehicles/vehicle-recent-list";
 import AppLayout from "@/layouts/app-layout";
 import { formatDate, formatMoney, formatNumber, humanize } from "@/lib/format";
+import { index as bookingsIndex } from "@/routes/bookings";
 import { index as logbookIndex } from "@/routes/logbook";
+import { index as mdcIndex } from "@/routes/mdc";
 import { edit, index, show } from "@/routes/vehicles";
 import type { BreadcrumbItem } from "@/types";
 
@@ -349,7 +351,7 @@ export default function VehicleShow({
                         <VehicleRecentList
                             title="Recent Bookings"
                             items={bookings}
-                            viewAllHref={`/bookings?vehicle=${vehicle.id}`}
+                            viewAllHref={bookingsIndex.url({ query: { vehicle: vehicle.id } })}
                             empty="No bookings yet"
                             renderItem={(booking) => ({
                                 key: booking.id,
@@ -410,7 +412,7 @@ export default function VehicleShow({
                         <VehicleRecentList
                             title="Recent MDC Charges"
                             items={mdcCalculations}
-                            viewAllHref={`/mdc?vehicle=${vehicle.id}`}
+                            viewAllHref={mdcIndex.url({ query: { vehicle: vehicle.id } })}
                             empty="No MDC charges yet"
                             renderItem={(mdc) => ({
                                 key: mdc.id,
