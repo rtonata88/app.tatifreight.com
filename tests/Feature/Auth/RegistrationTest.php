@@ -1,25 +1,39 @@
 <?php
 
-use App\Livewire\Auth\Register;
-use Livewire\Livewire;
+namespace Tests\Feature\Auth;
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Fortify\Features;
+use Tests\TestCase;
 
-    $response->assertStatus(200);
-});
+class RegistrationTest extends TestCase
+{
+    use RefreshDatabase;
 
-test('new users can register', function () {
-    $response = Livewire::test(Register::class)
-        ->set('name', 'Test User')
-        ->set('email', 'test@example.com')
-        ->set('password', 'password')
-        ->set('password_confirmation', 'password')
-        ->call('register');
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    $response
-        ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        $this->skipUnlessFortifyFeature(Features::registration());
+    }
 
-    $this->assertAuthenticated();
-});
+    public function test_registration_screen_can_be_rendered()
+    {
+        $response = $this->get(route('register'));
+
+        $response->assertOk();
+    }
+
+    public function test_new_users_can_register()
+    {
+        $response = $this->post(route('register.store'), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+}

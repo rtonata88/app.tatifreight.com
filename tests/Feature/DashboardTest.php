@@ -1,13 +1,23 @@
 <?php
 
-use App\Models\User;
-
 test('guests are redirected to the login page', function () {
     $this->get('/dashboard')->assertRedirect('/login');
 });
 
-test('authenticated users can visit the dashboard', function () {
-    $this->actingAs($user = User::factory()->create());
+test('users with report access land on the analytics dashboard', function () {
+    $this->actingAs(userWithPermissions(['view-reports']))
+        ->get('/dashboard')
+        ->assertRedirect(route('reports.dashboard'));
+});
 
-    $this->get('/dashboard')->assertStatus(200);
+test('users with only booking access land on bookings', function () {
+    $this->actingAs(userWithPermissions(['view-bookings']))
+        ->get('/dashboard')
+        ->assertRedirect(route('bookings.index'));
+});
+
+test('other users land on vehicles', function () {
+    $this->actingAs(userWithPermissions([]))
+        ->get('/dashboard')
+        ->assertRedirect(route('vehicles.index'));
 });

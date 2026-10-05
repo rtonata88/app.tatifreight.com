@@ -41,7 +41,37 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * A user holding the given role, after seeding the real roles and permissions.
+ * Admins also get every permission, as in production.
+ */
+function userWithRole(string $role): App\Models\User
 {
-    // ..
+    (new Database\Seeders\RolesAndPermissionsSeeder)->run();
+
+    $user = App\Models\User::factory()->create();
+    $user->assignRole($role);
+
+    if ($role === 'admin') {
+        Spatie\Permission\Models\Role::findByName('admin')->givePermissionTo(Spatie\Permission\Models\Permission::all());
+    }
+
+    return $user->fresh();
+}
+
+/**
+ * A user holding exactly the given permissions (created if missing).
+ *
+ * @param  list<string>  $permissions
+ */
+function userWithPermissions(array $permissions): App\Models\User
+{
+    foreach ($permissions as $permission) {
+        Spatie\Permission\Models\Permission::findOrCreate($permission, 'web');
+    }
+
+    $user = App\Models\User::factory()->create();
+    $user->givePermissionTo($permissions);
+
+    return $user->fresh();
 }

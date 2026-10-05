@@ -17,7 +17,10 @@ class VehicleTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->randomElement(['Tipper', 'Cooler', 'Superlink', 'Support']),
+            'description' => fake()->sentence(),
+            'base_rate_daily' => fake()->randomFloat(2, 1000, 5000),
+            'requires_mdc' => true,
         ];
     }
 }
