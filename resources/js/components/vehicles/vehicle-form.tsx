@@ -32,6 +32,8 @@ export type VehicleFormValues = {
     load_capacity: string | number;
     tare_weight: string | number;
     gvm_tonnes: string | number;
+    expected_consumption: string | number;
+    tank_capacity: string | number;
     mdc_rate_card_id: string | number;
     insurance_expiry: string;
     disc_expiry: string;
@@ -84,6 +86,8 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
         load_capacity: text(vehicle?.load_capacity),
         tare_weight: text(vehicle?.tare_weight),
         gvm_tonnes: text(vehicle?.gvm_tonnes),
+        expected_consumption: text(vehicle?.expected_consumption),
+        tank_capacity: text(vehicle?.tank_capacity),
         mdc_rate_card_id: text(vehicle?.mdc_rate_card_id),
         insurance_expiry: text(vehicle?.insurance_expiry),
         disc_expiry: text(vehicle?.disc_expiry),
@@ -173,6 +177,20 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                 </FormField>
                 <FormField label="GPS Device ID" htmlFor="gps_device_id" error={errors.gps_device_id}>
                     <Input id="gps_device_id" value={data.gps_device_id} onChange={(e) => setData('gps_device_id', e.target.value)} placeholder="Optional tracking device ID" />
+                </FormField>
+            </FormSection>
+
+            <FormSection title="Fuel" description="Used to flag fill-ups that do not match the distance driven">
+                <FormField
+                    label="Expected fuel use (L/100 km)"
+                    htmlFor="expected_consumption"
+                    error={errors.expected_consumption}
+                    description="Leave blank to learn it from the first five full tanks"
+                >
+                    <Input id="expected_consumption" type="number" step="0.1" inputMode="decimal" value={data.expected_consumption} onChange={(e) => setData('expected_consumption', e.target.value)} placeholder="e.g., 35" aria-invalid={!!errors.expected_consumption} />
+                </FormField>
+                <FormField label="Tank capacity (litres)" htmlFor="tank_capacity" error={errors.tank_capacity}>
+                    <Input id="tank_capacity" type="number" step="1" inputMode="decimal" value={data.tank_capacity} onChange={(e) => setData('tank_capacity', e.target.value)} placeholder="e.g., 600" aria-invalid={!!errors.tank_capacity} />
                 </FormField>
             </FormSection>
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Financial\ExpenseController;
+use App\Http\Controllers\Financial\FuelAlertController;
 use Illuminate\Support\Facades\Route;
 
 // Expense Management
@@ -21,3 +22,6 @@ Route::post('expenses/{expense}/reject', [ExpenseController::class, 'reject'])->
 // Receipts (stored on the public disk under expenses/receipts).
 Route::get('expenses/{expense}/receipt', [ExpenseController::class, 'downloadReceipt'])->name('expenses.receipt.download')->middleware('can:view-expenses');
 Route::delete('expenses/{expense}/receipt', [ExpenseController::class, 'destroyReceipt'])->name('expenses.receipt.destroy')->middleware('can:edit-expenses');
+
+// Fuel alerts raised by App\Services\FuelChecks, reviewed by whoever approves expenses.
+Route::post('fuel-alerts/{fuelAlert}/review', [FuelAlertController::class, 'review'])->name('fuel-alerts.review')->middleware('can:approve-expenses');

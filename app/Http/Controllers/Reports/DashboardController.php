@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\CompanySetting;
 use App\Models\Expense;
+use App\Models\FuelAlert;
 use App\Models\Invoice;
 use App\Models\MdcCalculation;
 use App\Models\Vehicle;
@@ -22,6 +23,9 @@ class DashboardController extends Controller
 {
     /** MDC reminders appear this many days before the due date. */
     private const MDC_REMINDER_DAYS = 14;
+
+    /** Fuel alerts listed on the dashboard; the card says how many more there are. */
+    private const FUEL_ALERT_ROWS = 10;
 
     public function __invoke(Request $request): Response
     {
@@ -128,6 +132,7 @@ class DashboardController extends Controller
             'maintenanceAlerts' => $this->maintenanceAlerts(),
             'mdcReminders' => $request->user()->can('view-mdc') ? $this->mdcReminders() : null,
             'canRecordMdcPayment' => $request->user()->can('manage-mdc'),
+            'fuelAlerts' => $request->user()->can('approve-expenses') ? $this->fuelAlerts() : null,
         ]);
     }
 
@@ -224,5 +229,36 @@ class DashboardController extends Controller
             ->all();
 
         return ['due_day' => $dueDay, 'has_outstanding' => $outstanding->isNotEmpty(), 'rows' => $rows];
+    }
+
+    /**
+     * Fuel alerts not yet reviewed, newest fill-up first.
+     *
+     * @return array{total: int, rows: list<array<string, mixed>>}
+     */
+    private function fuelAlerts(): array
+    {
+        // A rejected fill-up has already been dealt with.
+        $open = FuelAlert::open()->whereHas('expense', fn ($q) => $q->where('status', '!=', 'rejected'));
+
+        $rows = (clone $open)
+            ->with(['expense', 'vehicle', 'driver'])
+            ->get()
+            ->sortByDesc(fn (FuelAlert $alert) => [$alert->expense->expense_date->format('Y-m-d'), $alert->id])
+            ->take(self::FUEL_ALERT_ROWS)
+            ->map(fn (FuelAlert $alert) => [
+                'id' => $alert->id,
+                'expense_id' => $alert->expense_id,
+                'type' => $alert->type,
+                'label' => $alert->label(),
+                'message' => $alert->message,
+                'reg_number' => $alert->vehicle?->reg_number,
+                'driver' => $alert->driver?->name,
+                'date' => $alert->expense->expense_date->format('Y-m-d'),
+            ])
+            ->values()
+            ->all();
+
+        return ['total' => $open->count(), 'rows' => $rows];
     }
 }

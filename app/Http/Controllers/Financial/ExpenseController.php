@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Financial;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\CompanySetting;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\FuelAlert;
+use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\FuelChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +31,10 @@ class ExpenseController extends Controller
     private const RECEIPT_DISK = 'public';
 
     private const RECEIPT_PATH = 'expenses/receipts';
+
+    private const ODOMETER_PHOTO_PATH = 'expenses/odometer-photos';
+
+    public function __construct(private FuelChecks $fuelChecks) {}
 
     public function index(Request $request): Response
     {
@@ -88,35 +96,41 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('expenses/create', [
             ...$this->formOptions(withBookingDate: true),
-            'defaults' => ['expense_date' => now()->format('Y-m-d')],
+            'defaults' => [
+                'expense_date' => now()->format('Y-m-d'),
+                // A driver filling up is usually recording their own fill-up.
+                'driver_id' => $user->hasRole('driver') ? $user->id : null,
+            ],
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->rules());
+        $validated = $request->validate([
+            ...$this->rules(),
+            // A fill-up needs its slip; other expenses may follow without one.
+            'receipt_upload' => 'nullable|required_if:category,fuel|image|max:2048',
+        ], self::MESSAGES);
 
         $receiptPath = null;
         if ($request->hasFile('receipt_upload')) {
             $receiptPath = $request->file('receipt_upload')->store(self::RECEIPT_PATH, self::RECEIPT_DISK);
         }
 
-        Expense::create([
-            'vehicle_id' => ($validated['vehicle_id'] ?? null) ?: null,
-            'booking_id' => ($validated['booking_id'] ?? null) ?: null,
+        $expense = Expense::create([
+            ...$this->attributes($validated),
             'user_id' => $request->user()->id,
-            'category' => $validated['category'],
-            'amount' => $validated['amount'],
-            'expense_date' => $validated['expense_date'],
-            'description' => $validated['description'],
             'receipt_path' => $receiptPath,
             'status' => 'pending',
-            'notes' => $validated['notes'] ?? null,
         ]);
+        $this->storeOdometerPhoto($request, $expense);
+        $this->fuelChecks->check($expense);
 
         return redirect()->route('expenses.index')->with('success', 'Expense submitted successfully!');
     }
@@ -124,7 +138,7 @@ class ExpenseController extends Controller
     public function show(Request $request, Expense $expense): Response
     {
         $this->ensureDriverOwns($request, $expense);
-        $expense->load(['vehicle.vehicleType', 'booking.client', 'user', 'approvedBy']);
+        $expense->load(['vehicle.vehicleType', 'booking.client', 'user', 'driver', 'approvedBy', 'fuelAlerts.reviewedBy']);
         $user = $request->user();
 
         return Inertia::render('expenses/show', [
@@ -154,10 +168,34 @@ class ExpenseController extends Controller
                 'approved_by' => $expense->approvedBy?->name,
                 'approved_at' => $expense->approved_at?->format('Y-m-d H:i:s'),
                 ...$this->receiptProps($expense),
+                'fuel' => $expense->category === 'fuel' ? [
+                    'driver' => $expense->driver?->name,
+                    'litres' => $expense->litres !== null ? (float) $expense->litres : null,
+                    'price_per_litre' => $expense->price_per_litre !== null ? (float) $expense->price_per_litre : null,
+                    'odometer' => $expense->odometer !== null ? (float) $expense->odometer : null,
+                    'full_tank' => $expense->full_tank,
+                    'station' => $expense->station,
+                    'consumption' => $expense->consumption_l_per_100km !== null ? (float) $expense->consumption_l_per_100km : null,
+                    'expected_consumption' => $expense->vehicle?->expected_consumption !== null ? (float) $expense->vehicle->expected_consumption : null,
+                    'odometer_photo_url' => $expense->odometer_photo_path ? Storage::disk(self::RECEIPT_DISK)->url($expense->odometer_photo_path) : null,
+                ] : null,
             ],
+            // Fuel alerts are for reviewers; drivers do not see them.
+            'fuelAlerts' => $user->can('approve-expenses')
+                ? $expense->fuelAlerts->sortBy('id')->map(fn (FuelAlert $alert) => [
+                    'id' => $alert->id,
+                    'label' => $alert->label(),
+                    'message' => $alert->message,
+                    'reviewed' => $alert->reviewed_at !== null,
+                    'reviewed_by' => $alert->reviewedBy?->name,
+                    'reviewed_at' => $alert->reviewed_at?->format('Y-m-d H:i'),
+                    'review_note' => $alert->review_note,
+                ])->values()
+                : [],
             'can' => [
                 'edit' => $user->can('edit-expenses'),
                 'delete' => $user->can('delete-expenses'),
+                'reviewFuelAlerts' => $user->can('approve-expenses'),
             ],
         ]);
     }
@@ -183,6 +221,13 @@ class ExpenseController extends Controller
                 'approved_by_id' => $expense->approved_by,
                 'approved_by' => $expense->approvedBy?->name,
                 'approved_at' => $expense->approved_at?->format('Y-m-d H:i:s'),
+                'driver_id' => $expense->driver_id,
+                'litres' => $expense->litres,
+                'price_per_litre' => $expense->price_per_litre,
+                'odometer' => $expense->odometer,
+                'full_tank' => $expense->full_tank,
+                'station' => $expense->station,
+                'odometer_photo_url' => $expense->odometer_photo_path ? Storage::disk(self::RECEIPT_DISK)->url($expense->odometer_photo_path) : null,
                 // The edit screen showed the stored receipt whenever a path was set.
                 'receipt_path' => $expense->receipt_path,
                 'receipt_url' => $expense->receipt_path ? Storage::disk(self::RECEIPT_DISK)->url($expense->receipt_path) : null,
@@ -195,16 +240,10 @@ class ExpenseController extends Controller
         $validated = $request->validate([
             ...$this->rules(),
             'status' => 'required|in:pending,approved,rejected',
-        ]);
+        ], self::MESSAGES);
 
         $data = [
-            'vehicle_id' => ($validated['vehicle_id'] ?? null) ?: null,
-            'booking_id' => ($validated['booking_id'] ?? null) ?: null,
-            'category' => $validated['category'],
-            'amount' => $validated['amount'],
-            'expense_date' => $validated['expense_date'],
-            'description' => $validated['description'],
-            'notes' => $validated['notes'] ?? null,
+            ...$this->attributes($validated, $expense),
             'status' => $validated['status'],
         ];
 
@@ -224,6 +263,8 @@ class ExpenseController extends Controller
         }
 
         $expense->update($data);
+        $this->storeOdometerPhoto($request, $expense);
+        $this->fuelChecks->check($expense);
 
         return redirect()->route('expenses.index')->with('success', 'Expense updated successfully!');
     }
@@ -231,6 +272,8 @@ class ExpenseController extends Controller
     public function destroy(Request $request, Expense $expense): RedirectResponse
     {
         $expense->delete();
+        // Expenses are soft-deleted, so their alerts are cleared here rather than by the foreign key.
+        $expense->fuelAlerts()->delete();
 
         // From the details page the old screen went back to the list; from the list it stayed put.
         if ($request->input('redirect') === 'index') {
@@ -281,6 +324,7 @@ class ExpenseController extends Controller
         if ($expense->receipt_path) {
             Storage::disk(self::RECEIPT_DISK)->delete($expense->receipt_path);
             $expense->update(['receipt_path' => null]);
+            $this->fuelChecks->check($expense);
 
             return back()->with('success', 'Receipt deleted successfully');
         }
@@ -314,6 +358,12 @@ class ExpenseController extends Controller
         return response()->json(['category' => ['value' => $category->value, 'label' => $category->label]], 201);
     }
 
+    /** Messages for the fill-up fields, worded as the form asks. */
+    private const MESSAGES = [
+        'full_tank.required_if' => 'Say whether you filled the tank until the pump clicked off.',
+        'odometer.required_if' => 'Enter the odometer reading at the pump.',
+    ];
+
     /**
      * Validation shared by create and edit (edit adds status).
      *
@@ -323,14 +373,91 @@ class ExpenseController extends Controller
     {
         return [
             'category' => ['required', Rule::exists('expense_categories', 'value')],
-            'amount' => 'required|numeric|min:0.01',
+            // A fill-up's amount is litres × price, and its description can be left to the station.
+            'amount' => 'nullable|required_unless:category,fuel|numeric|min:0.01',
             'expense_date' => 'required|date',
-            'description' => 'required|string|max:500',
-            'vehicle_id' => 'nullable|exists:vehicles,id',
+            'description' => 'nullable|required_unless:category,fuel|string|max:500',
+            'vehicle_id' => 'nullable|required_if:category,fuel|exists:vehicles,id',
+            'driver_id' => 'nullable|exists:users,id',
+            'litres' => 'nullable|required_if:category,fuel|numeric|min:0.01|max:10000',
+            // Ignored once a fuel price is set in Company settings (see fuelPrice()).
+            'price_per_litre' => 'nullable|numeric|min:0.01|max:1000',
+            'odometer' => 'nullable|required_if:category,fuel|numeric|min:0',
+            'full_tank' => 'nullable|required_if:category,fuel|boolean',
+            'station' => 'nullable|required_if:category,fuel|string|max:255',
+            'odometer_photo_upload' => 'nullable|image|max:2048',
             'booking_id' => 'nullable|exists:bookings,id',
             'receipt_upload' => 'nullable|image|max:2048',
             'notes' => 'nullable|string',
         ];
+    }
+
+    /**
+     * Columns saved from the create and edit forms. Fuel fields are kept only on fuel expenses,
+     * whose amount is litres × price per litre.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function attributes(array $validated, ?Expense $expense = null): array
+    {
+        $fuel = $validated['category'] === 'fuel';
+        $litres = $fuel ? (float) $validated['litres'] : null;
+        $price = $fuel ? $this->fuelPrice($validated, $expense) : null;
+        $station = $fuel ? trim((string) $validated['station']) : null;
+
+        return [
+            'vehicle_id' => ($validated['vehicle_id'] ?? null) ?: null,
+            'booking_id' => ($validated['booking_id'] ?? null) ?: null,
+            'driver_id' => $fuel ? (($validated['driver_id'] ?? null) ?: null) : null,
+            'category' => $validated['category'],
+            // Rounded twice so 210.5 × 21.45 = 4515.225 becomes 4515.23, not 4515.22 from float error.
+            'amount' => $fuel ? round(round($litres * $price, 6), 2) : $validated['amount'],
+            'litres' => $litres,
+            'price_per_litre' => $price,
+            'odometer' => $fuel ? $validated['odometer'] : null,
+            'full_tank' => $fuel ? (bool) $validated['full_tank'] : null,
+            'station' => $station,
+            'expense_date' => $validated['expense_date'],
+            'description' => ($validated['description'] ?? null) ?: sprintf('Fuel: %s L at %s', number_format($litres, 2), $station),
+            'notes' => $validated['notes'] ?? null,
+        ];
+    }
+
+    /**
+     * The price a fill-up is charged at. A new fill-up takes the price set in Company settings,
+     * whatever was typed, so drivers cannot change it; only with no price set is the entered one
+     * used. Editing (managers only) may correct it, else keeps the price it was saved with.
+     */
+    private function fuelPrice(array $validated, ?Expense $expense): float
+    {
+        $entered = $validated['price_per_litre'] ?? null;
+        $setting = CompanySetting::get()->fuel_price_per_litre;
+
+        $price = $expense
+            ? ($entered ?? $expense->price_per_litre ?? $setting)
+            : ($setting ?? $entered);
+
+        if ($price === null) {
+            throw ValidationException::withMessages([
+                'price_per_litre' => 'Enter the price per litre, or ask a manager to set the fuel price in Company settings.',
+            ]);
+        }
+
+        return (float) $price;
+    }
+
+    private function storeOdometerPhoto(Request $request, Expense $expense): void
+    {
+        if (! $request->hasFile('odometer_photo_upload')) {
+            return;
+        }
+
+        if ($expense->odometer_photo_path) {
+            Storage::disk(self::RECEIPT_DISK)->delete($expense->odometer_photo_path);
+        }
+
+        $expense->update(['odometer_photo_path' => $request->file('odometer_photo_upload')->store(self::ODOMETER_PHOTO_PATH, self::RECEIPT_DISK)]);
     }
 
     private function receiptExists(Expense $expense): bool
@@ -361,8 +488,15 @@ class ExpenseController extends Controller
      */
     private function formOptions(bool $withBookingDate): array
     {
+        $fuelPrice = CompanySetting::get()->fuel_price_per_litre;
+
         return [
             'categories' => ExpenseCategory::options(),
+            // Shown read-only on new fill-ups; null lets the driver enter it.
+            'fuelPrice' => $fuelPrice !== null ? (float) $fuelPrice : null,
+            // whereHas rather than User::role(), which throws when no driver role exists yet.
+            'drivers' => User::whereHas('roles', fn ($q) => $q->where('name', 'driver'))->orderBy('name')->get()
+                ->map(fn (User $driver) => ['value' => $driver->id, 'label' => $driver->name]),
             'vehicles' => Vehicle::with('vehicleType')->orderBy('reg_number')->get()
                 ->map(fn (Vehicle $vehicle) => [
                     'value' => $vehicle->id,

@@ -23,6 +23,9 @@ class CompanySettingController extends Controller
         'bank_name', 'bank_branch', 'account_name', 'account_number', 'branch_code', 'swift_code',
     ];
 
+    /** Fuel alert thresholds (App\Services\FuelChecks). */
+    private const FUEL_FIELDS = ['fuel_consumption_tolerance', 'fuel_min_km_between_fills', 'fuel_price_tolerance', 'fuel_trip_window_days'];
+
     public function edit(): Response
     {
         $settings = CompanySetting::get();
@@ -33,6 +36,8 @@ class CompanySettingController extends Controller
                 'logo_url' => $settings->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
                 'signature_url' => $settings->signature_path ? Storage::disk('public')->url($settings->signature_path) : null,
                 'mdc_payment_due_day' => $settings->mdc_payment_due_day,
+                ...collect(self::FUEL_FIELDS)->mapWithKeys(fn ($field) => [$field => $settings->{$field}])->all(),
+                'fuel_price_per_litre' => $settings->fuel_price_per_litre !== null ? (float) $settings->fuel_price_per_litre : null,
             ],
             'bankAccounts' => CompanyBankAccount::active()->map(fn (CompanyBankAccount $account) => [
                 'id' => $account->id,
@@ -73,6 +78,11 @@ class CompanySettingController extends Controller
             'branch_code' => 'nullable|string|max:50',
             'swift_code' => 'nullable|string|max:50',
             'mdc_payment_due_day' => 'nullable|integer|min:1|max:31',
+            'fuel_consumption_tolerance' => 'nullable|integer|min:1|max:100',
+            'fuel_min_km_between_fills' => 'nullable|integer|min:0|max:5000',
+            'fuel_price_tolerance' => 'nullable|integer|min:1|max:100',
+            'fuel_trip_window_days' => 'nullable|integer|min:0|max:14',
+            'fuel_price_per_litre' => 'nullable|numeric|min:0.01|max:1000',
         ]);
 
         $settings = CompanySetting::get();
@@ -81,6 +91,12 @@ class CompanySettingController extends Controller
         // `country` is NOT NULL in the table; Livewire saved a cleared field as '' (Inertia sends null).
         $data['country'] ??= '';
         $data['mdc_payment_due_day'] = $validated['mdc_payment_due_day'] ?? null;
+        foreach (self::FUEL_FIELDS as $field) {
+            // A threshold left out or cleared keeps its current value.
+            $data[$field] = $validated[$field] ?? $settings->{$field};
+        }
+        // Clearing the price is allowed: fill-ups then take the price the driver enters.
+        $data['fuel_price_per_litre'] = $validated['fuel_price_per_litre'] ?? null;
 
         if ($request->hasFile('logo_upload')) {
             if ($settings->logo_path) {

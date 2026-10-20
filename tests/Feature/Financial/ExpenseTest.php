@@ -122,10 +122,11 @@ test('an expense can be submitted with a receipt', function () {
 
     $this->actingAs($user)
         ->post(route('expenses.store'), [
-            'category' => 'fuel',
+            // Fuel fill-ups have their own fields (FuelMonitoringTest); this covers any other expense.
+            'category' => 'maintenance',
             'amount' => '1250.75',
             'expense_date' => '2025-11-04',
-            'description' => 'Diesel for Walvis trip',
+            'description' => 'Brake pads for Walvis trip',
             'vehicle_id' => $vehicle->id,
             'booking_id' => $booking->id,
             'notes' => 'Paid cash',

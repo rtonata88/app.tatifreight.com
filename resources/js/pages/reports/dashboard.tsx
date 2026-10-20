@@ -13,6 +13,8 @@ import { useFilters } from '@/hooks/use-filters';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { ReviewAlertDialog } from '@/components/fuel/review-alert-dialog';
+import { show as expenseShow } from '@/routes/expenses';
 import { recordPayment } from '@/routes/mdc';
 import { dashboard } from '@/routes/reports';
 import { company } from '@/routes/settings';
@@ -49,6 +51,17 @@ type MdcReminder = {
     days: number;
 };
 
+type FuelAlertRow = {
+    id: number;
+    expense_id: number;
+    type: string;
+    label: string;
+    message: string;
+    reg_number: string | null;
+    driver: string | null;
+    date: string;
+};
+
 type Props = {
     filters: { dateFrom: string; dateTo: string };
     totalRevenue: number;
@@ -70,6 +83,8 @@ type Props = {
     /** Null when the user cannot view MDC. */
     mdcReminders: { due_day: number | null; has_outstanding: boolean; rows: MdcReminder[] } | null;
     canRecordMdcPayment: boolean;
+    /** Null when the user does not review expenses. */
+    fuelAlerts: { total: number; rows: FuelAlertRow[] } | null;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Analytics', href: dashboard() }];
@@ -99,6 +114,7 @@ export default function ReportsDashboard(props: Props) {
         maintenanceAlerts,
         mdcReminders,
         canRecordMdcPayment,
+        fuelAlerts,
     } = props;
 
     return (
@@ -193,6 +209,8 @@ export default function ReportsDashboard(props: Props) {
                         </CardContent>
                     </Card>
                 )}
+
+                {fuelAlerts && fuelAlerts.rows.length > 0 && <FuelAlerts alerts={fuelAlerts} />}
 
                 {mdcReminders && <MdcReminders reminders={mdcReminders} canRecordPayment={canRecordMdcPayment} />}
 
@@ -441,4 +459,76 @@ function MdcDue({ row }: { row: MdcReminder }) {
     }
 
     return <span className="font-medium text-warning">{row.days === 0 ? 'Due today' : `Due in ${row.days} ${row.days === 1 ? 'day' : 'days'}`}</span>;
+}
+
+/** Fill-ups that failed a fuel check and have not been reviewed yet, newest first. */
+function FuelAlerts({ alerts }: { alerts: NonNullable<Props['fuelAlerts']> }) {
+    const more = alerts.total - alerts.rows.length;
+
+    return (
+        <Card className="border-destructive">
+            <CardHeader>
+                <CardTitle className="text-destructive">Fuel alerts</CardTitle>
+                <CardDescription>
+                    {alerts.total} {alerts.total === 1 ? 'fill-up check needs' : 'fill-up checks need'} a look. An alert is a reason to ask, not proof.
+                    {more > 0 && ` Showing the newest ${alerts.rows.length}.`}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3 md:hidden">
+                    {alerts.rows.map((alert) => (
+                        <div key={alert.id} className="space-y-2 rounded-lg border bg-background p-3">
+                            <div className="flex items-start justify-between gap-2">
+                                <div>
+                                    <Link href={expenseShow(alert.expense_id)} className="font-mono font-medium text-primary hover:underline">
+                                        {alert.reg_number ?? 'No vehicle'}
+                                    </Link>
+                                    <div className="text-sm text-muted-foreground">
+                                        {alert.driver ?? 'Unknown driver'} · {formatDate(alert.date)}
+                                    </div>
+                                </div>
+                                <StatusBadge tone="red">{alert.label}</StatusBadge>
+                            </div>
+                            <p className="text-sm">{alert.message}</p>
+                            <ReviewAlertDialog alertId={alert.id} summary={`${alert.label}: ${alert.message}`} />
+                        </div>
+                    ))}
+                </div>
+                <div className="hidden md:block">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Vehicle</TableHead>
+                                <TableHead>Driver</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Alert</TableHead>
+                                <TableHead>Details</TableHead>
+                                <TableHead />
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {alerts.rows.map((alert) => (
+                                <TableRow key={alert.id}>
+                                    <TableCell className="font-mono font-medium">
+                                        <Link href={expenseShow(alert.expense_id)} className="text-primary hover:underline">
+                                            {alert.reg_number ?? 'No vehicle'}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell>{alert.driver ?? '—'}</TableCell>
+                                    <TableCell>{formatDate(alert.date)}</TableCell>
+                                    <TableCell>
+                                        <StatusBadge tone="red">{alert.label}</StatusBadge>
+                                    </TableCell>
+                                    <TableCell className="max-w-md whitespace-normal">{alert.message}</TableCell>
+                                    <TableCell className="text-right">
+                                        <ReviewAlertDialog alertId={alert.id} summary={`${alert.label}: ${alert.message}`} />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }

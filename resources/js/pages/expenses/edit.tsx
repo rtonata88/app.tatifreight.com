@@ -12,11 +12,13 @@ import type { BreadcrumbItem, Option } from '@/types';
 type Props = {
     categories: ExpenseCategory[];
     vehicles: Option[];
+    drivers: Option[];
+    fuelPrice: number | null;
     bookings: Option[];
     expense: EditableExpense;
 };
 
-export default function ExpensesEdit({ categories, vehicles, bookings, expense }: Props) {
+export default function ExpensesEdit({ categories, vehicles, drivers, fuelPrice, bookings, expense }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Expenses', href: index() },
         { title: `Expense #${expense.id}`, href: show(expense.id) },
@@ -28,7 +30,7 @@ export default function ExpensesEdit({ categories, vehicles, bookings, expense }
             <Head title="Edit expense" />
             <PageContainer>
                 <PageHeader title="Edit expense" actions={<StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>} />
-                <ExpenseForm categories={categories} vehicles={vehicles} bookings={bookings} expense={expense} />
+                <ExpenseForm categories={categories} vehicles={vehicles} drivers={drivers} fuelPrice={fuelPrice} bookings={bookings} expense={expense} />
             </PageContainer>
         </AppLayout>
     );

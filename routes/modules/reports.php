@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfitLossController;
 use App\Http\Controllers\Reports\DashboardController;
+use App\Http\Controllers\Reports\FuelReportController;
 use App\Http\Controllers\Reports\ProfitLossReportController;
 use App\Http\Controllers\Reports\VatReportPageController;
 use App\Http\Controllers\VatReportController;
@@ -17,3 +18,7 @@ Route::get('reports/profit-loss/pdf', [ProfitLossController::class, 'exportPdf']
 Route::get('reports/vat', VatReportPageController::class)->name('reports.vat')->middleware('can:view-reports');
 // Export VAT report as PDF (reads ?dateFrom=&dateTo=)
 Route::get('reports/vat/pdf', [VatReportController::class, 'exportPdf'])->name('reports.vat.pdf')->middleware('can:view-reports');
+
+// Fuel monitoring: per-vehicle and per-driver consumption (reads ?dateFrom=&dateTo=)
+Route::get('reports/fuel', [FuelReportController::class, 'show'])->name('reports.fuel')->middleware('can:view-reports');
+Route::get('reports/fuel/pdf', [FuelReportController::class, 'pdf'])->name('reports.fuel.pdf')->middleware('can:view-reports');

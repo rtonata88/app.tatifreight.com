@@ -10,6 +10,7 @@ import {
     FileBarChart,
     FileText,
     FolderOpen,
+    Fuel,
     Receipt,
     ReceiptText,
     ShieldCheck,
@@ -112,6 +113,7 @@ export function AppSidebar() {
                       { title: 'Profit and loss', href: '/reports/profit-loss', icon: FileBarChart },
                       { title: 'VAT report', href: '/reports/vat', icon: FileText },
                       { title: 'MDC report', href: '/reports/mdc', icon: FileText },
+                      { title: 'Fuel report', href: '/reports/fuel', icon: Fuel },
                   ]
                 : [],
         },
