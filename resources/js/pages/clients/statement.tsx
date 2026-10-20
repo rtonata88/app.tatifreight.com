@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { index, statement } from "@/routes/clients";
 import { pdf } from "@/routes/clients/statement";
 import type { BreadcrumbItem } from "@/types";
+import { clientTypeLabel } from "@/components/clients/client-type";
 
 type StatementClient = {
     id: number;
@@ -60,8 +61,6 @@ type Props = {
 };
 
 const money = (value: number) => formatMoney(value, "N$");
-const ucfirst = (value: string) =>
-    value.charAt(0).toUpperCase() + value.slice(1);
 
 export default function ClientStatement({
     client,
@@ -173,7 +172,7 @@ export default function ClientStatement({
                             <div className="space-y-1 text-sm">
                                 <div>
                                     <strong>Type:</strong>{" "}
-                                    {ucfirst(client.classification)}
+                                    {clientTypeLabel(client.classification)}
                                 </div>
                                 <div>
                                     <strong>Credit limit:</strong>{" "}

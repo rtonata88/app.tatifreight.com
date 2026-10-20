@@ -25,6 +25,40 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { usePermissions } from '@/hooks/use-permissions';
 import type { NavGroup, NavItem } from '@/types';
 
+const SCROLL_KEY = 'sidebar-scroll';
+
+/** Kept here so it survives page visits (each page renders its own layout); the tab's session storage covers reloads. */
+let rememberedScroll: number | null = null;
+
+/**
+ * Keeps the menu's scroll position: every page renders the sidebar afresh, so without this a
+ * click near the bottom of a long menu lands the user back at the top. A callback ref, because on
+ * phones the menu only exists while its sheet is open.
+ */
+function rememberScroll(element: HTMLElement | null) {
+    if (!element) return;
+
+    if (rememberedScroll === null) {
+        try {
+            rememberedScroll = Number(sessionStorage.getItem(SCROLL_KEY)) || 0;
+        } catch {
+            rememberedScroll = 0;
+        }
+    }
+    element.scrollTop = rememberedScroll;
+
+    const save = () => {
+        rememberedScroll = element.scrollTop;
+        try {
+            sessionStorage.setItem(SCROLL_KEY, String(rememberedScroll));
+        } catch {
+            // Storage can be unavailable (private mode); the in-memory value still covers page visits.
+        }
+    };
+    element.addEventListener('scroll', save, { passive: true });
+    return () => element.removeEventListener('scroll', save);
+}
+
 /**
  * Same menu, groups and permission checks as the old Flux sidebar, drawn as the Nexus rail.
  * Plain URLs are used so the menu does not depend on generated route files.
@@ -103,7 +137,7 @@ export function AppSidebar() {
                 </Link>
             </SidebarHeader>
 
-            <SidebarContent className="gap-0 py-2">
+            <SidebarContent ref={rememberScroll} className="gap-0 py-2">
                 <NavGroups groups={groups} />
             </SidebarContent>
 

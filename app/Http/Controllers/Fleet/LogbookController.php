@@ -83,12 +83,12 @@ class LogbookController extends Controller
                 'dateFrom' => $dateFrom,
                 'dateTo' => $dateTo,
             ],
-            // The old screen showed these buttons for the *-vehicles permissions; the routes
-            // require the *-logbook permissions, so a button only shows when both allow it.
+            // Same permissions as the routes. (The old screen also required the *-vehicles
+            // permissions, which hid the buttons from drivers, who have logbook access only.)
             'can' => [
-                'create' => $user->can('create-vehicles') && $user->can('create-logbook'),
-                'edit' => $user->can('edit-vehicles') && $user->can('edit-logbook'),
-                'delete' => $user->can('delete-vehicles') && $user->can('delete-logbook'),
+                'create' => $user->can('create-logbook'),
+                'edit' => $user->can('edit-logbook'),
+                'delete' => $user->can('delete-logbook'),
             ],
         ]);
     }

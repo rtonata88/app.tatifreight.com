@@ -152,7 +152,7 @@ function NewClientDialog({ open, onOpenChange, onCreated }: { open: boolean; onO
                     </FormField>
                     <FormField label="Client type" htmlFor="new_client_classification" error={errors.classification}>
                         <NativeSelect id="new_client_classification" value={data.classification} onChange={set('classification')}>
-                            <option value="adhoc">Ad hoc</option>
+                            <option value="adhoc">Once-off</option>
                             <option value="contract">Contract</option>
                         </NativeSelect>
                     </FormField>

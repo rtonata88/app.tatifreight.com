@@ -259,7 +259,7 @@ export function ClientForm({ client }: { client?: EditableClient }) {
                             setData("classification", e.target.value)
                         }
                     >
-                        <option value="adhoc">Ad-hoc (pay per booking)</option>
+                        <option value="adhoc">Once-off (pay per booking)</option>
                         <option value="contract">
                             Contract (long-term agreement)
                         </option>

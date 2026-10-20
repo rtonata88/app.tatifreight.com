@@ -42,7 +42,7 @@ test('guests are redirected and users without permission are forbidden', functio
 });
 
 test('index lists entries for the current month by default with summary totals', function () {
-    $user = userWithPermissions(['view-logbook', 'edit-logbook', 'edit-vehicles']);
+    $user = userWithPermissions(['view-logbook', 'edit-logbook']);
     $vehicle = Vehicle::factory()->create(['reg_number' => 'N 100 W']);
     Logbook::factory()->create(['vehicle_id' => $vehicle->id, 'date' => now()->toDateString(), 'start_odometer' => 1000, 'end_odometer' => 1250]);
     Logbook::factory()->create(['vehicle_id' => $vehicle->id, 'date' => now()->toDateString(), 'start_odometer' => 2000, 'end_odometer' => 2100]);
@@ -218,4 +218,22 @@ test('deleting an entry needs delete-logbook and, as before, delete-vehicles', f
         ->delete(route('logbook.destroy', $logbook))
         ->assertSessionHas('success', 'Logbook entry deleted successfully');
     expect(Logbook::find($logbook->id))->toBeNull();
+});
+
+test('drivers get the logbook buttons their role allows, without vehicle permissions', function () {
+    $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+    $driver = \App\Models\User::factory()->create();
+    $driver->assignRole('driver');
+
+    expect($driver->can('create-vehicles'))->toBeFalse();
+
+    $this->actingAs($driver)
+        ->get(route('logbook.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('can.create', true)
+            ->where('can.edit', true)
+            ->where('can.delete', false)
+        );
+
+    $this->actingAs($driver)->get(route('logbook.create'))->assertOk();
 });

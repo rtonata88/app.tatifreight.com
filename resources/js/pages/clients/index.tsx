@@ -55,6 +55,7 @@ import {
     statement,
 } from "@/routes/clients";
 import type { BreadcrumbItem, Paginated } from "@/types";
+import { clientTypeLabel } from "@/components/clients/client-type";
 
 type ClientRow = {
     id: number;
@@ -81,9 +82,6 @@ type Props = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: "Clients", href: index() }];
-
-const ucfirst = (value: string) =>
-    value.charAt(0).toUpperCase() + value.slice(1);
 
 export default function ClientsIndex({
     clients,
@@ -145,7 +143,7 @@ export default function ClientsIndex({
                                 aria-label="Filter by type"
                             >
                                 <option value="">All types</option>
-                                <option value="adhoc">Ad-hoc</option>
+                                <option value="adhoc">Once-off</option>
                                 <option value="contract">Contract</option>
                             </NativeSelect>
                             <NativeSelect
@@ -385,7 +383,7 @@ export default function ClientsIndex({
 function ClassificationBadge({ value }: { value: string }) {
     return (
         <StatusBadge tone={value === "contract" ? "blue" : "gray"}>
-            {ucfirst(value)}
+            {clientTypeLabel(value)}
         </StatusBadge>
     );
 }
