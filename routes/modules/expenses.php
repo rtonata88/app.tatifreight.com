@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Expense Management
 Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index')->middleware('can:view-expenses');
+Route::post('expenses/categories', [ExpenseController::class, 'storeCategory'])->name('expenses.categories.store')->middleware('can:edit-expenses');
 Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create')->middleware('can:create-expenses');
 Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store')->middleware('can:create-expenses');
 Route::get('expenses/{expense}', [ExpenseController::class, 'show'])->name('expenses.show')->middleware('can:view-expenses');

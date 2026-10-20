@@ -59,7 +59,7 @@ test('profit and loss totals match the old calculations', function () {
     reportsExpense(['category' => 'insurance', 'amount' => 80]);
     reportsExpense(['category' => 'tolls', 'amount' => 30]);
     reportsExpense(['category' => 'other', 'amount' => 20]);
-    reportsExpense(['category' => 'driver_wages', 'amount' => 999]); // not one of the P&L lines (old code reads 'wages')
+    reportsExpense(['category' => 'driver_wages', 'amount' => 999]); // not one of the P&L lines, so counted under other
     reportsExpense(['category' => 'fuel', 'amount' => 999, 'status' => 'pending']);
     reportsExpense(['category' => 'fuel', 'amount' => 999, 'expense_date' => '2027-01-01']);
 
@@ -78,11 +78,11 @@ test('profit and loss totals match the old calculations', function () {
             ->where('expenses.licenses', 0)
             ->where('expenses.wages', 0)
             ->where('expenses.tolls', 30)
-            ->where('expenses.other', 20)
-            ->where('totalExpenses', 850)
+            ->where('expenses.other', 1019) // 20 + the driver_wages expense
+            ->where('totalExpenses', 1849)
             ->where('grossProfit', 3700)
-            ->where('netProfit', 2850)
-            ->where('profitMargin', fn ($v) => abs($v - (2850 / 3700 * 100)) < 1e-9)
+            ->where('netProfit', 1851)
+            ->where('profitMargin', fn ($v) => abs($v - (1851 / 3700 * 100)) < 1e-9)
             ->where('trendingData', fn ($rows) => collect($rows)->values()->all() == [
                 ['period' => '2026-01', 'revenue' => 1500],
                 ['period' => '2026-02', 'revenue' => 300],

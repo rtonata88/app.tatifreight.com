@@ -1,16 +1,12 @@
 import type { BadgeTone } from '@/components/status-badge';
 
-/** Category options, as listed in the old selects. */
-export const expenseCategories: { value: string; label: string }[] = [
-    { value: 'fuel', label: 'Fuel' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'repairs', label: 'Repairs' },
-    { value: 'tolls', label: 'Tolls' },
-    { value: 'insurance', label: 'Insurance' },
-    { value: 'licenses', label: 'Licenses' },
-    { value: 'wages', label: 'Driver wages' },
-    { value: 'other', label: 'Other' },
-];
+/** An expense category option; the server sends the list (they live in the expense_categories table). */
+export type ExpenseCategory = { value: string; label: string };
+
+/** The category's label, or the stored value as the old views showed it when it is not in the list. */
+export function categoryLabel(categories: ExpenseCategory[], value: string): string {
+    return categories.find((c) => c.value === value)?.label ?? ucfirst(value);
+}
 
 export const expenseStatusTone: Record<string, BadgeTone> = {
     pending: 'yellow',

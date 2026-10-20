@@ -54,10 +54,12 @@ class ProfitLossReportController extends Controller
 
         // Expense breakdown
         $expenses = [];
+        $named = collect(self::EXPENSE_CATEGORIES)->except('other')->flatten()->all();
         foreach (self::EXPENSE_CATEGORIES as $key => $categories) {
             $expenses[$key] = (float) Expense::whereBetween('expense_date', [$dateFrom, $dateTo])
                 ->where('status', 'approved')
-                ->whereIn('category', $categories)
+                // "Other" also takes categories added on the expenses page.
+                ->when($key === 'other', fn ($q) => $q->whereNotIn('category', $named), fn ($q) => $q->whereIn('category', $categories))
                 ->sum('amount');
         }
 

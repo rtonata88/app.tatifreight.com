@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Financial;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\Vehicle;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -74,6 +79,7 @@ class ExpenseController extends Controller
                 'total_approved' => (float) (clone $statsQuery)->where('status', 'approved')->sum('amount'),
             ],
             'filters' => ['search' => $search, 'status' => $status, 'category' => $category],
+            'categories' => ExpenseCategory::options(),
             'can' => [
                 'create' => $user->can('create-expenses'),
                 'edit' => $user->can('edit-expenses'),
@@ -127,6 +133,7 @@ class ExpenseController extends Controller
                 'amount' => (float) $expense->amount,
                 'status' => $expense->status,
                 'category' => $expense->category,
+                'category_label' => ExpenseCategory::where('value', $expense->category)->value('label') ?? Str::headline($expense->category),
                 'description' => $expense->description,
                 'expense_date' => $expense->expense_date?->format('Y-m-d'),
                 'notes' => $expense->notes,
@@ -282,14 +289,40 @@ class ExpenseController extends Controller
     }
 
     /**
+     * Adds an expense category from the "New category" dialog beside the category field on the
+     * expense form, and answers with it as a select option.
+     */
+    public function storeCategory(Request $request): JsonResponse
+    {
+        $validated = $request->validate(['label' => 'required|string|max:100']);
+
+        $label = trim($validated['label']);
+        $value = Str::slug($label, '_');
+
+        $exists = ExpenseCategory::where('value', $value)
+            ->orWhereRaw('LOWER(label) = ?', [mb_strtolower($label)])
+            ->exists();
+
+        if ($value === '' || $exists) {
+            throw ValidationException::withMessages([
+                'label' => $value === '' ? 'Use at least one letter or number.' : 'This category already exists.',
+            ]);
+        }
+
+        $category = ExpenseCategory::create(['value' => $value, 'label' => $label]);
+
+        return response()->json(['category' => ['value' => $category->value, 'label' => $category->label]], 201);
+    }
+
+    /**
      * Validation shared by create and edit (edit adds status).
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     private function rules(): array
     {
         return [
-            'category' => 'required|in:fuel,maintenance,repairs,tolls,insurance,licenses,wages,other',
+            'category' => ['required', Rule::exists('expense_categories', 'value')],
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
             'description' => 'required|string|max:500',
@@ -329,6 +362,7 @@ class ExpenseController extends Controller
     private function formOptions(bool $withBookingDate): array
     {
         return [
+            'categories' => ExpenseCategory::options(),
             'vehicles' => Vehicle::with('vehicleType')->orderBy('reg_number')->get()
                 ->map(fn (Vehicle $vehicle) => [
                     'value' => $vehicle->id,

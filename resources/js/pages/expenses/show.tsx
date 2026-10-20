@@ -21,6 +21,7 @@ type ExpenseDetail = {
     amount: number;
     status: string;
     category: string;
+    category_label: string;
     description: string | null;
     expense_date: string | null;
     notes: string | null;
@@ -53,7 +54,7 @@ export default function ExpensesShow({ expense, can }: Props) {
     ];
 
     const statusBadge = <StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>;
-    const categoryBadge = <StatusBadge tone="gray">{ucfirst(expense.category)}</StatusBadge>;
+    const categoryBadge = <StatusBadge tone="gray">{expense.category_label}</StatusBadge>;
 
     const approveExpense = () => router.post(approve(expense.id).url, {}, { preserveScroll: true });
     const rejectExpense = () => router.post(reject(expense.id).url, {}, { preserveScroll: true });

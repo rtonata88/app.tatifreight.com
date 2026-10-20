@@ -9,6 +9,7 @@ import { INVOICE_STATUSES } from '@/components/invoices/invoice-status';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
+import { SearchableSelect } from '@/components/searchable-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { index, store, update } from '@/routes/invoices';
@@ -149,14 +150,14 @@ export function InvoiceForm({ clients, vehicles, bankAccounts, taxRate, today, i
             <FormSection title="Invoice details" columns={editing ? 3 : 2}>
                 {!editing && (
                     <FormField label="Load from completed booking (optional)" htmlFor="booking_id" error={errors.booking_id} description="Auto-populate invoice from a completed booking">
-                        <NativeSelect id="booking_id" value={data.booking_id} onChange={(e) => onBookingChange(e.target.value)}>
-                            <option value="">Select a completed booking...</option>
-                            {bookings.map((booking) => (
-                                <option key={booking.id} value={booking.id}>
-                                    {booking.label}
-                                </option>
-                            ))}
-                        </NativeSelect>
+                        <SearchableSelect
+                            id="booking_id"
+                            value={data.booking_id}
+                            options={bookings.map((booking) => ({ value: booking.id, label: booking.label }))}
+                            onChange={onBookingChange}
+                            placeholder="Select a completed booking..."
+                            searchPlaceholder="Search bookings…"
+                        />
                     </FormField>
                 )}
 

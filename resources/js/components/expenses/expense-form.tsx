@@ -8,13 +8,15 @@ import { FormSection } from '@/components/form-section';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
+import { SearchableSelect } from '@/components/searchable-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDateTime } from '@/lib/format';
 import { index, store, update } from '@/routes/expenses';
 import { destroy as destroyReceipt } from '@/routes/expenses/receipt';
 import type { Option } from '@/types';
-import { expenseCategories } from './expense-meta';
+import { CategorySelect } from './category-select';
+import type { ExpenseCategory } from './expense-meta';
 
 export type ExpenseFormValues = {
     category: string;
@@ -48,6 +50,7 @@ export type EditableExpense = {
 };
 
 type Props = {
+    categories: ExpenseCategory[];
     vehicles: Option[];
     bookings: Option[];
     /** Present when editing. */
@@ -57,7 +60,7 @@ type Props = {
 
 const text = (value: unknown) => (value === null || value === undefined ? '' : String(value));
 
-export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props) {
+export function ExpenseForm({ categories, vehicles, bookings, expense, defaultDate }: Props) {
     const editing = Boolean(expense);
 
     const form = useForm<ExpenseFormValues>({
@@ -122,14 +125,7 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
 
             <FormSection title="Expense details">
                 <FormField label="Category" required htmlFor="category" error={errors.category}>
-                    <NativeSelect id="category" value={data.category} onChange={(e) => setData('category', e.target.value)} aria-invalid={!!errors.category}>
-                        <option value="">Select category</option>
-                        {expenseCategories.map((c) => (
-                            <option key={c.value} value={c.value}>
-                                {c.label}
-                            </option>
-                        ))}
-                    </NativeSelect>
+                    <CategorySelect categories={categories} value={data.category} onChange={(value) => setData('category', value)} invalid={!!errors.category} />
                 </FormField>
 
                 <FormField label="Amount (N$)" required htmlFor="amount" error={errors.amount}>
@@ -178,14 +174,15 @@ export function ExpenseForm({ vehicles, bookings, expense, defaultDate }: Props)
                     className={editing ? undefined : 'md:col-span-2'}
                     description={editing ? undefined : 'Link expense to a specific booking'}
                 >
-                    <NativeSelect id="booking_id" value={data.booking_id} onChange={(e) => setData('booking_id', e.target.value)} aria-invalid={!!errors.booking_id}>
-                        <option value="">Select booking (optional)</option>
-                        {bookings.map((b) => (
-                            <option key={b.value} value={b.value}>
-                                {b.label}
-                            </option>
-                        ))}
-                    </NativeSelect>
+                    <SearchableSelect
+                        id="booking_id"
+                        value={data.booking_id}
+                        options={bookings}
+                        onChange={(value) => setData('booking_id', value)}
+                        placeholder="Select booking (optional)"
+                        searchPlaceholder="Search bookings…"
+                        invalid={!!errors.booking_id}
+                    />
                 </FormField>
 
                 <FormField label="Description" required htmlFor="description" error={errors.description} className="md:col-span-2">

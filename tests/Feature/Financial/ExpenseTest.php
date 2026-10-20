@@ -301,3 +301,47 @@ test('drivers cannot open another user\'s expense or receipt', function () {
     $this->actingAs($driver)->get(route('expenses.receipt.download', $other))->assertForbidden();
     $this->actingAs($driver)->get(route('expenses.show', $own))->assertOk();
 });
+
+test('a new expense category can be created from the expense form and then used', function () {
+    $user = userWithPermissions(['view-expenses', 'create-expenses', 'edit-expenses']);
+
+    $this->actingAs($user)
+        ->postJson(route('expenses.categories.store'), ['label' => '  Tyres & Tubes '])
+        ->assertCreated()
+        ->assertExactJson(['category' => ['value' => 'tyres_tubes', 'label' => 'Tyres & Tubes']]);
+
+    $this->actingAs($user)
+        ->get(route('expenses.create'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('categories', fn ($categories) => collect($categories)->contains('value', 'tyres_tubes')
+                && collect($categories)->last()['value'] === 'other')
+        );
+
+    $this->actingAs($user)
+        ->post(route('expenses.store'), [
+            'category' => 'tyres_tubes',
+            'amount' => 1200,
+            'expense_date' => '2026-03-01',
+            'description' => 'Two new tyres',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Expense::where('category', 'tyres_tubes')->exists())->toBeTrue();
+});
+
+test('expense category names must be new and contain a letter or number', function () {
+    $user = userWithPermissions(['edit-expenses']);
+
+    $this->actingAs($user)->postJson(route('expenses.categories.store'), ['label' => 'driver wages'])
+        ->assertJsonValidationErrors(['label' => 'This category already exists.']);
+    $this->actingAs($user)->postJson(route('expenses.categories.store'), ['label' => '!!!'])
+        ->assertJsonValidationErrors(['label' => 'Use at least one letter or number.']);
+    $this->actingAs($user)->postJson(route('expenses.categories.store'), ['label' => ''])
+        ->assertJsonValidationErrors('label');
+});
+
+test('only users who can edit expenses may create categories', function () {
+    $this->actingAs(userWithPermissions(['view-expenses', 'create-expenses']))
+        ->postJson(route('expenses.categories.store'), ['label' => 'Tyres'])
+        ->assertForbidden();
+});

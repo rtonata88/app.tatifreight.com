@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { SearchableSelect } from "@/components/searchable-select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { index, store, update } from "@/routes/logbook";
@@ -154,24 +155,15 @@ export function LogbookForm({
                             error={errors.booking_id}
                             className="col-span-2 md:col-span-1"
                         >
-                            <NativeSelect
+                            <SearchableSelect
                                 id="booking_id"
                                 value={data.booking_id}
-                                onChange={(e) =>
-                                    setData("booking_id", e.target.value)
-                                }
-                                aria-invalid={!!errors.booking_id}
-                            >
-                                <option value="">None</option>
-                                {bookings.map((booking) => (
-                                    <option
-                                        key={booking.value}
-                                        value={booking.value}
-                                    >
-                                        {booking.label}
-                                    </option>
-                                ))}
-                            </NativeSelect>
+                                options={bookings}
+                                onChange={(value) => setData("booking_id", value)}
+                                placeholder="None"
+                                searchPlaceholder="Search bookings…"
+                                invalid={!!errors.booking_id}
+                            />
                         </FormField>
 
                         <FormField

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
-use App\Models\Expense;
 use App\Models\CompanySetting;
+use App\Models\Expense;
+use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -83,9 +83,10 @@ class ProfitLossController extends Controller
                 ->where('category', 'tolls')
                 ->sum('amount'),
 
+            // "Other" also takes categories added on the expenses page.
             'other' => Expense::whereBetween('expense_date', [$dateFrom, $dateTo])
                 ->where('status', 'approved')
-                ->where('category', 'other')
+                ->whereNotIn('category', ['fuel', 'maintenance', 'repairs', 'mdc_payment', 'insurance', 'licenses', 'wages', 'tolls'])
                 ->sum('amount'),
         ];
 
@@ -117,6 +118,7 @@ class ProfitLossController extends Controller
 
         // Return PDF for download
         $filename = 'Profit-Loss-' . date('Y-m-d', strtotime($dateFrom)) . '-to-' . date('Y-m-d', strtotime($dateTo)) . '.pdf';
+
         return $pdf->download($filename);
     }
 }

@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { SearchableSelect } from "@/components/searchable-select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { index, store, update } from "@/routes/documents";
@@ -284,11 +285,13 @@ export function DocumentForm({
                     htmlFor="booking_id"
                     error={errors.booking_id}
                 >
-                    <OptionSelect
+                    <SearchableSelect
                         id="booking_id"
                         value={data.booking_id}
                         options={bookings}
                         onChange={(value) => setData("booking_id", value)}
+                        placeholder="None"
+                        searchPlaceholder="Search bookings…"
                     />
                 </FormField>
             </FormSection>

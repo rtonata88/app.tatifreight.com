@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataPagination } from '@/components/data-pagination';
 import { EmptyState } from '@/components/empty-state';
-import { expenseCategories, expenseStatusTone, ucfirst } from '@/components/expenses/expense-meta';
+import { categoryLabel, expenseStatusTone, ucfirst, type ExpenseCategory } from '@/components/expenses/expense-meta';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
@@ -56,6 +56,7 @@ type Props = {
     expenses: Paginated<ExpenseRow>;
     stats: { pending: number; approved: number; rejected: number; total_pending: number; total_approved: number };
     filters: { search: string; status: string; category: string };
+    categories: ExpenseCategory[];
     can: { create: boolean; edit: boolean; delete: boolean };
 };
 
@@ -63,7 +64,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Expenses', href: index() }];
 
 const money = (value: number) => formatMoney(value, 'N$');
 
-export default function ExpensesIndex({ expenses, stats, filters: initialFilters, can }: Props) {
+export default function ExpensesIndex({ expenses, stats, filters: initialFilters, categories, can }: Props) {
     const { filters, setFilter } = useFilters(index().url, initialFilters);
     // Desktop dropdown "Delete" opens this dialog (a dropdown item can't host the dialog trigger itself).
     const [pendingDelete, setPendingDelete] = useState<ExpenseRow | null>(null);
@@ -109,7 +110,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                 aria-label="Filter by category"
                             >
                                 <option value="">All categories</option>
-                                {expenseCategories.map((c) => (
+                                {categories.map((c) => (
                                     <option key={c.value} value={c.value}>
                                         {c.label}
                                     </option>
@@ -144,7 +145,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                     <div className="flex-1">
                                                         <Description expense={expense} />
                                                     </div>
-                                                    <StatusBadge tone="gray">{ucfirst(expense.category)}</StatusBadge>
+                                                    <StatusBadge tone="gray">{categoryLabel(categories, expense.category)}</StatusBadge>
                                                 </div>
                                             </div>
 
@@ -234,7 +235,7 @@ export default function ExpensesIndex({ expenses, stats, filters: initialFilters
                                                 <TableRow key={expense.id}>
                                                     <TableCell className="text-sm">{formatDate(expense.expense_date)}</TableCell>
                                                     <TableCell>
-                                                        <StatusBadge tone="gray">{ucfirst(expense.category)}</StatusBadge>
+                                                        <StatusBadge tone="gray">{categoryLabel(categories, expense.category)}</StatusBadge>
                                                     </TableCell>
                                                     <TableCell className="whitespace-normal">
                                                         <div className="max-w-xs">

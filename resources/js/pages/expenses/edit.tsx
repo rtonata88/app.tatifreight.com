@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import type { ExpenseCategory } from '@/components/expenses/expense-meta';
 import { ExpenseForm, type EditableExpense } from '@/components/expenses/expense-form';
 import { expenseStatusTone, ucfirst } from '@/components/expenses/expense-meta';
 import { PageContainer } from '@/components/page-container';
@@ -9,12 +10,13 @@ import { edit, index, show } from '@/routes/expenses';
 import type { BreadcrumbItem, Option } from '@/types';
 
 type Props = {
+    categories: ExpenseCategory[];
     vehicles: Option[];
     bookings: Option[];
     expense: EditableExpense;
 };
 
-export default function ExpensesEdit({ vehicles, bookings, expense }: Props) {
+export default function ExpensesEdit({ categories, vehicles, bookings, expense }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Expenses', href: index() },
         { title: `Expense #${expense.id}`, href: show(expense.id) },
@@ -26,7 +28,7 @@ export default function ExpensesEdit({ vehicles, bookings, expense }: Props) {
             <Head title="Edit expense" />
             <PageContainer>
                 <PageHeader title="Edit expense" actions={<StatusBadge tone={expenseStatusTone[expense.status] ?? 'gray'}>{ucfirst(expense.status)}</StatusBadge>} />
-                <ExpenseForm vehicles={vehicles} bookings={bookings} expense={expense} />
+                <ExpenseForm categories={categories} vehicles={vehicles} bookings={bookings} expense={expense} />
             </PageContainer>
         </AppLayout>
     );
