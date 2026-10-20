@@ -135,10 +135,10 @@ test('without a set baseline, consumption is judged against the first five full-
         fuelTrip($vehicle, sprintf('2026-03-%02d', $day), 0, 20000);
     }
 
-    fuelFill($vehicle, '2026-03-01', 10000, 300);
-    // Five measurements of 30 L/100 km each (150 L per 500 km); none is judged while learning.
+    fuelFill($vehicle, '2026-03-01', 10000, 300, ['status' => 'approved']);
+    // Five approved measurements of 30 L/100 km each (150 L per 500 km); none is judged while learning.
     foreach (range(1, 5) as $i) {
-        $fill = fuelFill($vehicle, sprintf('2026-03-%02d', $i + 1), 10000 + $i * 500, 150);
+        $fill = fuelFill($vehicle, sprintf('2026-03-%02d', $i + 1), 10000 + $i * 500, 150, ['status' => 'approved']);
         expect(alertTypes($fill))->toBe([]);
     }
 
@@ -179,7 +179,7 @@ test('a price well above the recent average and a missing receipt are flagged', 
     fuelTrip($vehicle, '2026-03-12', 0, 50000);
 
     foreach ([1, 2, 3] as $i) {
-        fuelFill($vehicle, "2026-03-1{$i}", 40000 + $i * 1000, 100, ['full_tank' => false]);
+        fuelFill($vehicle, "2026-03-1{$i}", 40000 + $i * 1000, 100, ['full_tank' => false, 'status' => 'approved']);
     }
     $pricey = fuelFill($vehicle, '2026-03-14', 44000, 100, ['full_tank' => false, 'price_per_litre' => 23, 'receipt_path' => null]);
 
@@ -363,4 +363,48 @@ test('the fuel price is saved and can be cleared in company settings', function 
 
     $this->actingAs($admin)->put(route('settings.company.update'), ['company_name' => 'Tati', 'fuel_price_per_litre' => ''])->assertSessionHasNoErrors();
     expect(CompanySetting::first()->fuel_price_per_litre)->toBeNull();
+});
+
+test('unapproved fill-ups do not teach the baseline or the usual price', function () {
+    $vehicle = Vehicle::factory()->create(['expected_consumption' => null]);
+    foreach (range(1, 14) as $day) {
+        fuelTrip($vehicle, sprintf('2026-03-%02d', $day), 0, 50000);
+    }
+
+    // Padded early fill-ups (60 L/100 km at N$30) still waiting for approval.
+    fuelFill($vehicle, '2026-03-01', 10000, 300, ['price_per_litre' => 30]);
+    foreach (range(1, 5) as $i) {
+        fuelFill($vehicle, sprintf('2026-03-%02d', $i + 1), 10000 + $i * 500, 300, ['price_per_litre' => 30]);
+    }
+
+    expect(app(FuelChecks::class)->vehicleBaseline($vehicle))->toBeNull();
+
+    $later = fuelFill($vehicle, '2026-03-08', 13500, 150, ['full_tank' => false, 'price_per_litre' => 20]);
+    expect(alertTypes($later))->not->toContain('price_out_of_range');
+});
+
+test('a driver is recorded as the driver of their own fill-up; managers may only name drivers', function () {
+    $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+    $driver = User::factory()->create();
+    $driver->assignRole('driver');
+    $colleague = User::factory()->create();
+    $colleague->assignRole('driver');
+    $manager = User::factory()->create();
+    $manager->assignRole('manager');
+    $vehicle = Vehicle::factory()->create();
+    $fill = fn (array $extra) => [
+        'category' => 'fuel', 'expense_date' => '2026-03-14', 'vehicle_id' => $vehicle->id,
+        'litres' => 100, 'price_per_litre' => 20, 'odometer' => 5000, 'full_tank' => '0', 'station' => 'Engen',
+        'receipt_upload' => UploadedFile::fake()->image('slip.jpg'), ...$extra,
+    ];
+
+    // Naming a colleague does not move the fill-up onto them.
+    $this->actingAs($driver)->post(route('expenses.store'), $fill(['driver_id' => $colleague->id]))->assertSessionHasNoErrors();
+    expect(Expense::latest('id')->value('driver_id'))->toBe($driver->id);
+
+    $this->actingAs($manager)->post(route('expenses.store'), $fill(['driver_id' => $colleague->id]))->assertSessionHasNoErrors();
+    expect(Expense::latest('id')->value('driver_id'))->toBe($colleague->id);
+
+    $this->actingAs($manager)->post(route('expenses.store'), $fill(['driver_id' => $manager->id]))
+        ->assertSessionHasErrors(['driver_id' => 'Choose one of the drivers.']);
 });

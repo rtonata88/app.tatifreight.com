@@ -155,7 +155,10 @@ class FuelChecks
         return round(($topUps + (float) $expense->litres) / $distance * 100, 2);
     }
 
-    /** The vehicle's expected L/100 km, or the average of its first full-to-full fills. */
+    /**
+     * The vehicle's expected L/100 km, or the average of its first full-to-full fills. Only
+     * approved fills teach the baseline, so unchecked fill-ups cannot raise it to hide later ones.
+     */
     private function baseline(Expense $expense): ?float
     {
         if ($expense->vehicle?->expected_consumption) {
@@ -163,6 +166,7 @@ class FuelChecks
         }
 
         $first = $this->otherFills($expense)
+            ->where('status', 'approved')
             ->whereNotNull('consumption_l_per_100km')
             ->where('odometer', '<', $expense->odometer)
             ->orderBy('odometer')
@@ -175,7 +179,7 @@ class FuelChecks
 
     /**
      * The vehicle's expected L/100 km as the report shows it: the set value, or the average of
-     * its first full-to-full fills once it has enough of them.
+     * its first approved full-to-full fills once it has enough of them.
      */
     public function vehicleBaseline(Vehicle $vehicle): ?float
     {
@@ -185,7 +189,7 @@ class FuelChecks
 
         $first = Expense::where('vehicle_id', $vehicle->id)
             ->where('category', 'fuel')
-            ->where('status', '!=', 'rejected')
+            ->where('status', 'approved')
             ->whereNotNull('consumption_l_per_100km')
             ->orderBy('odometer')
             ->limit(self::LEARNED_BASELINE_FILLS)
@@ -243,10 +247,11 @@ class FuelChecks
         );
     }
 
-    /** Average price per litre over the vehicle's recent earlier fill-ups. */
+    /** Average price per litre over the vehicle's recent approved fill-ups. */
     private function usualPrice(Expense $expense): ?float
     {
         $prices = $this->otherFills($expense)
+            ->where('status', 'approved')
             ->whereNotNull('price_per_litre')
             ->where('expense_date', '<=', $expense->expense_date)
             ->orderByDesc('expense_date')

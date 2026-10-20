@@ -11,6 +11,7 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { SearchableSelect } from '@/components/searchable-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { usePermissions } from '@/hooks/use-permissions';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { index, store, update } from '@/routes/expenses';
 import { destroy as destroyReceipt } from '@/routes/expenses/receipt';
@@ -103,6 +104,10 @@ export function ExpenseForm({ categories, vehicles, drivers, defaultDriverId, fu
     });
     const { data, setData, errors, processing } = form;
     const fuel = data.category === 'fuel';
+    // The server records drivers as the driver of their own fill-ups; only managers pick one.
+    const { can } = usePermissions();
+    const canPickDriver = can('edit-expenses');
+    const ownDriverName = drivers.find((d) => String(d.value) === data.driver_id)?.label;
     // New fill-ups are charged at the set price; managers editing one may correct its price.
     const priceLocked = !editing && fuelPrice !== null;
     // Matches the server: litres × price, rounded to cents.
@@ -303,16 +308,24 @@ export function ExpenseForm({ categories, vehicles, drivers, defaultDriverId, fu
                     <FormField label="Station" required htmlFor="station" error={errors.station}>
                         <Input id="station" value={data.station} onChange={(e) => setData('station', e.target.value)} placeholder="e.g., Engen Okahandja" aria-invalid={!!errors.station} />
                     </FormField>
-                    <FormField label="Driver" htmlFor="driver_id" error={errors.driver_id}>
-                        <NativeSelect id="driver_id" value={data.driver_id} onChange={(e) => setData('driver_id', e.target.value)} aria-invalid={!!errors.driver_id}>
-                            <option value="">Select driver</option>
-                            {drivers.map((d) => (
-                                <option key={d.value} value={d.value}>
-                                    {d.label}
-                                </option>
-                            ))}
-                        </NativeSelect>
-                    </FormField>
+                    {canPickDriver ? (
+                        <FormField label="Driver" htmlFor="driver_id" error={errors.driver_id}>
+                            <NativeSelect id="driver_id" value={data.driver_id} onChange={(e) => setData('driver_id', e.target.value)} aria-invalid={!!errors.driver_id}>
+                                <option value="">Select driver</option>
+                                {drivers.map((d) => (
+                                    <option key={d.value} value={d.value}>
+                                        {d.label}
+                                    </option>
+                                ))}
+                            </NativeSelect>
+                        </FormField>
+                    ) : (
+                        <FormField label="Driver" htmlFor="driver_id" description="Fill-ups are recorded under your name">
+                            <p id="driver_id" className="flex h-11 items-center border-b border-input font-medium md:h-9">
+                                {ownDriverName ?? 'You'}
+                            </p>
+                        </FormField>
+                    )}
                     <FormField
                         label="Dashboard odometer photo"
                         htmlFor="odometer_photo_upload"

@@ -125,6 +125,7 @@ class ExpenseController extends Controller
 
         $expense = Expense::create([
             ...$this->attributes($validated),
+            'driver_id' => $this->driverId($request, $validated),
             'user_id' => $request->user()->id,
             'receipt_path' => $receiptPath,
             'status' => 'pending',
@@ -244,6 +245,7 @@ class ExpenseController extends Controller
 
         $data = [
             ...$this->attributes($validated, $expense),
+            'driver_id' => $this->driverId($request, $validated),
             'status' => $validated['status'],
         ];
 
@@ -378,7 +380,11 @@ class ExpenseController extends Controller
             'expense_date' => 'required|date',
             'description' => 'nullable|required_unless:category,fuel|string|max:500',
             'vehicle_id' => 'nullable|required_if:category,fuel|exists:vehicles,id',
-            'driver_id' => 'nullable|exists:users,id',
+            'driver_id' => ['nullable', function (string $attribute, mixed $value, \Closure $fail) {
+                if (! User::whereKey($value)->whereHas('roles', fn ($q) => $q->where('name', 'driver'))->exists()) {
+                    $fail('Choose one of the drivers.');
+                }
+            }],
             'litres' => 'nullable|required_if:category,fuel|numeric|min:0.01|max:10000',
             // Ignored once a fuel price is set in Company settings (see fuelPrice()).
             'price_per_litre' => 'nullable|numeric|min:0.01|max:1000',
@@ -409,7 +415,6 @@ class ExpenseController extends Controller
         return [
             'vehicle_id' => ($validated['vehicle_id'] ?? null) ?: null,
             'booking_id' => ($validated['booking_id'] ?? null) ?: null,
-            'driver_id' => $fuel ? (($validated['driver_id'] ?? null) ?: null) : null,
             'category' => $validated['category'],
             // Rounded twice so 210.5 × 21.45 = 4515.225 becomes 4515.23, not 4515.22 from float error.
             'amount' => $fuel ? round(round($litres * $price, 6), 2) : $validated['amount'],
@@ -445,6 +450,24 @@ class ExpenseController extends Controller
         }
 
         return (float) $price;
+    }
+
+    /**
+     * Who filled up. Fill-ups are judged per driver, so only someone who manages expenses may name
+     * a driver; anyone else (a driver) is recorded as the driver of their own fill-up.
+     */
+    private function driverId(Request $request, array $validated): ?int
+    {
+        if ($validated['category'] !== 'fuel') {
+            return null;
+        }
+
+        $user = $request->user();
+        if (! $user->can('edit-expenses')) {
+            return $user->hasRole('driver') ? $user->id : null;
+        }
+
+        return ($validated['driver_id'] ?? null) ? (int) $validated['driver_id'] : null;
     }
 
     private function storeOdometerPhoto(Request $request, Expense $expense): void
