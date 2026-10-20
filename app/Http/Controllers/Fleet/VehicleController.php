@@ -171,7 +171,7 @@ class VehicleController extends Controller
             ...$this->formOptions(),
             'vehicle' => [
                 'id' => $vehicle->id,
-                'vehicle_type_id' => $vehicle->vehicle_type_id,
+                'vehicle_type' => $vehicle->vehicleType?->name,
                 'reg_number' => $vehicle->reg_number,
                 'vin' => $vehicle->vin,
                 'make' => $vehicle->make,
@@ -245,7 +245,7 @@ class VehicleController extends Controller
     private function rules(): array
     {
         return [
-            'vehicle_type_id' => 'required',
+            'vehicle_type' => 'required|string|max:255',
             'reg_number' => 'required',
             'vin' => 'nullable',
             'make' => 'required',
@@ -275,14 +275,29 @@ class VehicleController extends Controller
      */
     private function attributes(array $validated): array
     {
-        $fields = collect($validated)->except(['license_disc_upload', 'insurance_upload'])->all();
+        $fields = collect($validated)->except(['vehicle_type', 'license_disc_upload', 'insurance_upload'])->all();
 
         return [
             ...$fields,
+            'vehicle_type_id' => $this->vehicleTypeId($validated['vehicle_type']),
             'gvm_tonnes' => ($validated['gvm_tonnes'] ?? null) ?: null,
             'mdc_rate_card_id' => ($validated['mdc_rate_card_id'] ?? null) ?: null,
             'current_mileage' => ($validated['current_mileage'] ?? null) ?: 0,
         ];
+    }
+
+    /**
+     * The vehicle type typed on the form: an existing one matched by name, ignoring case
+     * and surrounding spaces, or a new one with no base rates yet.
+     */
+    private function vehicleTypeId(string $name): int
+    {
+        $name = trim($name);
+
+        $type = VehicleType::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first()
+            ?? VehicleType::create(['name' => $name]);
+
+        return $type->id;
     }
 
     private function storeUploads(Request $request, Vehicle $vehicle): void
@@ -306,7 +321,8 @@ class VehicleController extends Controller
         $today = now()->toDateString();
 
         return [
-            'vehicleTypes' => VehicleType::all()->map(fn ($type) => ['value' => $type->id, 'label' => $type->name]),
+            // Suggestions for the free-text vehicle type field.
+            'vehicleTypes' => VehicleType::orderBy('name')->pluck('name'),
             // The page picks the suggested rate for the GVM entered, like getActiveRateForGvm().
             'mdcRateCards' => MdcRateCard::where('is_active', true)
                 ->orderBy('min_gvm_tonnes')

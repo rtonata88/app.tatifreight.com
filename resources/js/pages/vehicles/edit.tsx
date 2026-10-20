@@ -4,10 +4,10 @@ import { PageHeader } from '@/components/page-header';
 import { VehicleForm, type MdcRateCardOption } from '@/components/vehicles/vehicle-form';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/vehicles';
-import type { BreadcrumbItem, Option } from '@/types';
+import type { BreadcrumbItem } from '@/types';
 
 type Props = {
-    vehicleTypes: Option[];
+    vehicleTypes: string[];
     mdcRateCards: MdcRateCardOption[];
     vehicle: Record<string, unknown> & {
         id: number;

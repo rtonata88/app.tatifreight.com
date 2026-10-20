@@ -11,7 +11,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { formatMoney } from '@/lib/format';
 import { index, store, update } from '@/routes/vehicles';
-import type { Option } from '@/types';
 
 export type MdcRateCardOption = {
     id: number;
@@ -24,7 +23,7 @@ export type MdcRateCardOption = {
 };
 
 export type VehicleFormValues = {
-    vehicle_type_id: string | number;
+    vehicle_type: string;
     reg_number: string;
     vin: string;
     make: string;
@@ -48,7 +47,8 @@ export type VehicleFormValues = {
 };
 
 type Props = {
-    vehicleTypes: Option[];
+    /** Existing type names, offered as suggestions; any other text creates a new type. */
+    vehicleTypes: string[];
     mdcRateCards: MdcRateCardOption[];
     /** Present when editing. */
     vehicle?: Partial<Record<keyof VehicleFormValues, unknown>> & {
@@ -73,7 +73,7 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
     const editing = Boolean(vehicle);
 
     const form = useForm<VehicleFormValues>({
-        vehicle_type_id: text(vehicle?.vehicle_type_id),
+        vehicle_type: text(vehicle?.vehicle_type),
         reg_number: text(vehicle?.reg_number),
         vin: text(vehicle?.vin),
         make: text(vehicle?.make),
@@ -125,15 +125,13 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
     return (
         <form onSubmit={submit} className="space-y-6">
             <FormSection title="Basic information">
-                <FormField label="Vehicle type" required htmlFor="vehicle_type_id" error={errors.vehicle_type_id}>
-                    <NativeSelect id="vehicle_type_id" value={data.vehicle_type_id} onChange={(e) => setData('vehicle_type_id', e.target.value)} aria-invalid={!!errors.vehicle_type_id}>
-                        <option value="">Select vehicle type</option>
-                        {vehicleTypes.map((type) => (
-                            <option key={type.value} value={type.value}>
-                                {type.label}
-                            </option>
+                <FormField label="Vehicle type" required htmlFor="vehicle_type" error={errors.vehicle_type}>
+                    <Input id="vehicle_type" list="vehicle_type_options" value={data.vehicle_type} onChange={(e) => setData('vehicle_type', e.target.value)} placeholder="e.g., Tipper Truck" autoComplete="off" aria-invalid={!!errors.vehicle_type} />
+                    <datalist id="vehicle_type_options">
+                        {vehicleTypes.map((name) => (
+                            <option key={name} value={name} />
                         ))}
-                    </NativeSelect>
+                    </datalist>
                 </FormField>
                 <FormField label="Registration number" required htmlFor="reg_number" error={errors.reg_number}>
                     <Input id="reg_number" value={data.reg_number} onChange={(e) => setData('reg_number', e.target.value)} placeholder="e.g., N 12345 W" autoCapitalize="characters" autoCorrect="off" spellCheck={false} aria-invalid={!!errors.reg_number} />

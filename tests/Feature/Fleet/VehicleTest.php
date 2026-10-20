@@ -41,7 +41,7 @@ test('a vehicle can be created with uploads', function () {
 
     $this->actingAs($user)
         ->post(route('vehicles.store'), [
-            'vehicle_type_id' => $type->id,
+            'vehicle_type' => $type->name,
             'reg_number' => 'N 5555 W',
             'make' => 'Scania',
             'model' => 'R500',
@@ -52,6 +52,7 @@ test('a vehicle can be created with uploads', function () {
         ->assertSessionHas('success', 'Vehicle created successfully!');
 
     $vehicle = Vehicle::where('reg_number', 'N 5555 W')->firstOrFail();
+    expect($vehicle->vehicle_type_id)->toBe($type->id);
     expect((float) $vehicle->current_mileage)->toBe(0.0);
     Storage::disk('public')->assertExists($vehicle->license_disc_path);
 });
@@ -62,7 +63,7 @@ test('creating a vehicle validates required fields and unique reg number', funct
 
     $this->actingAs($user)
         ->post(route('vehicles.store'), ['reg_number' => $existing->reg_number])
-        ->assertSessionHasErrors(['vehicle_type_id', 'reg_number', 'make', 'model']);
+        ->assertSessionHasErrors(['vehicle_type', 'reg_number', 'make', 'model']);
 });
 
 test('a vehicle can be updated and deleted', function () {
@@ -71,11 +72,15 @@ test('a vehicle can be updated and deleted', function () {
 
     $this->actingAs($user)
         ->get(route('vehicles.edit', $vehicle))
-        ->assertInertia(fn (Assert $page) => $page->component('vehicles/edit')->where('vehicle.id', $vehicle->id));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('vehicles/edit')
+            ->where('vehicle.id', $vehicle->id)
+            ->where('vehicle.vehicle_type', $vehicle->vehicleType->name)
+        );
 
     $this->actingAs($user)
         ->put(route('vehicles.update', $vehicle), [
-            'vehicle_type_id' => $vehicle->vehicle_type_id,
+            'vehicle_type' => $vehicle->vehicleType->name,
             'reg_number' => $vehicle->reg_number,
             'make' => 'Volvo',
             'model' => 'FH16',
@@ -95,11 +100,41 @@ test('updating a vehicle to another vehicle\'s registration is a validation erro
 
     $this->actingAs($user)
         ->put(route('vehicles.update', $a), [
-            'vehicle_type_id' => $a->vehicle_type_id,
+            'vehicle_type' => $a->vehicleType->name,
             'reg_number' => $b->reg_number,
             'make' => 'Volvo',
             'model' => 'FH',
             'status' => 'available',
         ])
         ->assertSessionHasErrors('reg_number');
+});
+
+test('a typed vehicle type matches an existing one ignoring case, or creates a new one', function () {
+    $user = userWithPermissions(['create-vehicles']);
+    $tipper = VehicleType::factory()->create(['name' => 'Tipper Truck']);
+    $payload = ['make' => 'Scania', 'model' => 'R500', 'status' => 'available'];
+
+    $this->actingAs($user)
+        ->post(route('vehicles.store'), [...$payload, 'vehicle_type' => '  tipper truck ', 'reg_number' => 'N 1 W'])
+        ->assertRedirect(route('vehicles.index'));
+
+    $this->actingAs($user)
+        ->post(route('vehicles.store'), [...$payload, 'vehicle_type' => 'Flatbed Trailer', 'reg_number' => 'N 2 W'])
+        ->assertRedirect(route('vehicles.index'));
+
+    expect(Vehicle::where('reg_number', 'N 1 W')->value('vehicle_type_id'))->toBe($tipper->id);
+
+    $flatbed = VehicleType::where('name', 'Flatbed Trailer')->firstOrFail();
+    expect(Vehicle::where('reg_number', 'N 2 W')->value('vehicle_type_id'))->toBe($flatbed->id)
+        ->and($flatbed->base_rate_daily)->toBeNull()
+        ->and(VehicleType::count())->toBe(2);
+});
+
+test('the vehicle form suggests existing type names', function () {
+    VehicleType::factory()->create(['name' => 'Tipper Truck']);
+    VehicleType::factory()->create(['name' => 'Cooler Truck']);
+
+    $this->actingAs(userWithPermissions(['create-vehicles']))
+        ->get(route('vehicles.create'))
+        ->assertInertia(fn (Assert $page) => $page->where('vehicleTypes', ['Cooler Truck', 'Tipper Truck']));
 });
