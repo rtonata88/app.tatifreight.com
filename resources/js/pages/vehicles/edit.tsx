@@ -14,6 +14,7 @@ type Props = {
         reg_number: string;
         license_disc_url: string | null;
         insurance_url: string | null;
+        registration_certificate_url: string | null;
     };
 };
 

@@ -47,17 +47,18 @@ const TEXT_FIELDS = [
 type TextField = (typeof TEXT_FIELDS)[number];
 
 type Props = {
-    settings: Record<TextField, string | null> & { logo_url: string | null; signature_url: string | null };
+    settings: Record<TextField, string | null> & { logo_url: string | null; signature_url: string | null; mdc_payment_due_day: number | null };
     bankAccounts: BankAccount[];
 };
 
-type FormValues = Record<TextField, string> & { logo_upload: File | null; signature_upload: File | null };
+type FormValues = Record<TextField, string> & { mdc_payment_due_day: string; logo_upload: File | null; signature_upload: File | null };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Company settings', href: company() }];
 
 export default function CompanySettings({ settings, bankAccounts }: Props) {
     const form = useForm<FormValues>({
         ...(Object.fromEntries(TEXT_FIELDS.map((field) => [field, settings[field] ?? ''])) as Record<TextField, string>),
+        mdc_payment_due_day: settings.mdc_payment_due_day === null ? '' : String(settings.mdc_payment_due_day),
         logo_upload: null,
         signature_upload: null,
     });
@@ -215,6 +216,27 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
                                 value={data.invoice_footer}
                                 onChange={(e) => setData('invoice_footer', e.target.value)}
                                 placeholder="Payment terms: Net 30 days..."
+                            />
+                        </FormField>
+                    </FormSection>
+
+                    <FormSection title="MDC payments" description="When Mass Distance Charges must be paid. The dashboard reminds you as the due date approaches.">
+                        <FormField
+                            label="Payment due day"
+                            htmlFor="mdc_payment_due_day"
+                            error={errors.mdc_payment_due_day}
+                            description="Day of the following month on which each month's MDC is due (1–31). In shorter months, the last day is used."
+                        >
+                            <Input
+                                id="mdc_payment_due_day"
+                                type="number"
+                                min={1}
+                                max={31}
+                                inputMode="numeric"
+                                value={data.mdc_payment_due_day}
+                                onChange={(e) => setData('mdc_payment_due_day', e.target.value)}
+                                placeholder="e.g., 20"
+                                aria-invalid={!!errors.mdc_payment_due_day}
                             />
                         </FormField>
                     </FormSection>

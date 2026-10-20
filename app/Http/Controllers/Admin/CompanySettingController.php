@@ -32,6 +32,7 @@ class CompanySettingController extends Controller
                 ...collect(self::FIELDS)->mapWithKeys(fn ($field) => [$field => $settings->{$field}])->all(),
                 'logo_url' => $settings->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
                 'signature_url' => $settings->signature_path ? Storage::disk('public')->url($settings->signature_path) : null,
+                'mdc_payment_due_day' => $settings->mdc_payment_due_day,
             ],
             'bankAccounts' => CompanyBankAccount::active()->map(fn (CompanyBankAccount $account) => [
                 'id' => $account->id,
@@ -71,6 +72,7 @@ class CompanySettingController extends Controller
             'account_number' => 'nullable|string|max:100',
             'branch_code' => 'nullable|string|max:50',
             'swift_code' => 'nullable|string|max:50',
+            'mdc_payment_due_day' => 'nullable|integer|min:1|max:31',
         ]);
 
         $settings = CompanySetting::get();
@@ -78,6 +80,7 @@ class CompanySettingController extends Controller
         $data = collect(self::FIELDS)->mapWithKeys(fn ($field) => [$field => $validated[$field] ?? null])->all();
         // `country` is NOT NULL in the table; Livewire saved a cleared field as '' (Inertia sends null).
         $data['country'] ??= '';
+        $data['mdc_payment_due_day'] = $validated['mdc_payment_due_day'] ?? null;
 
         if ($request->hasFile('logo_upload')) {
             if ($settings->logo_path) {

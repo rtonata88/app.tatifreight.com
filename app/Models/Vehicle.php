@@ -31,6 +31,7 @@ class Vehicle extends Model
         'gps_device_id',
         'license_disc_path',
         'insurance_path',
+        'registration_certificate_path',
         'photos',
         'next_service_date',
         'next_service_mileage',

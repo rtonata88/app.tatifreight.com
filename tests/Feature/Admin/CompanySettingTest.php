@@ -47,6 +47,7 @@ test('company settings can be updated with logo and signature uploads', function
             'vat_number' => '123456789',
             'website' => 'https://taati.com.na',
             'city' => 'Windhoek',
+            'mdc_payment_due_day' => 20,
             'logo_upload' => UploadedFile::fake()->image('logo.png'),
             'signature_upload' => UploadedFile::fake()->image('sig.png'),
         ])
@@ -56,6 +57,7 @@ test('company settings can be updated with logo and signature uploads', function
     $settings = CompanySetting::first();
     expect($settings->company_name)->toBe('Tati Investment CC')
         ->and($settings->city)->toBe('Windhoek')
+        ->and($settings->mdc_payment_due_day)->toBe(20)
         ->and($settings->logo_path)->not->toBe($old);
     Storage::disk('public')->assertExists([$settings->logo_path, $settings->signature_path]);
     Storage::disk('public')->assertMissing($old);
@@ -70,9 +72,10 @@ test('company settings validation matches the old rules', function () {
             'email' => 'not-an-email',
             'website' => 'not a url',
             'postal_code' => str_repeat('9', 21),
+            'mdc_payment_due_day' => 32,
             'logo_upload' => UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'),
         ])
-        ->assertSessionHasErrors(['company_name', 'email', 'website', 'postal_code', 'logo_upload']);
+        ->assertSessionHasErrors(['company_name', 'email', 'website', 'postal_code', 'mdc_payment_due_day', 'logo_upload']);
 });
 
 test('logo and signature can be deleted', function () {

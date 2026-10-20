@@ -47,6 +47,7 @@ test('a vehicle can be created with uploads', function () {
             'model' => 'R500',
             'status' => 'available',
             'license_disc_upload' => UploadedFile::fake()->image('disc.jpg'),
+            'registration_certificate_upload' => UploadedFile::fake()->image('registration.jpg'),
         ])
         ->assertRedirect(route('vehicles.index'))
         ->assertSessionHas('success', 'Vehicle created successfully!');
@@ -54,7 +55,7 @@ test('a vehicle can be created with uploads', function () {
     $vehicle = Vehicle::where('reg_number', 'N 5555 W')->firstOrFail();
     expect($vehicle->vehicle_type_id)->toBe($type->id);
     expect((float) $vehicle->current_mileage)->toBe(0.0);
-    Storage::disk('public')->assertExists($vehicle->license_disc_path);
+    Storage::disk('public')->assertExists([$vehicle->license_disc_path, $vehicle->registration_certificate_path]);
 });
 
 test('creating a vehicle validates required fields and unique reg number', function () {

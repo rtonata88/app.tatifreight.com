@@ -139,3 +139,64 @@ test('dashboard lists insurance and licence disc alerts within 30 days', functio
             ->where('maintenanceAlerts.2.days', 20)
         );
 });
+
+test('dashboard reminds about MDC that is overdue or due within 14 days', function () {
+    \App\Models\CompanySetting::get()->update(['mdc_payment_due_day' => 10]);
+    $a = Vehicle::factory()->create(['reg_number' => 'N 1 W']);
+    $b = Vehicle::factory()->create(['reg_number' => 'N 2 W']);
+    $mdc = fn (Vehicle $vehicle, string $date, float $amount) => \App\Models\MdcCalculation::factory()
+        ->for($vehicle)->state(['calculation_date' => $date, 'mdc_amount' => $amount]);
+
+    $mdc($a, '2026-01-20', 100)->create();                     // due 10 Feb: overdue
+    $mdc($a, '2026-02-03', 200)->partiallyPaid(50)->create();  // due 10 Mar: overdue, with the next one
+    $mdc($a, '2026-02-25', 100)->create();
+    $mdc($b, '2026-02-12', 300)->paid()->create();             // paid: no reminder
+    $mdc($b, '2026-03-02', 400)->create();                     // due 10 Apr: more than 14 days away
+
+    $this->actingAs(userWithPermissions(['view-reports', 'view-mdc']))
+        ->get(route('reports.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('mdcReminders.due_day', 10)
+            ->where('mdcReminders.has_outstanding', true)
+            ->has('mdcReminders.rows', 2)
+            ->where('mdcReminders.rows.0', fn ($row) => $row['reg_number'] === 'N 1 W' && $row['month'] === '2026-01'
+                && $row['due_date'] === '2026-02-10' && $row['overdue'] === true && $row['days'] === 33 && (float) $row['outstanding'] === 100.0)
+            ->where('mdcReminders.rows.1', fn ($row) => $row['month'] === '2026-02' && $row['charges'] === 2
+                && $row['due_date'] === '2026-03-10' && $row['days'] === 5 && (float) $row['outstanding'] === 250.0)
+            ->where('canRecordMdcPayment', false)
+        );
+
+    // Due within the window but not yet overdue.
+    $this->travelTo(now()->setDate(2026, 3, 30));
+    $this->actingAs(userWithPermissions(['view-reports', 'view-mdc']))
+        ->get(route('reports.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('mdcReminders.rows.2', fn ($row) => $row['reg_number'] === 'N 2 W' && $row['due_date'] === '2026-04-10'
+                && $row['overdue'] === false && $row['days'] === 11)
+        );
+});
+
+test('MDC due day falls back to the last day of shorter months', function () {
+    \App\Models\CompanySetting::get()->update(['mdc_payment_due_day' => 31]);
+    \App\Models\MdcCalculation::factory()->state(['calculation_date' => '2026-01-15'])->create();
+
+    $this->actingAs(userWithPermissions(['view-reports', 'view-mdc']))
+        ->get(route('reports.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page->where('mdcReminders.rows.0.due_date', '2026-02-28'));
+});
+
+test('MDC reminders ask for a due day when none is set, and are hidden without view-mdc', function () {
+    \App\Models\MdcCalculation::factory()->create();
+
+    $this->actingAs(userWithPermissions(['view-reports', 'view-mdc']))
+        ->get(route('reports.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('mdcReminders.due_day', null)
+            ->where('mdcReminders.has_outstanding', true)
+            ->has('mdcReminders.rows', 0)
+        );
+
+    $this->actingAs(userWithPermissions(['view-reports']))
+        ->get(route('reports.dashboard'))
+        ->assertInertia(fn (Assert $page) => $page->where('mdcReminders', null));
+});

@@ -28,7 +28,15 @@ class CompanySetting extends Model
         'account_number',
         'branch_code',
         'swift_code',
+        'mdc_payment_due_day',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'mdc_payment_due_day' => 'integer',
+        ];
+    }
 
     /**
      * Get the company settings (singleton pattern)
@@ -37,7 +45,7 @@ class CompanySetting extends Model
     {
         $settings = self::first();
 
-        if (!$settings) {
+        if (! $settings) {
             $settings = self::create([
                 'company_name' => 'TAATI Transport',
                 'country' => 'Namibia',

@@ -10,7 +10,7 @@ import type { NavItem } from '@/types';
 const CANDIDATES: (NavItem & { permission: string })[] = [
     { title: 'Dashboard', href: '/reports/dashboard', icon: BarChart3, permission: 'view-reports', activePrefixes: ['/reports'] },
     { title: 'Bookings', href: '/bookings', icon: Calendar, permission: 'view-bookings', activePrefixes: ['/bookings'] },
-    { title: 'Logbook', href: '/logbook', icon: BookOpen, permission: 'view-logbook', activePrefixes: ['/logbook'] },
+    { title: 'MDC Logbook', href: '/logbook', icon: BookOpen, permission: 'view-logbook', activePrefixes: ['/logbook'] },
     { title: 'Expenses', href: '/expenses', icon: ReceiptText, permission: 'view-expenses', activePrefixes: ['/expenses'] },
     { title: 'Invoices', href: '/invoices', icon: Receipt, permission: 'view-invoices', activePrefixes: ['/invoices'] },
     { title: 'Fleet', href: '/vehicles', icon: Truck, permission: 'view-vehicles', activePrefixes: ['/vehicles'] },

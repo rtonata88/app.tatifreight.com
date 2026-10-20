@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\CompanySetting;
 use App\Models\Expense;
 use App\Models\Invoice;
+use App\Models\MdcCalculation;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,6 +20,9 @@ use Inertia\Response;
  */
 class DashboardController extends Controller
 {
+    /** MDC reminders appear this many days before the due date. */
+    private const MDC_REMINDER_DAYS = 14;
+
     public function __invoke(Request $request): Response
     {
         $dateFrom = (string) ($request->query('dateFrom') ?: now()->startOfMonth()->format('Y-m-d'));
@@ -121,6 +126,8 @@ class DashboardController extends Controller
             'monthlyRevenue' => $monthlyRevenue,
             'expensesByCategory' => $expensesByCategory,
             'maintenanceAlerts' => $this->maintenanceAlerts(),
+            'mdcReminders' => $request->user()->can('view-mdc') ? $this->mdcReminders() : null,
+            'canRecordMdcPayment' => $request->user()->can('manage-mdc'),
         ]);
     }
 
@@ -167,5 +174,55 @@ class DashboardController extends Controller
         }
 
         return $rows;
+    }
+
+    /**
+     * Outstanding MDC per vehicle and month, for months whose charges are overdue or fall due
+     * within MDC_REMINDER_DAYS. A month's MDC is due on the company's due day of the next month.
+     *
+     * @return array{due_day: int|null, has_outstanding: bool, rows: list<array<string, mixed>>}
+     */
+    private function mdcReminders(): array
+    {
+        $dueDay = CompanySetting::get()->mdc_payment_due_day;
+
+        $outstanding = MdcCalculation::where('payment_status', '!=', 'paid')
+            ->with('vehicle')
+            ->get()
+            ->filter(fn (MdcCalculation $calculation) => $calculation->outstanding_amount > 0 && $calculation->calculation_date);
+
+        if (! $dueDay) {
+            // Without a due day there are no dates to remind about; the page asks for one instead.
+            return ['due_day' => null, 'has_outstanding' => $outstanding->isNotEmpty(), 'rows' => []];
+        }
+
+        $today = now()->startOfDay();
+
+        $rows = $outstanding
+            ->groupBy(fn (MdcCalculation $calculation) => $calculation->vehicle_id.'|'.$calculation->calculation_date->format('Y-m'))
+            ->map(function ($calculations) use ($dueDay, $today) {
+                /** @var MdcCalculation $first */
+                $first = $calculations->first();
+                $nextMonth = $first->calculation_date->copy()->startOfMonth()->addMonthNoOverflow();
+                $dueDate = $nextMonth->day(min($dueDay, $nextMonth->daysInMonth));
+
+                return [
+                    'key' => $first->vehicle_id.'-'.$first->calculation_date->format('Y-m'),
+                    'vehicle_id' => $first->vehicle_id,
+                    'reg_number' => $first->vehicle?->reg_number,
+                    'month' => $first->calculation_date->format('Y-m'),
+                    'charges' => $calculations->count(),
+                    'outstanding' => round($calculations->sum(fn (MdcCalculation $calculation) => $calculation->outstanding_amount), 2),
+                    'due_date' => $dueDate->format('Y-m-d'),
+                    'overdue' => $dueDate->lt($today),
+                    'days' => (int) abs($today->diffInDays($dueDate)),
+                ];
+            })
+            ->filter(fn (array $row) => $row['due_date'] <= $today->copy()->addDays(self::MDC_REMINDER_DAYS)->format('Y-m-d'))
+            ->sortBy([['due_date', 'asc'], ['reg_number', 'asc']])
+            ->values()
+            ->all();
+
+        return ['due_day' => $dueDay, 'has_outstanding' => $outstanding->isNotEmpty(), 'rows' => $rows];
     }
 }

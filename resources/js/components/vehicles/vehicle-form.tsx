@@ -44,6 +44,7 @@ export type VehicleFormValues = {
     notes: string;
     license_disc_upload: File | null;
     insurance_upload: File | null;
+    registration_certificate_upload: File | null;
 };
 
 type Props = {
@@ -55,6 +56,7 @@ type Props = {
         id: number;
         license_disc_url?: string | null;
         insurance_url?: string | null;
+        registration_certificate_url?: string | null;
     };
 };
 
@@ -94,6 +96,7 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
         notes: text(vehicle?.notes),
         license_disc_upload: null,
         insurance_upload: null,
+        registration_certificate_upload: null,
     });
     const { data, setData, errors, processing } = form;
 
@@ -234,6 +237,16 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
                         file={data.insurance_upload}
                         currentUrl={vehicle?.insurance_url}
                         onChange={(file) => setData('insurance_upload', file)}
+                    />
+                </FormField>
+                <FormField label="Registration certificate (image)" htmlFor="registration_certificate_upload" error={errors.registration_certificate_upload}>
+                    <FileInput
+                        id="registration_certificate_upload"
+                        accept="image/*"
+                        preview
+                        file={data.registration_certificate_upload}
+                        currentUrl={vehicle?.registration_certificate_url}
+                        onChange={(file) => setData('registration_certificate_upload', file)}
                     />
                 </FormField>
             </FormSection>

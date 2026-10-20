@@ -1,18 +1,21 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { toneText, type ReportTone } from '@/components/reports/report-tiles';
 import { PageContainer } from '@/components/page-container';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
 import { StatusBadge } from '@/components/status-badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFilters } from '@/hooks/use-filters';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { recordPayment } from '@/routes/mdc';
 import { dashboard } from '@/routes/reports';
+import { company } from '@/routes/settings';
 import type { BreadcrumbItem } from '@/types';
 
 type TopClient = {
@@ -34,6 +37,18 @@ type MaintenanceAlert = {
     days: number;
 };
 
+type MdcReminder = {
+    key: string;
+    vehicle_id: number;
+    reg_number: string | null;
+    month: string;
+    charges: number;
+    outstanding: number;
+    due_date: string;
+    overdue: boolean;
+    days: number;
+};
+
 type Props = {
     filters: { dateFrom: string; dateTo: string };
     totalRevenue: number;
@@ -52,6 +67,9 @@ type Props = {
     monthlyRevenue: { month: string; revenue: number }[];
     expensesByCategory: CategoryTotal[];
     maintenanceAlerts: MaintenanceAlert[];
+    /** Null when the user cannot view MDC. */
+    mdcReminders: { due_day: number | null; has_outstanding: boolean; rows: MdcReminder[] } | null;
+    canRecordMdcPayment: boolean;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Analytics', href: dashboard() }];
@@ -79,6 +97,8 @@ export default function ReportsDashboard(props: Props) {
         topClients,
         expensesByCategory,
         maintenanceAlerts,
+        mdcReminders,
+        canRecordMdcPayment,
     } = props;
 
     return (
@@ -173,6 +193,8 @@ export default function ReportsDashboard(props: Props) {
                         </CardContent>
                     </Card>
                 )}
+
+                {mdcReminders && <MdcReminders reminders={mdcReminders} canRecordPayment={canRecordMdcPayment} />}
 
                 {/* Revenue & bookings */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -312,4 +334,111 @@ function DaysRemaining({ alert }: { alert: MaintenanceAlert }) {
             {alert.expired ? `Expired ${alert.days} days ago` : `${alert.days} days`}
         </span>
     );
+}
+
+/** "2026-09" → "Sep 2026". */
+const monthLabel = (month: string) =>
+    new Date(`${month}-01T00:00:00`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+
+/** Outstanding MDC that is overdue or falls due soon; shown only when there is something to act on. */
+function MdcReminders({ reminders, canRecordPayment }: { reminders: NonNullable<Props['mdcReminders']>; canRecordPayment: boolean }) {
+    const { due_day, has_outstanding, rows } = reminders;
+
+    if (!due_day) {
+        if (!has_outstanding) return null;
+
+        return (
+            <Card className="border-warning">
+                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1.5">
+                        <CardTitle>MDC payment reminders</CardTitle>
+                        <CardDescription>There is unpaid MDC, but no payment due day is set, so reminders are off.</CardDescription>
+                    </div>
+                    <Button asChild variant="outline">
+                        <Link href={company()}>Set due day</Link>
+                    </Button>
+                </CardHeader>
+            </Card>
+        );
+    }
+
+    if (rows.length === 0) return null;
+
+    const overdue = rows.some((row) => row.overdue);
+    const total = rows.reduce((sum, row) => sum + row.outstanding, 0);
+
+    return (
+        <Card className={overdue ? 'border-destructive' : 'border-warning'}>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1.5">
+                    <CardTitle className={overdue ? 'text-destructive' : undefined}>MDC payment reminders</CardTitle>
+                    <CardDescription>
+                        {money(total)} outstanding. Each month's MDC is due on day {due_day} of the following month.
+                    </CardDescription>
+                </div>
+                {canRecordPayment && (
+                    <Button asChild>
+                        <Link href={recordPayment()}>Record payment</Link>
+                    </Button>
+                )}
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3 md:hidden">
+                    {rows.map((row) => (
+                        <div key={row.key} className="space-y-2 rounded-lg border bg-background p-3">
+                            <div className="flex items-start justify-between gap-2">
+                                <div>
+                                    <div className="font-mono font-medium">{row.reg_number}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {monthLabel(row.month)} · {row.charges} {row.charges === 1 ? 'charge' : 'charges'}
+                                    </div>
+                                </div>
+                                <span className="font-mono font-medium tabular-nums">{money(row.outstanding)}</span>
+                            </div>
+                            <div className="flex justify-between border-t pt-2 text-sm">
+                                <span className="font-medium">Due {formatDate(row.due_date)}</span>
+                                <MdcDue row={row} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="hidden md:block">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Vehicle</TableHead>
+                                <TableHead>Month</TableHead>
+                                <TableHead className="text-right">Charges</TableHead>
+                                <TableHead className="text-right">Outstanding</TableHead>
+                                <TableHead>Due date</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {rows.map((row) => (
+                                <TableRow key={row.key}>
+                                    <TableCell className="font-mono font-medium">{row.reg_number}</TableCell>
+                                    <TableCell>{monthLabel(row.month)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row.charges}</TableCell>
+                                    <TableCell className="text-right font-mono tabular-nums">{money(row.outstanding)}</TableCell>
+                                    <TableCell className="font-medium">{formatDate(row.due_date)}</TableCell>
+                                    <TableCell>
+                                        <MdcDue row={row} />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function MdcDue({ row }: { row: MdcReminder }) {
+    if (row.overdue) {
+        return <span className="font-medium text-destructive">Overdue by {row.days} {row.days === 1 ? 'day' : 'days'}</span>;
+    }
+
+    return <span className="font-medium text-warning">{row.days === 0 ? 'Due today' : `Due in ${row.days} ${row.days === 1 ? 'day' : 'days'}`}</span>;
 }

@@ -192,6 +192,7 @@ class VehicleController extends Controller
                 'notes' => $vehicle->notes,
                 'license_disc_url' => $vehicle->license_disc_path ? Storage::disk('public')->url($vehicle->license_disc_path) : null,
                 'insurance_url' => $vehicle->insurance_path ? Storage::disk('public')->url($vehicle->insurance_path) : null,
+                'registration_certificate_url' => $vehicle->registration_certificate_path ? Storage::disk('public')->url($vehicle->registration_certificate_path) : null,
             ],
         ]);
     }
@@ -263,6 +264,7 @@ class VehicleController extends Controller
             'gps_device_id' => 'nullable',
             'license_disc_upload' => 'nullable|image|max:2048',
             'insurance_upload' => 'nullable|image|max:2048',
+            'registration_certificate_upload' => 'nullable|image|max:2048',
             'next_service_date' => 'nullable|date',
             'next_service_mileage' => 'nullable|integer|min:0',
             'notes' => 'nullable',
@@ -275,7 +277,7 @@ class VehicleController extends Controller
      */
     private function attributes(array $validated): array
     {
-        $fields = collect($validated)->except(['vehicle_type', 'license_disc_upload', 'insurance_upload'])->all();
+        $fields = collect($validated)->except(['vehicle_type', 'license_disc_upload', 'insurance_upload', 'registration_certificate_upload'])->all();
 
         return [
             ...$fields,
@@ -308,6 +310,10 @@ class VehicleController extends Controller
 
         if ($request->hasFile('insurance_upload')) {
             $vehicle->update(['insurance_path' => $request->file('insurance_upload')->store('vehicles/insurance', 'public')]);
+        }
+
+        if ($request->hasFile('registration_certificate_upload')) {
+            $vehicle->update(['registration_certificate_path' => $request->file('registration_certificate_upload')->store('vehicles/registration-certificates', 'public')]);
         }
     }
 
