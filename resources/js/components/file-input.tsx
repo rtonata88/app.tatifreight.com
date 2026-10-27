@@ -62,7 +62,13 @@ export function FileInput({ id, accept, file, onChange, currentUrl, preview = fa
             {preview && currentUrl && !objectUrl && (
                 <div>
                     <p className="mb-1 text-xs text-muted-foreground">Current</p>
-                    <img src={currentUrl} alt="" className="h-32 rounded border object-contain" />
+                    {/\.pdf($|\?)/i.test(currentUrl) ? (
+                        <a href={currentUrl} target="_blank" rel="noreferrer" className="text-body font-medium underline underline-offset-4">
+                            View PDF
+                        </a>
+                    ) : (
+                        <img src={currentUrl} alt="" className="h-32 rounded border object-contain" />
+                    )}
                 </div>
             )}
 

@@ -237,30 +237,30 @@ export function VehicleForm({ vehicleTypes, mdcRateCards, vehicle }: Props) {
             </FormSection>
 
             <FormSection title="Document uploads">
-                <FormField label="License disc (image)" htmlFor="license_disc_upload" error={errors.license_disc_upload}>
+                <FormField label="License disc (photo or PDF)" htmlFor="license_disc_upload" error={errors.license_disc_upload}>
                     <FileInput
                         id="license_disc_upload"
-                        accept="image/*"
+                        accept="image/*,application/pdf"
                         preview
                         file={data.license_disc_upload}
                         currentUrl={vehicle?.license_disc_url}
                         onChange={(file) => setData('license_disc_upload', file)}
                     />
                 </FormField>
-                <FormField label="Insurance certificate (image)" htmlFor="insurance_upload" error={errors.insurance_upload}>
+                <FormField label="Insurance certificate (photo or PDF)" htmlFor="insurance_upload" error={errors.insurance_upload}>
                     <FileInput
                         id="insurance_upload"
-                        accept="image/*"
+                        accept="image/*,application/pdf"
                         preview
                         file={data.insurance_upload}
                         currentUrl={vehicle?.insurance_url}
                         onChange={(file) => setData('insurance_upload', file)}
                     />
                 </FormField>
-                <FormField label="Registration certificate (image)" htmlFor="registration_certificate_upload" error={errors.registration_certificate_upload}>
+                <FormField label="Registration certificate (photo or PDF)" htmlFor="registration_certificate_upload" error={errors.registration_certificate_upload}>
                     <FileInput
                         id="registration_certificate_upload"
-                        accept="image/*"
+                        accept="image/*,application/pdf"
                         preview
                         file={data.registration_certificate_upload}
                         currentUrl={vehicle?.registration_certificate_url}
