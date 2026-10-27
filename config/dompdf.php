@@ -78,7 +78,9 @@ return [
          * direct class use like:
          * $dompdf = new DOMPDF();  $dompdf->load_html($htmldata); $dompdf->render(); $pdfdata = $dompdf->output();
          */
-        'chroot' => realpath(base_path()),
+        // Uploads (logo, signature) live in storage, which on zero-downtime deploys is a symlink
+        // to a shared folder outside the release, so it must be allowed by its real path.
+        'chroot' => array_values(array_filter([realpath(base_path()), realpath(storage_path('app/public'))])),
 
         /**
          * Protocol whitelist
