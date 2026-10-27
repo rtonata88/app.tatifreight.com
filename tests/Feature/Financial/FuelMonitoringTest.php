@@ -355,13 +355,13 @@ test('editing keeps a fill-up at its saved price unless a manager corrects it', 
     expect((float) $fill->fresh()->price_per_litre)->toBe(19.5);
 });
 
-test('the fuel price is saved and can be cleared in company settings', function () {
+test('the fuel price is saved and can be cleared in fuel settings', function () {
     $admin = adminTestUser('admin');
 
-    $this->actingAs($admin)->put(route('settings.company.update'), ['company_name' => 'Tati', 'fuel_price_per_litre' => 21.45])->assertSessionHasNoErrors();
+    $this->actingAs($admin)->put(route('settings.fuel.update'), ['fuel_price_per_litre' => 21.45])->assertSessionHasNoErrors();
     expect((float) CompanySetting::first()->fuel_price_per_litre)->toBe(21.45);
 
-    $this->actingAs($admin)->put(route('settings.company.update'), ['company_name' => 'Tati', 'fuel_price_per_litre' => ''])->assertSessionHasNoErrors();
+    $this->actingAs($admin)->put(route('settings.fuel.update'), ['fuel_price_per_litre' => ''])->assertSessionHasNoErrors();
     expect(CompanySetting::first()->fuel_price_per_litre)->toBeNull();
 });
 

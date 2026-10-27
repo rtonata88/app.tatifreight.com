@@ -124,6 +124,7 @@ export function AppSidebar() {
                       { title: 'Users', href: '/users', icon: UserCog, activePrefixes: ['/users'] },
                       { title: 'Roles and permissions', href: '/roles', icon: ShieldCheck, activePrefixes: ['/roles'] },
                       { title: 'Company settings', href: '/settings/company', icon: Building2, activePrefixes: ['/settings/bank-accounts'] },
+                      { title: 'Fuel settings', href: '/settings/fuel', icon: Fuel },
                   ]
                 : [],
         },

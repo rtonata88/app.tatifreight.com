@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BankAccountController;
 use App\Http\Controllers\Admin\CompanySettingController;
+use App\Http\Controllers\Admin\FuelSettingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,10 @@ Route::middleware('role:admin')->group(function () {
     Route::put('settings/company', [CompanySettingController::class, 'update'])->name('settings.company.update');
     Route::delete('settings/company/logo', [CompanySettingController::class, 'destroyLogo'])->name('settings.company.logo.destroy');
     Route::delete('settings/company/signature', [CompanySettingController::class, 'destroySignature'])->name('settings.company.signature.destroy');
+
+    // Fuel price and fuel alert thresholds
+    Route::get('settings/fuel', [FuelSettingController::class, 'edit'])->name('settings.fuel');
+    Route::put('settings/fuel', [FuelSettingController::class, 'update'])->name('settings.fuel.update');
 
     // Company bank accounts
     Route::get('settings/bank-accounts', [BankAccountController::class, 'index'])->name('settings.bank-accounts');

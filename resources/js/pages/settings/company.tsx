@@ -46,23 +46,16 @@ const TEXT_FIELDS = [
 
 type TextField = (typeof TEXT_FIELDS)[number];
 
-/** Fuel alert thresholds (App\Services\FuelChecks). */
-const FUEL_FIELDS = ['fuel_consumption_tolerance', 'fuel_min_km_between_fills', 'fuel_price_tolerance', 'fuel_trip_window_days'] as const;
-
-type FuelField = (typeof FUEL_FIELDS)[number];
-
 type Props = {
     settings: Record<TextField, string | null> & {
         logo_url: string | null;
         signature_url: string | null;
         mdc_payment_due_day: number | null;
-        fuel_price_per_litre: number | null;
-    } & Record<FuelField, number>;
+    };
     bankAccounts: BankAccount[];
 };
 
-type FormValues = Record<TextField, string> &
-    Record<FuelField, string> & { mdc_payment_due_day: string; fuel_price_per_litre: string; logo_upload: File | null; signature_upload: File | null };
+type FormValues = Record<TextField, string> & { mdc_payment_due_day: string; logo_upload: File | null; signature_upload: File | null };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Company settings', href: company() }];
 
@@ -70,8 +63,6 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
     const form = useForm<FormValues>({
         ...(Object.fromEntries(TEXT_FIELDS.map((field) => [field, settings[field] ?? ''])) as Record<TextField, string>),
         mdc_payment_due_day: settings.mdc_payment_due_day === null ? '' : String(settings.mdc_payment_due_day),
-        ...(Object.fromEntries(FUEL_FIELDS.map((field) => [field, String(settings[field])])) as Record<FuelField, string>),
-        fuel_price_per_litre: settings.fuel_price_per_litre === null ? '' : String(settings.fuel_price_per_litre),
         logo_upload: null,
         signature_upload: null,
     });
@@ -254,46 +245,6 @@ export default function CompanySettings({ settings, bankAccounts }: Props) {
                         </FormField>
                     </FormSection>
 
-                    <FormSection title="Fuel monitoring" description="The fuel price, and when a fill-up is flagged on the dashboard. Defaults follow the fuel monitoring spec.">
-                        <FormField
-                            label="Fuel price per litre (N$)"
-                            htmlFor="fuel_price_per_litre"
-                            error={errors.fuel_price_per_litre}
-                            description="New fill-ups are charged at this price; drivers cannot change it. Update it when the pump price changes. Leave blank to let drivers enter it."
-                        >
-                            <Input
-                                id="fuel_price_per_litre"
-                                type="number"
-                                step="0.001"
-                                min="0.01"
-                                inputMode="decimal"
-                                value={data.fuel_price_per_litre}
-                                onChange={(e) => setData('fuel_price_per_litre', e.target.value)}
-                                placeholder="e.g., 21.450"
-                                aria-invalid={!!errors.fuel_price_per_litre}
-                            />
-                        </FormField>
-                        {(
-                            [
-                                ['fuel_consumption_tolerance', 'High fuel use (% over expected)', 'Flag full tanks that use more than this % above the vehicle\'s expected L/100 km.'],
-                                ['fuel_min_km_between_fills', 'Fills too close (km)', 'Flag a fill-up less than this many km after the previous one.'],
-                                ['fuel_price_tolerance', 'Price out of range (% over average)', 'Flag a price per litre more than this % above the vehicle\'s recent fills.'],
-                                ['fuel_trip_window_days', 'Fuel without trips (days)', 'Flag a fill-up with no logbook trip within this many days either side.'],
-                            ] as const
-                        ).map(([field, label, help]) => (
-                            <FormField key={field} label={label} htmlFor={field} error={errors[field]} description={help}>
-                                <Input
-                                    id={field}
-                                    type="number"
-                                    min={0}
-                                    inputMode="numeric"
-                                    value={data[field]}
-                                    onChange={(e) => setData(field, e.target.value)}
-                                    aria-invalid={!!errors[field]}
-                                />
-                            </FormField>
-                        ))}
-                    </FormSection>
 
                     <FormActions>
                         <Button type="submit" disabled={processing}>
